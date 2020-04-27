@@ -15,27 +15,27 @@ func ParseNnmClub(document *goquery.Document) (models.Torrent, error) {
 	var err error
 
 	info.Title = document.Find(".maintitle").First().Text()
-	info.UpdatedAt, err = parseNnmClubUpdatedAt(document)
+	info.UploadedAt, err = parseNnmClubUploadedAt(document)
 
 	return info, err
 }
 
-func parseNnmClubUpdatedAt(document *goquery.Document) (time.Time, error) {
+func parseNnmClubUploadedAt(document *goquery.Document) (time.Time, error) {
 	previous := " Зарегистрирован: "
 	var updatedAtNodeId int
-	var updatedAt string
+	var uploadedAt string
 
 	document.Find("table.btTbl tr.row1 td.genmed").Each(func(i int, s *goquery.Selection) {
 		text := s.Text()
 		if i == updatedAtNodeId {
-			updatedAt = s.Text()
+			uploadedAt = s.Text()
 		}
 		if text == previous {
 			updatedAtNodeId = i + 1
 		}
 	})
 
-	if updatedAt == "" {
+	if uploadedAt == "" {
 		return time.Time{}, errors.New("couldn't detect updated at")
 	}
 
@@ -54,5 +54,5 @@ func parseNnmClubUpdatedAt(document *goquery.Document) (time.Time, error) {
 		"Дек", "Dec",
 	)
 
-	return time.Parse("02 Jan 2006 15:04:05", strings.Trim(r.Replace(updatedAt), " "))
+	return time.Parse("02 Jan 2006 15:04:05", strings.Trim(r.Replace(uploadedAt), " "))
 }
