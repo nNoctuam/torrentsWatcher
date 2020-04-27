@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"torrentsWatcher/internal/api/db"
 
-	"torrentsWatcher/internal/api"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/parsing"
 )
 
 func AddTorrent(w http.ResponseWriter, r *http.Request) {
-	var torrent models.Torrent
+	var torrent *models.Torrent
 	var requestBody struct {
 		Url string
 	}
@@ -30,13 +30,13 @@ func AddTorrent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.DB.Create(&torrent).Error
+	err = db.DB.Create(torrent).Error
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	response, err := json.Marshal(&torrent)
+	response, err := json.Marshal(torrent)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

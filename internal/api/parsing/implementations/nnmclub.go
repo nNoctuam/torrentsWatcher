@@ -10,14 +10,14 @@ import (
 	"torrentsWatcher/internal/api/models"
 )
 
-func ParseNnmClub(document *goquery.Document) (models.Torrent, error) {
+func ParseNnmClub(document *goquery.Document) (*models.Torrent, error) {
 	var info models.Torrent
 	var err error
 
 	info.Title = document.Find(".maintitle").First().Text()
 	info.UploadedAt, err = parseNnmClubUploadedAt(document)
 
-	return info, err
+	return &info, err
 }
 
 func parseNnmClubUploadedAt(document *goquery.Document) (time.Time, error) {

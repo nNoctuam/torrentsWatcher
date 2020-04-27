@@ -1,11 +1,9 @@
-package api
+package db
 
 import (
-	"log"
-	"torrentsWatcher/internal/api/models"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"log"
 )
 
 var DB *gorm.DB
@@ -20,8 +18,4 @@ func InitDB() {
 
 func CloseDB() {
 	DB.Close()
-}
-
-func Migrate() {
-	DB.AutoMigrate(&models.Torrent{})
 }

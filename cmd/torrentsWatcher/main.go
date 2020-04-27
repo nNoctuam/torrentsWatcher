@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 
-	"torrentsWatcher/internal/api"
+	"torrentsWatcher/internal/api/db"
+	"torrentsWatcher/internal/api/models"
+	"torrentsWatcher/internal/api/watch"
 	"torrentsWatcher/internal/handlers"
 )
 
@@ -19,12 +22,14 @@ import (
 // authorization
 
 func main() {
-	api.InitDB()
-	defer api.CloseDB()
+	db.InitDB()
+	defer db.CloseDB()
 
 	fmt.Print("it works.\n")
 
-	api.Migrate()
+	migrate()
+
+	go watch.Watch(1 * time.Hour)
 	serve()
 }
 
@@ -52,4 +57,8 @@ func serve() {
 	}
 
 	server.ListenAndServe()
+}
+
+func migrate() {
+	db.DB.AutoMigrate(&models.Torrent{})
 }

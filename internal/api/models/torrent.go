@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"time"
+	"torrentsWatcher/internal/api/db"
 )
 
 type Torrent struct {
@@ -38,4 +39,12 @@ func (t *Torrent) GetDeletedAt() int64 {
 		return 0
 	}
 	return t.DeletedAt.Unix()
+}
+
+func (t *Torrent) UpdateFrom(updatedTorrent *Torrent) error {
+	t.Title = updatedTorrent.Title
+	t.UploadedAt = updatedTorrent.UploadedAt
+	t.FileUrl = updatedTorrent.FileUrl
+
+	return db.DB.Save(&t).Error
 }

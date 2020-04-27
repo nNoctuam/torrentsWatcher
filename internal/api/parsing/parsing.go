@@ -2,6 +2,7 @@ package parsing
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,27 +16,26 @@ import (
 	"torrentsWatcher/internal/api/parsing/implementations"
 )
 
-func GetTorrentInfo(url string) (models.Torrent, error) {
+func GetTorrentInfo(url string) (*models.Torrent, error) {
 	body, err := loadHTML(url)
 	if err != nil {
-		return models.Torrent{}, err
+		return &models.Torrent{}, err
 	}
 
 	doc, err := goquery.NewDocumentFromReader(body)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	parser := getParser(url)
 
-	info, err := parser(doc)
-	info.PageUrl = url
-	fmt.Printf("parsed: %v (err = %v)\n", info, err)
+	torrent, err := parser(doc)
+	jsonView, _ := json.Marshal(torrent)
+	fmt.Printf("parsed: %s (err = %v)\n", jsonView, err)
 
-	return info, err
+	return torrent, err
 }
 
-func getParser(url string) func(document *goquery.Document) (models.Torrent, error) {
+func getParser(url string) func(document *goquery.Document) (*models.Torrent, error) {
 	return implementations.ParseNnmClub
 }
 
