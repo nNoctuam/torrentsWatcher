@@ -16,7 +16,7 @@
       </thead>
 
       <tbody>
-        <tr v-for="torrent in torrents" v-bind:key="torrent.page_url">
+        <tr v-for="torrent in torrents" v-bind:key="torrent.id">
           <td><a :href="torrent.page_url" target="_blank">{{ torrent.title }}</a></td>
           <td :title="timeFormat(torrent.uploaded_at * 1000)">{{ timeFromNow(torrent.uploaded_at * 1000) }}</td>
           <td :title="timeFormat(torrent.updated_at * 1000)">{{ timeFromNow(torrent.updated_at * 1000) }}</td>
@@ -86,14 +86,15 @@ export default {
 h3
   margin 40px 0 0
 
-ul
-  list-style-type none
-  padding 0
-
-li
-  display inline-block
-  margin 0 10px
-
 a
   color #42b983
+
+table
+  margin-top: 30px
+
+thead th
+  white-space nowrap
+  border-bottom: 1px solid gray
+  padding-bottom: 10px
+
 </style>

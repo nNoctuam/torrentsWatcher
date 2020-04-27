@@ -24,6 +24,11 @@ func main() {
 
 	fmt.Print("it works.\n")
 
+	api.Migrate()
+	serve()
+}
+
+func serve() {
 	router := chi.NewRouter()
 
 	corsMiddleware := cors.New(cors.Options{

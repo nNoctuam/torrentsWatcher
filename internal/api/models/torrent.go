@@ -6,14 +6,14 @@ import (
 )
 
 type Torrent struct {
-	Id         uint       `gorm:"primary_key" json:"id"`
+	Id         uint       `json:"id" gorm:"primary_key"`
+	Title      string     `json:"title"`
+	PageUrl    string     `json:"page_url" gorm:"unique"`
+	FileUrl    string     `json:"file_url"`
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	UploadedAt time.Time  `json:"uploaded_at"`
-	DeletedAt  *time.Time `sql:"index" json:"deleted_at"`
-	Title      string     `json:"title"`
-	PageUrl    string     `gorm:"unique" json:"page_url"`
-	FileUrl    string     `json:"file_url"`
+	DeletedAt  *time.Time `json:"deleted_at" sql:"index"`
 }
 
 func (t *Torrent) MarshalJSON() ([]byte, error) {
