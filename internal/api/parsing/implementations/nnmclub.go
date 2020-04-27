@@ -1,15 +1,17 @@
-package implementation
+package implementations
 
 import (
 	"errors"
-	"github.com/PuerkitoBio/goquery"
 	"strings"
 	"time"
-	"torrentsWatcher/models"
+
+	"github.com/PuerkitoBio/goquery"
+
+	"torrentsWatcher/internal/api/models"
 )
 
-func ParseNnmClub(document *goquery.Document) (models.TorrentInfo, error) {
-	var info models.TorrentInfo
+func ParseNnmClub(document *goquery.Document) (models.Torrent, error) {
+	var info models.Torrent
 	var err error
 
 	info.Title = document.Find(".maintitle").First().Text()

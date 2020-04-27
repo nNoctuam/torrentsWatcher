@@ -7,18 +7,18 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"torrentsWatcher/models"
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html/charset"
 
-	"torrentsWatcher/parsing/implementation"
+	"torrentsWatcher/internal/api/models"
+	"torrentsWatcher/internal/api/parsing/implementations"
 )
 
-func GetTorrentInfo(url string) (models.TorrentInfo, error) {
+func GetTorrentInfo(url string) (models.Torrent, error) {
 	body, err := loadHTML(url)
 	if err != nil {
-		return models.TorrentInfo{}, err
+		return models.Torrent{}, err
 	}
 
 	doc, err := goquery.NewDocumentFromReader(body)
@@ -35,17 +35,17 @@ func GetTorrentInfo(url string) (models.TorrentInfo, error) {
 	return info, err
 }
 
-func getParser(url string) func(document *goquery.Document) (models.TorrentInfo, error) {
-	return implementation.ParseNnmClub
+func getParser(url string) func(document *goquery.Document) (models.Torrent, error) {
+	return implementations.ParseNnmClub
 }
 
 func loadHTML(url string) (io.Reader, error) {
-	// Request the HTML page.
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer res.Body.Close()
+
 	if res.StatusCode != 200 {
 		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
 	}
