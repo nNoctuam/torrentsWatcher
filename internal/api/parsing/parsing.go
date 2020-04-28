@@ -3,11 +3,13 @@ package parsing
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html/charset"
@@ -16,8 +18,12 @@ import (
 	"torrentsWatcher/internal/api/parsing/implementations"
 )
 
-func GetTorrentInfo(url string) (*models.Torrent, error) {
-	body, err := loadHTML(url)
+var parsers = map[string]func(document *goquery.Document) (*models.Torrent, error){
+	"nnmclub.to": implementations.ParseNnmClub,
+}
+
+func GetTorrentInfo(torrentUrl string) (*models.Torrent, error) {
+	body, err := loadHTML(torrentUrl)
 	if err != nil {
 		return &models.Torrent{}, err
 	}
@@ -26,7 +32,11 @@ func GetTorrentInfo(url string) (*models.Torrent, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	parser := getParser(url)
+
+	parser := getParser(torrentUrl)
+	if parser == nil {
+		return &models.Torrent{}, errors.New("Parser not found for url " + torrentUrl)
+	}
 
 	torrent, err := parser(doc)
 	jsonView, _ := json.Marshal(torrent)
@@ -35,8 +45,18 @@ func GetTorrentInfo(url string) (*models.Torrent, error) {
 	return torrent, err
 }
 
-func getParser(url string) func(document *goquery.Document) (*models.Torrent, error) {
-	return implementations.ParseNnmClub
+func getParser(torrentUrl string) func(document *goquery.Document) (*models.Torrent, error) {
+	parsedUrl, err := url.Parse(torrentUrl)
+	if err != nil {
+		fmt.Printf("Couldn't parse url %s", torrentUrl)
+		return nil
+	}
+
+	parser, exists := parsers[parsedUrl.Host]
+	if !exists {
+		return nil
+	}
+	return parser
 }
 
 func loadHTML(url string) (io.Reader, error) {
