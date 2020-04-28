@@ -1,6 +1,7 @@
 package watch
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 )
 
 func Watch(period time.Duration) {
+	fmt.Printf("Start checking every %s\n", period)
 	for {
 		go func() {
 			var torrents []models.Torrent

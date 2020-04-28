@@ -2,12 +2,16 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 
+	"torrentsWatcher/config"
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/watch"
@@ -22,6 +26,8 @@ import (
 // authorization
 
 func main() {
+	cfg := getConfig()
+
 	db.InitDB()
 	defer db.CloseDB()
 
@@ -29,11 +35,27 @@ func main() {
 
 	migrate()
 
-	go watch.Watch(1 * time.Hour)
-	serve()
+	go watch.Watch(time.Duration(cfg.IntervalHours) * time.Hour)
+	serve(cfg.Host, cfg.Port)
 }
 
-func serve() {
+func getConfig() *config.AppConfig {
+	cfg := &config.AppConfig{}
+
+	dat, err := ioutil.ReadFile("config.yml")
+	if err != nil {
+		log.Fatalf("error loading config: %v", err)
+	}
+
+	err = yaml.Unmarshal(dat, cfg)
+	if err != nil {
+		log.Fatalf("error parsing config: %v", err)
+	}
+
+	return cfg
+}
+
+func serve(host string, port string) {
 	router := chi.NewRouter()
 
 	corsMiddleware := cors.New(cors.Options{
@@ -52,11 +74,11 @@ func serve() {
 	router.Handle("/*", http.FileServer(http.Dir("./frontend/dist")))
 
 	server := http.Server{
-		Addr:    "0.0.0.0:8080",
+		Addr:    fmt.Sprintf("%s:%s", host, port),
 		Handler: router,
 	}
 
-	server.ListenAndServe()
+	_ = server.ListenAndServe()
 }
 
 func migrate() {

@@ -8,4 +8,5 @@ require (
 	github.com/go-chi/cors v1.1.1
 	github.com/jinzhu/gorm v1.9.12
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	gopkg.in/yaml.v2 v2.2.8
 )
