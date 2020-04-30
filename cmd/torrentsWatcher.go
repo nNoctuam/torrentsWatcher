@@ -2,15 +2,10 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"time"
-
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-
+	"net/http"
+	"time"
 	"torrentsWatcher/config"
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
@@ -26,7 +21,10 @@ import (
 // authorization
 
 func main() {
-	cfg := getConfig()
+	config.Load()
+	//c, _ := json.Marshal(config.App)
+	//fmt.Print(string(c))
+	//return
 
 	db.InitDB()
 	defer db.CloseDB()
@@ -35,24 +33,8 @@ func main() {
 
 	migrate()
 
-	go watch.Watch(time.Duration(cfg.IntervalHours) * time.Hour)
-	serve(cfg.Host, cfg.Port)
-}
-
-func getConfig() *config.AppConfig {
-	cfg := &config.AppConfig{}
-
-	dat, err := ioutil.ReadFile("config.yml")
-	if err != nil {
-		log.Fatalf("error loading config: %v", err)
-	}
-
-	err = yaml.Unmarshal(dat, cfg)
-	if err != nil {
-		log.Fatalf("error parsing config: %v", err)
-	}
-
-	return cfg
+	go watch.Watch(time.Duration(config.App.IntervalHours) * time.Hour)
+	serve(config.App.Host, config.App.Port)
 }
 
 func serve(host string, port string) {
@@ -82,5 +64,5 @@ func serve(host string, port string) {
 }
 
 func migrate() {
-	db.DB.AutoMigrate(&models.Torrent{})
+	db.DB.AutoMigrate(&models.Torrent{}, &models.AuthCookie{})
 }

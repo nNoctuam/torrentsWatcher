@@ -33,10 +33,10 @@ func checkTorrent(torrent *models.Torrent) {
 	updatedTorrent, err := parsing.GetTorrentInfo(torrent.PageUrl)
 
 	if err != nil {
-		log.Print("Couldn't get torrents for check", err)
+		log.Print("Error parsing torrent: ", err)
 		return
 	}
-	if torrent.UploadedAt != updatedTorrent.UploadedAt {
+	if torrent.UploadedAt.Unix() != updatedTorrent.UploadedAt.Unix() {
 		log.Printf("torrent '%s' (%s) was updated!", torrent.Title, torrent.PageUrl)
 		notification.NotifyAbout(torrent)
 	}

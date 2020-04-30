@@ -1,7 +1,8 @@
-package implementations
+package tracker
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 	"time"
 
@@ -10,7 +11,22 @@ import (
 	"torrentsWatcher/internal/api/models"
 )
 
-func ParseNnmClub(document *goquery.Document) (*models.Torrent, error) {
+type NnmClub struct {
+	Tracker
+}
+
+func NewNnmClub() *Tracker {
+	return &Tracker{
+		Domain:   "nnmclub.to",
+		iTracker: &NnmClub{},
+	}
+}
+
+func (t *NnmClub) doesRequireLogin() bool {
+	return false
+}
+
+func (t *NnmClub) parse(document *goquery.Document) (*models.Torrent, error) {
 	var info models.Torrent
 	var err error
 
@@ -18,6 +34,10 @@ func ParseNnmClub(document *goquery.Document) (*models.Torrent, error) {
 	info.UploadedAt, err = parseNnmClubUploadedAt(document)
 
 	return &info, err
+}
+
+func (t *NnmClub) login() (*http.Cookie, error) {
+	return nil, nil
 }
 
 func parseNnmClubUploadedAt(document *goquery.Document) (time.Time, error) {
@@ -53,6 +73,6 @@ func parseNnmClubUploadedAt(document *goquery.Document) (time.Time, error) {
 		"Ноя", "Nov",
 		"Дек", "Dec",
 	)
-
-	return time.Parse("02 Jan 2006 15:04:05", strings.Trim(r.Replace(uploadedAt), " "))
+	location, _ := time.LoadLocation("Local")
+	return time.ParseInLocation("02 Jan 2006 15:04:05", strings.Trim(r.Replace(uploadedAt), " "), location)
 }

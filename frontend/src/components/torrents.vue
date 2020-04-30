@@ -45,7 +45,7 @@ export default {
     timeFromNow (time) {
       return moment(time).fromNow()
     },
-    timeFormat (time, format = 'dddd MMM Do h:mm:ss') {
+    timeFormat (time, format = 'llll') {
       return moment(time).format(format)
     },
     addTorrent () {
