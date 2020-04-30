@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/parsing/tracker"
 )
