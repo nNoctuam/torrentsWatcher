@@ -33,6 +33,7 @@ func (t *Rutracker) parse(document *goquery.Document) (*models.Torrent, error) {
 	var err error
 
 	info.Title = document.Find(".maintitle").First().Text()
+	info.Title = strings.Trim(info.Title, " \t\n")
 
 	if info.Title != "" && document.Find("#logged-in-username").Size() == 0 {
 		fmt.Println("Unauthorized")
