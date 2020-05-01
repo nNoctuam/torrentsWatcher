@@ -2,12 +2,16 @@ package tracker
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 
+	"torrentsWatcher/config"
 	"torrentsWatcher/internal/api/models"
 )
 
@@ -23,21 +27,96 @@ func NewNnmClub() *Tracker {
 }
 
 func (t *NnmClub) doesRequireLogin() bool {
-	return false
+	return true
 }
 
 func (t *NnmClub) parse(document *goquery.Document) (*models.Torrent, error) {
 	var info models.Torrent
 	var err error
 
+	if document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Text() != "Скачать" {
+		return &info, errors.New(UnauthorizedError)
+	}
+
 	info.Title = document.Find(".maintitle").First().Text()
 	info.UploadedAt, err = parseNnmClubUploadedAt(document)
+	info.FileUrl, _ = document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Attr("href")
+	if info.FileUrl[:8] == "download" {
+		info.FileUrl = "https://nnmclub.to/forum/" + info.FileUrl
+	}
 
 	return &info, err
 }
 
-func (t *NnmClub) login() (*http.Cookie, error) {
-	return nil, nil
+func (t *NnmClub) login() ([]*http.Cookie, error) {
+	fmt.Println("login")
+	code, err := getLoginCode()
+
+	params := url.Values{}
+	params.Set("username", config.App.Credentials["nnmclub.to"].Login)
+	params.Set("password", config.App.Credentials["nnmclub.to"].Password)
+	params.Set("autologin", "on")
+	params.Set("redirect", "")
+	params.Set("code", code)
+	params.Set("login", "%C2%F5%EE%E4")
+
+	r, err := http.NewRequest("POST", "http://nnmclub.to/forum/login.php", strings.NewReader(params.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Set("Content-Length", strconv.Itoa(len(params.Encode())))
+
+	client := http.Client{}
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	res, err := client.Do(r)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return res.Cookies(), nil
+}
+
+func getLoginCode() (string, error) {
+	r, err := http.NewRequest("GET", "http://nnmclub.to/forum/login.php", nil)
+	if err != nil {
+		return "", err
+	}
+
+	r.Header.Set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linu…) Gecko/20100101 Firefox/75.0")
+	r.Header.Set("Origin", "http://nnmclub.to")
+
+	client := http.Client{}
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	res, err := client.Do(r)
+	if err != nil {
+		return "", err
+	}
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("login page response is %d %s", res.StatusCode, http.StatusText(res.StatusCode))
+	}
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	code, _ := doc.Find(`input[name="code"]`).First().Attr("value")
+	if code == "" {
+		return "", errors.New("hidden input with code not found")
+	}
+	err = res.Body.Close()
+	if err != nil {
+		return "", err
+	}
+
+	return code, nil
 }
 
 func parseNnmClubUploadedAt(document *goquery.Document) (time.Time, error) {

@@ -2,6 +2,7 @@ package tracker
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -13,7 +14,7 @@ import (
 )
 
 type iTracker interface {
-	login() (*http.Cookie, error)
+	login() ([]*http.Cookie, error)
 	doesRequireLogin() bool
 	parse(document *goquery.Document) (*models.Torrent, error)
 }
@@ -29,18 +30,25 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 	torrent, err := t.LoadAndParse(url)
 
 	if err != nil && (err.Error() == UnauthorizedError || err.Error() == "record not found") {
-		cookie, err := t.iTracker.login()
+		var cookies []*http.Cookie
+		cookies, err = t.iTracker.login()
 		if err != nil {
 			return nil, err
 		}
 
-		err = db.DB.Save(&models.AuthCookie{
-			Domain: t.Domain,
-			Name:   cookie.Name,
-			Value:  cookie.Value,
-		}).Error
-		if err != nil {
-			return nil, err
+		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).Delete(models.AuthCookie{}).Error; err != nil {
+			fmt.Println("error removing old cookies")
+		}
+
+		for _, cookie := range cookies {
+			err = db.DB.Save(&models.AuthCookie{
+				Domain: t.Domain,
+				Name:   cookie.Name,
+				Value:  cookie.Value,
+			}).Error
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		torrent, err = t.LoadAndParse(url)
@@ -59,7 +67,7 @@ func (t *Tracker) LoadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	body, err := tools.Load(url, cookies)
+	body, err := tools.LoadHTML(url, cookies)
 	if err != nil {
 		return nil, err
 	}
@@ -75,14 +83,16 @@ func (t *Tracker) LoadAndParse(url string) (*models.Torrent, error) {
 func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 	var cookies []*http.Cookie
 	if t.iTracker.doesRequireLogin() {
-		savedCookie := models.AuthCookie{}
-		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).First(&savedCookie).Error; err != nil {
+		var savedCookies []models.AuthCookie
+		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).Find(&savedCookies).Error; err != nil {
 			return nil, err
 		}
-		cookies = append(cookies, &http.Cookie{
-			Name:  savedCookie.Name,
-			Value: savedCookie.Value,
-		})
+		for _, savedCookie := range savedCookies {
+			cookies = append(cookies, &http.Cookie{
+				Name:  savedCookie.Name,
+				Value: savedCookie.Value,
+			})
+		}
 	}
 	return cookies, nil
 }
@@ -93,7 +103,7 @@ func (t *Tracker) Download(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := tools.Load(url, cookies)
+	body, err := tools.LoadBytes(url, cookies)
 	if err != nil {
 		return nil, err
 	}

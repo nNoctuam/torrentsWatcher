@@ -71,7 +71,7 @@ func (t *Rutracker) parse(document *goquery.Document) (*models.Torrent, error) {
 	return &info, err
 }
 
-func (t *Rutracker) login() (*http.Cookie, error) {
+func (t *Rutracker) login() ([]*http.Cookie, error) {
 	data := url.Values{}
 	data.Set("login_username", config.App.Credentials["rutracker.org"].Login)
 	data.Set("login_password", config.App.Credentials["rutracker.org"].Password)
@@ -96,10 +96,5 @@ func (t *Rutracker) login() (*http.Cookie, error) {
 		return nil, err
 	}
 
-	for _, cookie := range response.Cookies() {
-		if cookie.Name == "bb_session" {
-			return cookie, nil
-		}
-	}
-	return nil, errors.New("cookie not found in response")
+	return response.Cookies(), nil
 }
