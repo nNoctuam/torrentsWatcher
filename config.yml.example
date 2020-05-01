@@ -5,3 +5,7 @@ credentials:
   site.domain:
     login:
     password:
+notifications:
+  trayMessage: true
+  KDEMessage: true
+  openInBrowser: true

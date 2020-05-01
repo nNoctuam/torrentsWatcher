@@ -5,10 +5,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"net/http"
+	"runtime"
 	"time"
 	"torrentsWatcher/config"
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
+	"torrentsWatcher/internal/api/notification"
 	"torrentsWatcher/internal/api/watch"
 	"torrentsWatcher/internal/handlers"
 )
@@ -32,6 +34,7 @@ func main() {
 	fmt.Print("it works.\n")
 
 	migrate()
+	initNotifications()
 
 	go watch.Watch(time.Duration(config.App.IntervalHours) * time.Hour)
 	serve(config.App.Host, config.App.Port)
@@ -65,4 +68,15 @@ func serve(host string, port string) {
 
 func migrate() {
 	db.DB.AutoMigrate(&models.Torrent{}, &models.AuthCookie{})
+}
+
+func initNotifications() {
+	switch runtime.GOOS {
+	case "windows":
+		notification.Notificator = &notification.Windows{}
+	case "linux":
+		fallthrough
+	default:
+		notification.Notificator = &notification.Linux{}
+	}
 }

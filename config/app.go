@@ -14,6 +14,11 @@ type AppConfig struct {
 		Login    string
 		Password string
 	}
+	Notifications struct {
+		TrayMessage   bool `yaml:"trayMessage"`
+		KDEMessage    bool `yaml:"KDEMessage"`
+		OpenInBrowser bool `yaml:"openInBrowser"`
+	}
 }
 
 var App *AppConfig
