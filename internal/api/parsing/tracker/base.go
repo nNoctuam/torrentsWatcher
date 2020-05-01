@@ -1,6 +1,8 @@
 package tracker
 
 import (
+	"bytes"
+	"io"
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
@@ -57,7 +59,7 @@ func (t *Tracker) LoadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	body, err := tools.LoadHTML(url, cookies)
+	body, err := tools.Load(url, cookies)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +87,19 @@ func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 	return cookies, nil
 }
 
-//func (t *Tracker) login() (*http.Cookie, error) {
-//	return nil, nil
-//}
+func (t *Tracker) Download(url string) ([]byte, error) {
+	cookies, err := t.getCookies()
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := tools.Load(url, cookies)
+	if err != nil {
+		return nil, err
+	}
+
+	var data bytes.Buffer
+	_, err = io.Copy(&data, body)
+
+	return data.Bytes(), err
+}

@@ -7,10 +7,11 @@ import (
 )
 
 type Torrent struct {
-	Id         uint       `json:"id" gorm:"primary_key"`
-	Title      string     `json:"title"`
-	PageUrl    string     `json:"page_url" gorm:"unique"`
-	FileUrl    string     `json:"file_url"`
+	Id         uint   `json:"id" gorm:"primary_key"`
+	Title      string `json:"title"`
+	PageUrl    string `json:"page_url" gorm:"unique"`
+	FileUrl    string `json:"file_url"`
+	File       []byte
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	UploadedAt time.Time  `json:"uploaded_at"`

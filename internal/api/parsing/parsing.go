@@ -27,6 +27,14 @@ func GetTorrentInfo(torrentUrl string) (*models.Torrent, error) {
 	return torrent, err
 }
 
+func DownloadTorrentFile(torrent *models.Torrent) ([]byte, error) {
+	parser, err := getParser(torrent.FileUrl)
+	if err != nil {
+		return nil, err
+	}
+	return (*parser).Download(torrent.FileUrl)
+}
+
 func getParser(torrentUrl string) (*tracker.Tracker, error) {
 	parsedUrl, err := url.Parse(torrentUrl)
 	if err != nil {

@@ -34,6 +34,11 @@ func (t *Rutracker) parse(document *goquery.Document) (*models.Torrent, error) {
 
 	info.Title = document.Find(".maintitle").First().Text()
 	info.Title = strings.Trim(info.Title, " \t\n")
+	info.FileUrl, _ = document.Find(".dl-stub.dl-link.dl-topic").First().Attr("href")
+
+	if info.FileUrl[:6] == "dl.php" {
+		info.FileUrl = "https://rutracker.org/forum/" + info.FileUrl
+	}
 
 	if info.Title != "" && document.Find("#logged-in-username").Size() == 0 {
 		fmt.Println("Unauthorized")

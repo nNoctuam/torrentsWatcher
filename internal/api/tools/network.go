@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-func LoadHTML(url string, cookies []*http.Cookie) (io.Reader, error) {
-	r, err := http.NewRequest("POST", url, nil)
+func Load(url string, cookies []*http.Cookie) (io.Reader, error) {
+	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
