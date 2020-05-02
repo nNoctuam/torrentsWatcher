@@ -3,6 +3,8 @@ package notification
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"torrentsWatcher/config"
 
 	"torrentsWatcher/internal/api/models"
@@ -15,6 +17,7 @@ type notificator interface {
 	openInBrowser(url string)
 	sendTrayMessage(text string)
 	sendKDEMessage(text string)
+	openFile(content []byte, name string)
 }
 
 type Linux struct{}
@@ -27,8 +30,12 @@ func NotifyAbout(torrent *models.Torrent) {
 	if config.App.Notifications.KDEMessage {
 		Notificator.sendKDEMessage(torrent.Title)
 	}
-	if config.App.Notifications.OpenInBrowser {
-		Notificator.openInBrowser(torrent.PageUrl)
+	if config.App.Notifications.OpenFile && torrent.File != nil {
+		Notificator.openFile(torrent.File, "tmp.torrent")
+	} else {
+		if config.App.Notifications.OpenInBrowser {
+			Notificator.openInBrowser(torrent.PageUrl)
+		}
 	}
 }
 
@@ -53,6 +60,26 @@ func (n *Linux) sendKDEMessage(text string) {
 	}
 }
 
+func (n *Linux) openFile(content []byte, name string) {
+	filename := os.TempDir() + string(filepath.Separator) + name
+	f, err := os.Create(filename)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = f.Write(content)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	output, err := tools.TryExecShell("xdg-open", filename)
+	if err != nil {
+		fmt.Print(err, output)
+	}
+}
+
 func (n *Windows) openInBrowser(url string) {
 	output, err := tools.TryExecShell("start", `""`, fmt.Sprintf(`"%s"`, url))
 	if err != nil {
@@ -66,4 +93,24 @@ func (n *Windows) sendTrayMessage(text string) {
 
 func (n *Windows) sendKDEMessage(text string) {
 	log.Fatal("'sendKDEMessage' is not available for windows")
+}
+
+func (n *Windows) openFile(content []byte, name string) {
+	filename := os.TempDir() + string(filepath.Separator) + name
+	f, err := os.Create(filename)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = f.Write(content)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	output, err := tools.TryExecShell("start", `""`, fmt.Sprintf(`"%s"`, filename))
+	if err != nil {
+		fmt.Print(err, output)
+	}
 }

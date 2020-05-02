@@ -18,6 +18,7 @@ type AppConfig struct {
 		TrayMessage   bool `yaml:"trayMessage"`
 		KDEMessage    bool `yaml:"KDEMessage"`
 		OpenInBrowser bool `yaml:"openInBrowser"`
+		OpenFile      bool `yaml:"openFile"`
 	}
 }
 

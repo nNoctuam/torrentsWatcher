@@ -1,13 +1,11 @@
-const base = 'http://localhost:8080'
-
 const api = {
 
   getTorrents () {
-    return fetch(`${base}/torrents`)
+    return fetch('/torrents')
   },
 
   addTorrent (url) {
-    return fetch(`${base}/torrent`, {
+    return fetch('/torrent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8'

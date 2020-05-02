@@ -9,3 +9,4 @@ notifications:
   trayMessage: true
   KDEMessage: true
   openInBrowser: true
+  openFile: true

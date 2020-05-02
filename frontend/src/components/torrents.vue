@@ -10,6 +10,7 @@
       <thead>
         <tr>
           <th>Title</th>
+          <th></th>
           <th>Last upload</th>
           <th>Last check</th>
         </tr>
@@ -17,7 +18,8 @@
 
       <tbody>
         <tr v-for="torrent in torrents" v-bind:key="torrent.id">
-          <td><a :href="torrent.page_url" target="_blank">{{ torrent.title }}</a></td>
+          <td><a class="open" :href="torrent.page_url" target="_blank">{{ torrent.title }}</a></td>
+          <td><a class="download" v-if="torrent.file_url" :href="'/torrent/' + torrent.id + '/download'"><img src="../assets/transmission-logo.png" alt=""></a></td>
           <td :title="timeFormat(torrent.uploaded_at * 1000)">{{ timeFromNow(torrent.uploaded_at * 1000) }}</td>
           <td :title="timeFormat(torrent.updated_at * 1000)">{{ timeFromNow(torrent.updated_at * 1000) }}</td>
         </tr>
@@ -88,6 +90,9 @@ h3
 
 a
   color #42b983
+
+.download img
+  height: 25px
 
 table
   margin-top: 30px

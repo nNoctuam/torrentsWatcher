@@ -56,6 +56,7 @@ func serve(host string, port string) {
 
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents)
 	router.MethodFunc("POST", "/torrent", handlers.AddTorrent)
+	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, handlers.DownloadTorrent)
 	router.Handle("/*", http.FileServer(http.Dir("./frontend/dist")))
 
 	server := http.Server{
