@@ -16,6 +16,17 @@ import (
 	"torrentsWatcher/internal/handlers"
 )
 
+// TODO:
+// 	notifications:
+// 		browser
+// 		messenger
+// 		email
+// 	docker build
+// 	log instead of fmt.Print
+// 	supervisor config
+// 	unit tests
+// 	DI
+
 func main() {
 	config.Load()
 
