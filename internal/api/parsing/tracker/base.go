@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -22,11 +23,16 @@ type iTracker interface {
 const UnauthorizedError = "unauthorized"
 
 type Tracker struct {
-	Domain   string
-	iTracker iTracker
+	Domain     string
+	ForceHttps bool
+	iTracker   iTracker
 }
 
 func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
+	if t.ForceHttps {
+		url = strings.Replace(url, "http://", "https://", 1)
+	}
+
 	torrent, err := t.LoadAndParse(url)
 
 	if err != nil && (err.Error() == UnauthorizedError || err.Error() == "record not found") {

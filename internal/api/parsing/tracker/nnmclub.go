@@ -21,8 +21,9 @@ type NnmClub struct {
 
 func NewNnmClub() *Tracker {
 	return &Tracker{
-		Domain:   "nnmclub.to",
-		iTracker: &NnmClub{},
+		Domain:     "nnmclub.to",
+		ForceHttps: true,
+		iTracker:   &NnmClub{},
 	}
 }
 
@@ -60,7 +61,7 @@ func (t *NnmClub) login() ([]*http.Cookie, error) {
 	params.Set("code", code)
 	params.Set("login", "%C2%F5%EE%E4")
 
-	r, err := http.NewRequest("POST", "http://nnmclub.to/forum/login.php", strings.NewReader(params.Encode()))
+	r, err := http.NewRequest("POST", "https://nnmclub.to/forum/login.php", strings.NewReader(params.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +83,7 @@ func (t *NnmClub) login() ([]*http.Cookie, error) {
 }
 
 func getLoginCode() (string, error) {
-	r, err := http.NewRequest("GET", "http://nnmclub.to/forum/login.php", nil)
+	r, err := http.NewRequest("GET", "https://nnmclub.to/forum/login.php", nil)
 	if err != nil {
 		return "", err
 	}

@@ -19,8 +19,9 @@ type Rutracker struct{}
 
 func NewRutracker() *Tracker {
 	return &Tracker{
-		Domain:   "rutracker.org",
-		iTracker: &Rutracker{},
+		Domain:     "rutracker.org",
+		ForceHttps: true,
+		iTracker:   &Rutracker{},
 	}
 }
 
