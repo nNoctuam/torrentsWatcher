@@ -1,4 +1,4 @@
-package tools
+package shell
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func ExecShell(command string, arguments ...string) string {
-	output, err := TryExecShell(command, arguments...)
+func Exec(command string, arguments ...string) string {
+	output, err := TryExec(command, arguments...)
 	if err != nil {
 		fmt.Printf("Failed to execute [%s %s]\n", command, strings.Join(arguments, " "))
 		fmt.Printf(output)
@@ -17,7 +17,7 @@ func ExecShell(command string, arguments ...string) string {
 	return output
 }
 
-func TryExecShell(command string, arguments ...string) (string, error) {
+func TryExec(command string, arguments ...string) (string, error) {
 	segments := strings.Fields(command)
 	segments = append(segments, arguments...)
 	//fmt.Printf("executing [%s %s]\n", segments[0], strings.Join(segments[1:], " "))

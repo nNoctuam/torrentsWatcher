@@ -1,4 +1,4 @@
-package tracker
+package impl
 
 import (
 	"errors"
@@ -11,32 +11,31 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"torrentsWatcher/config"
 	"torrentsWatcher/internal/api/models"
+	"torrentsWatcher/internal/api/parser"
 )
 
 type NnmClub struct {
-	Tracker
+	parser.Tracker
 }
 
-func NewNnmClub() *Tracker {
-	return &Tracker{
-		Domain:     "nnmclub.to",
-		ForceHttps: true,
-		iTracker:   &NnmClub{},
+const NnmClubDomain = "nnmclub.to"
+
+func NewNnmClub(credentials parser.Credentials) *parser.Tracker {
+	return &parser.Tracker{
+		Domain:      NnmClubDomain,
+		ForceHttps:  true,
+		Credentials: credentials,
+		Impl:        &NnmClub{},
 	}
 }
 
-func (t *NnmClub) doesRequireLogin() bool {
-	return true
-}
-
-func (t *NnmClub) parse(document *goquery.Document) (*models.Torrent, error) {
+func (t *NnmClub) Parse(document *goquery.Document) (*models.Torrent, error) {
 	var info models.Torrent
 	var err error
 
 	if document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Text() != "Скачать" {
-		return &info, errors.New(UnauthorizedError)
+		return &info, errors.New(parser.UnauthorizedError)
 	}
 
 	info.Title = document.Find(".maintitle").First().Text()
@@ -49,13 +48,13 @@ func (t *NnmClub) parse(document *goquery.Document) (*models.Torrent, error) {
 	return &info, err
 }
 
-func (t *NnmClub) login() ([]*http.Cookie, error) {
+func (t *NnmClub) Login() ([]*http.Cookie, error) {
 	fmt.Println("login")
 	code, err := getLoginCode()
 
 	params := url.Values{}
-	params.Set("username", config.App.Credentials["nnmclub.to"].Login)
-	params.Set("password", config.App.Credentials["nnmclub.to"].Password)
+	params.Set("username", t.Credentials.Login)
+	params.Set("password", t.Credentials.Password)
 	params.Set("autologin", "on")
 	params.Set("redirect", "")
 	params.Set("code", code)

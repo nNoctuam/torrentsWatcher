@@ -7,10 +7,10 @@ import (
 	"torrentsWatcher/internal/api/db"
 
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/parsing"
+	"torrentsWatcher/internal/api/parser"
 )
 
-func AddTorrent(w http.ResponseWriter, r *http.Request) {
+func AddTorrent(w http.ResponseWriter, r *http.Request, parsers []*parser.Tracker) {
 	var torrent *models.Torrent
 	var requestBody struct {
 		Url string
@@ -24,7 +24,7 @@ func AddTorrent(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("parsing %s\n", requestBody.Url)
 
-	torrent, err = parsing.GetTorrentInfo(requestBody.Url)
+	torrent, err = parser.GetTorrentInfo(requestBody.Url, parsers)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

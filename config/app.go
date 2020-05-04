@@ -22,18 +22,18 @@ type AppConfig struct {
 	}
 }
 
-var App *AppConfig
-
-func Load() {
-	App = &AppConfig{}
+func Load() *AppConfig {
+	config := &AppConfig{}
 
 	dat, err := ioutil.ReadFile("config.yml")
 	if err != nil {
 		log.Fatalf("error loading config: %v", err)
 	}
 
-	err = yaml.Unmarshal(dat, App)
+	err = yaml.Unmarshal(dat, config)
 	if err != nil {
 		log.Fatalf("error parsing config: %v", err)
 	}
+
+	return config
 }

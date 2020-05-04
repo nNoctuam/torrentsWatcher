@@ -12,6 +12,8 @@ import (
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
+	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/api/parser/impl"
 	"torrentsWatcher/internal/api/watch"
 	"torrentsWatcher/internal/handlers"
 )
@@ -28,25 +30,30 @@ import (
 // 	DI
 
 func main() {
-	config.Load()
+	cfg := config.Load()
+	notificator := getNotificator(cfg)
+	parsers := []*parser.Tracker{
+		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]),
+		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
+	}
 
 	db.InitDB()
-	migrate()
 	defer db.CloseDB()
-
-	initNotifications()
+	migrate()
 
 	fmt.Print("it works.\n")
 
-	go watch.Watch(time.Duration(config.App.IntervalHours) * time.Hour)
-	serve(config.App.Host, config.App.Port)
+	go watch.Watch(time.Duration(cfg.IntervalHours)*time.Hour, parsers, notificator)
+	serve(cfg.Host, cfg.Port, parsers)
 }
 
-func serve(host string, port string) {
+func serve(host string, port string, parsers []*parser.Tracker) {
 	router := chi.NewRouter()
 
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents)
-	router.MethodFunc("POST", "/torrent", handlers.AddTorrent)
+	router.MethodFunc("POST", "/torrent", func(w http.ResponseWriter, r *http.Request) {
+		handlers.AddTorrent(w, r, parsers)
+	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, handlers.DownloadTorrent)
 	router.Handle("/*", http.FileServer(http.Dir("./frontend/dist")))
 
@@ -62,13 +69,13 @@ func migrate() {
 	db.DB.AutoMigrate(&models.Torrent{}, &models.AuthCookie{})
 }
 
-func initNotifications() {
+func getNotificator(cfg *config.AppConfig) notification.Notificator {
 	switch runtime.GOOS {
 	case "windows":
-		notification.Notificator = &notification.Windows{}
+		return &notification.Windows{Config: notification.Config(cfg.Notifications)}
 	case "linux":
 		fallthrough
 	default:
-		notification.Notificator = &notification.Linux{}
+		return &notification.Linux{Config: notification.Config(cfg.Notifications)}
 	}
 }

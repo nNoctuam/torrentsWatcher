@@ -1,4 +1,4 @@
-package tracker
+package impl
 
 import (
 	"errors"
@@ -11,25 +11,26 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"torrentsWatcher/config"
 	"torrentsWatcher/internal/api/models"
+	"torrentsWatcher/internal/api/parser"
 )
 
-type Rutracker struct{}
+type Rutracker struct {
+	parser.Tracker
+}
 
-func NewRutracker() *Tracker {
-	return &Tracker{
-		Domain:     "rutracker.org",
-		ForceHttps: true,
-		iTracker:   &Rutracker{},
+const RutrackerDomain = "rutracker.org"
+
+func NewRutracker(credentials parser.Credentials) *parser.Tracker {
+	return &parser.Tracker{
+		Domain:      RutrackerDomain,
+		ForceHttps:  true,
+		Credentials: credentials,
+		Impl:        &Rutracker{},
 	}
 }
 
-func (t *Rutracker) doesRequireLogin() bool {
-	return true
-}
-
-func (t *Rutracker) parse(document *goquery.Document) (*models.Torrent, error) {
+func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 	var info models.Torrent
 	var err error
 
@@ -43,7 +44,7 @@ func (t *Rutracker) parse(document *goquery.Document) (*models.Torrent, error) {
 
 	if info.Title != "" && document.Find("#logged-in-username").Size() == 0 {
 		fmt.Println("Unauthorized")
-		return nil, errors.New(UnauthorizedError)
+		return nil, errors.New(parser.UnauthorizedError)
 	}
 
 	r := strings.NewReplacer(
@@ -72,10 +73,10 @@ func (t *Rutracker) parse(document *goquery.Document) (*models.Torrent, error) {
 	return &info, err
 }
 
-func (t *Rutracker) login() ([]*http.Cookie, error) {
+func (t *Rutracker) Login() ([]*http.Cookie, error) {
 	data := url.Values{}
-	data.Set("login_username", config.App.Credentials["rutracker.org"].Login)
-	data.Set("login_password", config.App.Credentials["rutracker.org"].Password)
+	data.Set("login_username", t.Credentials.Login)
+	data.Set("login_password", t.Credentials.Password)
 	data.Set("login", "%E2%F5%EE%E4")
 
 	fmt.Println("login...")

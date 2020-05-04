@@ -1,4 +1,4 @@
-package parsing
+package parser
 
 import (
 	"encoding/json"
@@ -6,16 +6,10 @@ import (
 	"net/url"
 
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/parsing/tracker"
 )
 
-var parsers = []*tracker.Tracker{
-	tracker.NewNnmClub(),
-	tracker.NewRutracker(),
-}
-
-func GetTorrentInfo(torrentUrl string) (*models.Torrent, error) {
-	parser, err := getParser(torrentUrl)
+func GetTorrentInfo(torrentUrl string, parsers []*Tracker) (*models.Torrent, error) {
+	parser, err := getParser(torrentUrl, parsers)
 	if err != nil {
 		return nil, err
 	}
@@ -27,15 +21,15 @@ func GetTorrentInfo(torrentUrl string) (*models.Torrent, error) {
 	return torrent, err
 }
 
-func DownloadTorrentFile(torrent *models.Torrent) ([]byte, error) {
-	parser, err := getParser(torrent.FileUrl)
+func DownloadTorrentFile(torrent *models.Torrent, parsers []*Tracker) ([]byte, error) {
+	parser, err := getParser(torrent.FileUrl, parsers)
 	if err != nil {
 		return nil, err
 	}
 	return (*parser).Download(torrent.FileUrl)
 }
 
-func getParser(torrentUrl string) (*tracker.Tracker, error) {
+func getParser(torrentUrl string, parsers []*Tracker) (*Tracker, error) {
 	parsedUrl, err := url.Parse(torrentUrl)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse url %s", torrentUrl)

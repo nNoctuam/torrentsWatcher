@@ -1,4 +1,4 @@
-package tracker
+package parser
 
 import (
 	"bytes"
@@ -11,21 +11,26 @@ import (
 
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/tools"
+	"torrentsWatcher/internal/api/utils/network"
 )
 
-type iTracker interface {
-	login() ([]*http.Cookie, error)
-	doesRequireLogin() bool
-	parse(document *goquery.Document) (*models.Torrent, error)
+type TrackerImpl interface {
+	Login() ([]*http.Cookie, error)
+	Parse(document *goquery.Document) (*models.Torrent, error)
 }
 
 const UnauthorizedError = "unauthorized"
 
+type Credentials struct {
+	Login    string
+	Password string
+}
+
 type Tracker struct {
-	Domain     string
-	ForceHttps bool
-	iTracker   iTracker
+	Domain      string
+	ForceHttps  bool
+	Credentials Credentials
+	Impl        TrackerImpl
 }
 
 func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
@@ -37,7 +42,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 
 	if err != nil && (err.Error() == UnauthorizedError || err.Error() == "record not found") {
 		var cookies []*http.Cookie
-		cookies, err = t.iTracker.login()
+		cookies, err = t.Impl.Login()
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +78,7 @@ func (t *Tracker) LoadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	body, err := tools.LoadHTML(url, cookies)
+	body, err := network.LoadHTML(url, cookies)
 	if err != nil {
 		return nil, err
 	}
@@ -83,12 +88,12 @@ func (t *Tracker) LoadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	return t.iTracker.parse(document)
+	return t.Impl.Parse(document)
 }
 
 func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 	var cookies []*http.Cookie
-	if t.iTracker.doesRequireLogin() {
+	if t.Credentials != (Credentials{}) {
 		var savedCookies []models.AuthCookie
 		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).Find(&savedCookies).Error; err != nil {
 			return nil, err
@@ -109,7 +114,7 @@ func (t *Tracker) Download(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := tools.LoadBytes(url, cookies)
+	body, err := network.LoadBytes(url, cookies)
 	if err != nil {
 		return nil, err
 	}
