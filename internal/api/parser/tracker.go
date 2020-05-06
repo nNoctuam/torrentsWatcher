@@ -15,7 +15,7 @@ import (
 )
 
 type TrackerImpl interface {
-	Login() ([]*http.Cookie, error)
+	Login(credentials Credentials) ([]*http.Cookie, error)
 	Parse(document *goquery.Document) (*models.Torrent, error)
 }
 
@@ -42,7 +42,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 
 	if err != nil && (err.Error() == UnauthorizedError || err.Error() == "record not found") {
 		var cookies []*http.Cookie
-		cookies, err = t.Impl.Login()
+		cookies, err = t.Impl.Login(t.Credentials)
 		if err != nil {
 			return nil, err
 		}

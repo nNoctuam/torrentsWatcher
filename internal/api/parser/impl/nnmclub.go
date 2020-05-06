@@ -15,9 +15,7 @@ import (
 	"torrentsWatcher/internal/api/parser"
 )
 
-type NnmClub struct {
-	parser.Tracker
-}
+type NnmClub struct{}
 
 const NnmClubDomain = "nnmclub.to"
 
@@ -48,13 +46,13 @@ func (t *NnmClub) Parse(document *goquery.Document) (*models.Torrent, error) {
 	return &info, err
 }
 
-func (t *NnmClub) Login() ([]*http.Cookie, error) {
-	fmt.Println("login")
+func (t *NnmClub) Login(credentials parser.Credentials) ([]*http.Cookie, error) {
+	fmt.Println("login", t)
 	code, err := getLoginCode()
 
 	params := url.Values{}
-	params.Set("username", t.Credentials.Login)
-	params.Set("password", t.Credentials.Password)
+	params.Set("username", credentials.Login)
+	params.Set("password", credentials.Password)
 	params.Set("autologin", "on")
 	params.Set("redirect", "")
 	params.Set("code", code)

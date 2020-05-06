@@ -15,9 +15,7 @@ import (
 	"torrentsWatcher/internal/api/parser"
 )
 
-type Rutracker struct {
-	parser.Tracker
-}
+type Rutracker struct{}
 
 const RutrackerDomain = "rutracker.org"
 
@@ -73,10 +71,10 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 	return &info, err
 }
 
-func (t *Rutracker) Login() ([]*http.Cookie, error) {
+func (t *Rutracker) Login(credentials parser.Credentials) ([]*http.Cookie, error) {
 	data := url.Values{}
-	data.Set("login_username", t.Credentials.Login)
-	data.Set("login_password", t.Credentials.Password)
+	data.Set("login_username", credentials.Login)
+	data.Set("login_password", credentials.Password)
 	data.Set("login", "%E2%F5%EE%E4")
 
 	fmt.Println("login...")
