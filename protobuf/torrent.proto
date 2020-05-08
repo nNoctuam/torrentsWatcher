@@ -1,0 +1,15 @@
+syntax = "proto3";
+package protobuf;
+
+option go_package = ".;pb";
+import "google/protobuf/timestamp.proto";
+
+message Torrent {
+  uint32 id = 1;
+  string title = 2;
+  string page_url = 3;
+  string file_url = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  google.protobuf.Timestamp uploaded_at = 7;
+}

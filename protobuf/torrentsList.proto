@@ -1,0 +1,10 @@
+syntax = "proto3";
+package protobuf;
+
+option go_package = ".;pb";
+//import "google/protobuf/timestamp.proto";
+import "torrent.proto";
+
+message Torrents {
+  repeated Torrent torrents = 1;
+}

@@ -20,8 +20,8 @@
         <tr v-for="torrent in torrents" v-bind:key="torrent.id">
           <td><a class="open" :href="torrent.page_url" target="_blank">{{ torrent.title }}</a></td>
           <td><a class="download" v-if="torrent.file_url" :href="'/torrent/' + torrent.id + '/download'"><img src="../assets/transmission-logo.png" alt=""></a></td>
-          <td :title="timeFormat(torrent.uploaded_at * 1000)">{{ timeFromNow(torrent.uploaded_at * 1000) }}</td>
-          <td :title="timeFormat(torrent.updated_at * 1000)">{{ timeFromNow(torrent.updated_at * 1000) }}</td>
+          <td :title="timeFormat(torrent.uploadedAt.seconds * 1000)">{{ timeFromNow(torrent.uploadedAt.seconds * 1000) }}</td>
+          <td :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
         </tr>
       </tbody>
     </table>
@@ -32,6 +32,7 @@
 <script>
 import api from '../js/api'
 import moment from 'moment'
+import {Torrents} from '../pb/torrentsList_pb'
 
 export default {
   name: 'torrents',
@@ -75,10 +76,16 @@ export default {
 
   mounted () {
     api.getTorrents()
-      .then(r => r.json())
-      .then(r => {
-        this.torrents = r
+      .then(async (r) => {
+        console.log(r)
+        let result = await r.arrayBuffer();
+        const data = Torrents.deserializeBinary(result);
+        console.log(data.toObject());
+        this.torrents = data.toObject().torrentsList;
       })
+      // .then(r => {
+      //   this.torrents = r
+      // })
   }
 }
 </script>
