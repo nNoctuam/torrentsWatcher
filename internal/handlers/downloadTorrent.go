@@ -8,11 +8,11 @@ import (
 
 	"github.com/go-chi/chi"
 
-	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
+	"torrentsWatcher/internal/storage"
 )
 
-func DownloadTorrent(w http.ResponseWriter, r *http.Request) {
+func DownloadTorrent(w http.ResponseWriter, r *http.Request, torrentsStorage storage.Torrents) {
 	var torrent models.Torrent
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
@@ -21,7 +21,7 @@ func DownloadTorrent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = db.DB.First(&torrent, models.Torrent{Id: uint(id)}).Error; err != nil {
+	if err = torrentsStorage.First(&torrent, models.Torrent{Id: uint(id)}); err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

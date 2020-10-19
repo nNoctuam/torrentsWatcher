@@ -9,9 +9,9 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/utils/network"
+	"torrentsWatcher/internal/storage"
 )
 
 type TrackerImpl interface {
@@ -27,10 +27,12 @@ type Credentials struct {
 }
 
 type Tracker struct {
-	Domain      string
-	ForceHttps  bool
-	Credentials Credentials
-	Impl        TrackerImpl
+	Domain          string
+	ForceHttps      bool
+	Credentials     Credentials
+	TorrentsStorage storage.Torrents
+	CookiesStorage  storage.Cookies
+	Impl            TrackerImpl
 }
 
 func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
@@ -47,16 +49,16 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 			return nil, err
 		}
 
-		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).Delete(models.AuthCookie{}).Error; err != nil {
+		if err := t.CookiesStorage.Delete(&models.AuthCookie{Domain: t.Domain}); err != nil {
 			fmt.Println("error removing old cookies")
 		}
 
 		for _, cookie := range cookies {
-			err = db.DB.Save(&models.AuthCookie{
+			err = t.CookiesStorage.Save(&models.AuthCookie{
 				Domain: t.Domain,
 				Name:   cookie.Name,
 				Value:  cookie.Value,
-			}).Error
+			})
 			if err != nil {
 				return nil, err
 			}
@@ -95,7 +97,7 @@ func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 	var cookies []*http.Cookie
 	if t.Credentials != (Credentials{}) {
 		var savedCookies []models.AuthCookie
-		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).Find(&savedCookies).Error; err != nil {
+		if err := t.CookiesStorage.Find(&savedCookies, &models.AuthCookie{Domain: t.Domain}); err != nil {
 			return nil, err
 		}
 		for _, savedCookie := range savedCookies {

@@ -5,23 +5,29 @@ import (
 	"log"
 	"time"
 
-	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
 	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/storage"
 )
 
-func Watch(period time.Duration, parsers []*parser.Tracker, notificator notification.Notificator) {
+func Watch(
+	period time.Duration,
+	parsers []*parser.Tracker,
+	notificator notification.Notificator,
+	torrentsStorage storage.Torrents,
+	cookiesStorage storage.Cookies,
+) {
 	fmt.Printf("Start checking every %s\n", period)
 	for {
 		go func() {
 			var torrents []models.Torrent
-			err := db.DB.Find(&torrents).Error
+			err := torrentsStorage.Find(&torrents, nil)
 			if err != nil {
 				log.Print("Couldn't get torrents for check")
 			}
 			for _, torrent := range torrents {
-				checkTorrent(&torrent, parsers, notificator)
+				checkTorrent(&torrent, parsers, notificator, torrentsStorage)
 			}
 		}()
 
@@ -29,7 +35,12 @@ func Watch(period time.Duration, parsers []*parser.Tracker, notificator notifica
 	}
 }
 
-func checkTorrent(torrent *models.Torrent, parsers []*parser.Tracker, notificator notification.Notificator) {
+func checkTorrent(
+	torrent *models.Torrent,
+	parsers []*parser.Tracker,
+	notificator notification.Notificator,
+	torrentsStorage storage.Torrents,
+) {
 	updatedTorrent, err := parser.GetTorrentInfo(torrent.PageUrl, parsers)
 
 	if err != nil {
@@ -48,7 +59,8 @@ func checkTorrent(torrent *models.Torrent, parsers []*parser.Tracker, notificato
 		torrent.File = file
 	}
 
-	err = torrent.UpdateFrom(updatedTorrent)
+	torrent.UpdateFrom(updatedTorrent)
+	err = torrentsStorage.Save(torrent)
 	if err != nil {
 		log.Printf("Couldn't save torrent: %v", updatedTorrent)
 		return

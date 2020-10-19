@@ -2,18 +2,20 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"net/http"
-	"torrentsWatcher/internal/api/db"
+
 	"torrentsWatcher/internal/pb"
+	"torrentsWatcher/internal/storage"
+
+	"github.com/golang/protobuf/ptypes/timestamp"
+	"google.golang.org/protobuf/proto"
 
 	"torrentsWatcher/internal/api/models"
 )
 
-func GetTorrents(w http.ResponseWriter, r *http.Request) {
+func GetTorrents(w http.ResponseWriter, r *http.Request, torrentsStorage storage.Torrents) {
 	var torrents []models.Torrent
-	err := db.DB.Find(&torrents).Error
+	err := torrentsStorage.Find(&torrents, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

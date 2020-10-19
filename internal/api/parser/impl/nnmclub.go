@@ -13,18 +13,21 @@ import (
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/storage"
 )
 
 type NnmClub struct{}
 
 const NnmClubDomain = "nnmclub.to"
 
-func NewNnmClub(credentials parser.Credentials) *parser.Tracker {
+func NewNnmClub(credentials parser.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *parser.Tracker {
 	return &parser.Tracker{
-		Domain:      NnmClubDomain,
-		ForceHttps:  true,
-		Credentials: credentials,
-		Impl:        &NnmClub{},
+		Domain:          NnmClubDomain,
+		ForceHttps:      true,
+		Credentials:     credentials,
+		TorrentsStorage: torrentsStorage,
+		CookiesStorage:  cookiesStorage,
+		Impl:            &NnmClub{},
 	}
 }
 

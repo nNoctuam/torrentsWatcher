@@ -13,18 +13,21 @@ import (
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/storage"
 )
 
 type Rutracker struct{}
 
 const RutrackerDomain = "rutracker.org"
 
-func NewRutracker(credentials parser.Credentials) *parser.Tracker {
+func NewRutracker(credentials parser.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *parser.Tracker {
 	return &parser.Tracker{
-		Domain:      RutrackerDomain,
-		ForceHttps:  true,
-		Credentials: credentials,
-		Impl:        &Rutracker{},
+		Domain:          RutrackerDomain,
+		ForceHttps:      true,
+		Credentials:     credentials,
+		TorrentsStorage: torrentsStorage,
+		CookiesStorage:  cookiesStorage,
+		Impl:            &Rutracker{},
 	}
 }
 
