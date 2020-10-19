@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"runtime"
-	"time"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -51,7 +50,7 @@ func main() {
 	}
 
 	go watch.Watch(
-		time.Duration(cfg.IntervalHours)*time.Hour,
+		cfg.Interval,
 		parsers,
 		notificator,
 		torrentsStorage,
@@ -60,15 +59,12 @@ func main() {
 	serve(cfg.Host, cfg.Port, parsers, torrentsStorage)
 }
 
-var dbHidden *gorm.DB
-
 func InitDB() *gorm.DB {
-	var err error
-	dbHidden, err = gorm.Open("sqlite3", "./torrents.db")
+	db, err := gorm.Open("sqlite3", "./torrents.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	return dbHidden
+	return db
 }
 
 func serve(
