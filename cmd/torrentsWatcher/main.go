@@ -37,7 +37,11 @@ func main() {
 	cfg := config.Load()
 	notificator := getNotificator(cfg)
 
-	db := InitDB()
+	db, err := gorm.Open("sqlite3", "./torrents.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer db.Close()
 	db.AutoMigrate(&models.Torrent{}, &models.AuthCookie{})
 
@@ -57,14 +61,6 @@ func main() {
 		cookiesStorage,
 	)
 	serve(cfg.Host, cfg.Port, parsers, torrentsStorage)
-}
-
-func InitDB() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "./torrents.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
 }
 
 func serve(

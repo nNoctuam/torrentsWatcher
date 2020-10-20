@@ -14,7 +14,7 @@ func GetTorrentInfo(torrentUrl string, parsers []*Tracker) (*models.Torrent, err
 		return nil, err
 	}
 
-	torrent, err := (*parser).GetInfo(torrentUrl)
+	torrent, err := parser.GetInfo(torrentUrl)
 	jsonView, _ := json.Marshal(torrent)
 	fmt.Printf("parsed: %s (err = %v)\n", jsonView, err)
 
@@ -26,7 +26,7 @@ func DownloadTorrentFile(torrent *models.Torrent, parsers []*Tracker) ([]byte, e
 	if err != nil {
 		return nil, err
 	}
-	return (*parser).Download(torrent.FileUrl)
+	return parser.Download(torrent.FileUrl)
 }
 
 func getParser(torrentUrl string, parsers []*Tracker) (*Tracker, error) {
