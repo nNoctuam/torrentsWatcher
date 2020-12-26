@@ -1,20 +1,26 @@
 package watch
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
-
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
 	"torrentsWatcher/internal/api/parser"
 )
 
-func Watch(period time.Duration, parsers []*parser.Tracker, notificator notification.Notificator) {
+func Run(ctx context.Context, wg *sync.WaitGroup, period time.Duration, parsers []*parser.Tracker, notificator notification.Notificator) {
 	fmt.Printf("Start checking every %s\n", period)
+	ticker := time.After(0)
 	for {
-		go func() {
+		select {
+		case <-ctx.Done():
+			wg.Done()
+			return
+		case <-ticker:
 			var torrents []models.Torrent
 			err := db.DB.Find(&torrents).Error
 			if err != nil {
@@ -23,9 +29,8 @@ func Watch(period time.Duration, parsers []*parser.Tracker, notificator notifica
 			for _, torrent := range torrents {
 				checkTorrent(&torrent, parsers, notificator)
 			}
-		}()
-
-		time.Sleep(period)
+			ticker = time.After(period)
+		}
 	}
 }
 

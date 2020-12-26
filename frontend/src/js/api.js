@@ -1,7 +1,13 @@
+import { Torrents } from '../pb/torrentsList_pb'
+
 const api = {
 
   getTorrents () {
     return fetch('/torrents')
+      .then(async (r) => {
+        const result = await r.arrayBuffer()
+        return Torrents.deserializeBinary(result).toObject().torrentsList
+      })
   },
 
   addTorrent (url) {

@@ -1,16 +1,18 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 type AppConfig struct {
-	Host          string
-	Port          string
-	IntervalHours int `yaml:"intervalHours"`
-	Credentials   map[string]struct {
+	Host        string
+	Port        string
+	Period      time.Duration `yaml:"period"`
+	Credentials map[string]struct {
 		Login    string
 		Password string
 	}
@@ -25,12 +27,12 @@ type AppConfig struct {
 func Load() *AppConfig {
 	config := &AppConfig{}
 
-	dat, err := ioutil.ReadFile("config.yml")
+	data, err := ioutil.ReadFile("config.yml")
 	if err != nil {
 		log.Fatalf("error loading config: %v", err)
 	}
 
-	err = yaml.Unmarshal(dat, config)
+	err = yaml.Unmarshal(data, config)
 	if err != nil {
 		log.Fatalf("error parsing config: %v", err)
 	}

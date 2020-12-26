@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime"
-	"time"
+	"sync"
+	"syscall"
 
 	"github.com/go-chi/chi"
 
@@ -30,6 +34,10 @@ import (
 // 	DI
 
 func main() {
+	ctx, ctxCancel := context.WithCancel(context.Background())
+	errorChan := make(chan error)
+	wg := new(sync.WaitGroup)
+
 	cfg := config.Load()
 	notificator := getNotificator(cfg)
 	parsers := []*parser.Tracker{
@@ -41,13 +49,26 @@ func main() {
 	defer db.CloseDB()
 	migrate()
 
-	fmt.Print("it works.\n")
+	fmt.Println("Service started")
 
-	go watch.Watch(time.Duration(cfg.IntervalHours)*time.Hour, parsers, notificator)
-	serve(cfg.Host, cfg.Port, parsers)
+	wg.Add(1)
+	go watch.Run(ctx, wg, cfg.Period, parsers, notificator)
+	serve(errorChan, cfg.Host, cfg.Port, parsers)
+
+	select {
+	case err := <-errorChan:
+		fmt.Println(err)
+	case <-ctx.Done():
+		fmt.Println("Service context stopped")
+	case <-waitExitSignal():
+		fmt.Println("Service stopped by signal")
+	}
+
+	ctxCancel()
+	wg.Wait()
 }
 
-func serve(host string, port string, parsers []*parser.Tracker) {
+func serve(errorChan chan error, host string, port string, parsers []*parser.Tracker) {
 	router := chi.NewRouter()
 
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents)
@@ -62,7 +83,9 @@ func serve(host string, port string, parsers []*parser.Tracker) {
 		Handler: router,
 	}
 
-	_ = server.ListenAndServe()
+	go func() {
+		errorChan <- server.ListenAndServe()
+	}()
 }
 
 func migrate() {
@@ -78,4 +101,11 @@ func getNotificator(cfg *config.AppConfig) notification.Notificator {
 	default:
 		return &notification.Linux{Config: notification.Config(cfg.Notifications)}
 	}
+}
+
+func waitExitSignal() chan os.Signal {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+
+	return ch
 }
