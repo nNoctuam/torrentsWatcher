@@ -1,6 +1,6 @@
 host: 0.0.0.0
 port: 8080
-intervalHours: 1
+period: 1h
 credentials:
   site.domain:
     login:

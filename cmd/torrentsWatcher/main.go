@@ -76,6 +76,7 @@ func serve(errorChan chan error, host string, port string, parsers []*parser.Tra
 		handlers.AddTorrent(w, r, parsers)
 	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, handlers.DownloadTorrent)
+	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent)
 	router.Handle("/*", http.FileServer(http.Dir("./frontend/dist")))
 
 	server := http.Server{

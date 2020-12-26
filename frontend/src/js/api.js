@@ -20,6 +20,15 @@ const api = {
         url
       })
     })
+  },
+
+  deleteTorrent (id) {
+    return fetch('/torrent/' + id, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      }
+    })
   }
 }
 
