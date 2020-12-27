@@ -35,6 +35,13 @@ func AddTorrent(w http.ResponseWriter, r *http.Request, parsers []*parser.Tracke
 		return
 	}
 
+	file, err := parser.DownloadTorrentFile(torrent, parsers)
+	if err != nil {
+		fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
+		return
+	}
+	torrent.File = file
+
 	err = db.DB.Create(torrent).Error
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
