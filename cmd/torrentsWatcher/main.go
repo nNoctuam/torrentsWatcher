@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"runtime"
 	"sync"
 	"syscall"
@@ -38,14 +39,16 @@ func main() {
 	errorChan := make(chan error)
 	wg := new(sync.WaitGroup)
 
-	cfg := config.Load()
+	basePath := path.Dir(os.Args[0])
+
+	cfg := config.Load(basePath + "/config.yml")
 	notificator := getNotificator(cfg)
 	parsers := []*parser.Tracker{
 		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]),
 		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
 	}
 
-	db.InitDB()
+	db.InitDB(basePath + "/torrents.db")
 	defer db.CloseDB()
 	migrate()
 
@@ -53,7 +56,7 @@ func main() {
 
 	wg.Add(1)
 	go watch.Run(ctx, wg, cfg.Period, parsers, notificator)
-	serve(errorChan, cfg.Host, cfg.Port, parsers)
+	serve(errorChan, cfg.Host, cfg.Port, basePath, parsers)
 
 	select {
 	case err := <-errorChan:
@@ -68,7 +71,7 @@ func main() {
 	wg.Wait()
 }
 
-func serve(errorChan chan error, host string, port string, parsers []*parser.Tracker) {
+func serve(errorChan chan error, host string, port string, basePath string, parsers []*parser.Tracker) {
 	router := chi.NewRouter()
 
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents)
@@ -77,7 +80,7 @@ func serve(errorChan chan error, host string, port string, parsers []*parser.Tra
 	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, handlers.DownloadTorrent)
 	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent)
-	router.Handle("/*", http.FileServer(http.Dir("./frontend/dist")))
+	router.Handle("/*", http.FileServer(http.Dir(basePath+"/frontend/dist")))
 
 	server := http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, port),

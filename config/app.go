@@ -24,10 +24,10 @@ type AppConfig struct {
 	}
 }
 
-func Load() *AppConfig {
+func Load(filePath string) *AppConfig {
 	config := &AppConfig{}
 
-	data, err := ioutil.ReadFile("config.yml")
+	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("error loading config: %v", err)
 	}
