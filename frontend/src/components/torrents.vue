@@ -55,13 +55,6 @@ export default {
     addTorrent () {
       this.newTorrentAdding = true
       api.addTorrent(this.newTorrentUrl)
-        .then(async r => {
-          if (r.status !== 200) {
-            const text = await r.text()
-            throw new Error(text)
-          }
-          return r.json()
-        })
         .then(r => {
           this.torrents.push(r)
         })
@@ -83,7 +76,7 @@ export default {
           this.torrents.splice(torrent, 1)
         })
         .catch(e => {
-          alert("failed to delete torrent:" + e)
+          alert('failed to delete torrent:' + e)
         })
     }
   },

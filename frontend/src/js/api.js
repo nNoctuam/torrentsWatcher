@@ -1,3 +1,4 @@
+import { Torrent } from '../pb/torrent_pb'
 import { Torrents } from '../pb/torrentsList_pb'
 
 const api = {
@@ -5,6 +6,10 @@ const api = {
   getTorrents () {
     return fetch('/torrents')
       .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
         const result = await r.arrayBuffer()
         return Torrents.deserializeBinary(result).toObject().torrentsList
       })
@@ -20,14 +25,19 @@ const api = {
         url
       })
     })
+      .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+        const result = await r.arrayBuffer()
+        return Torrent.deserializeBinary(result).toObject()
+      })
   },
 
   deleteTorrent (id) {
     return fetch('/torrent/' + id, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8'
-      }
+      method: 'DELETE'
     })
   }
 }
