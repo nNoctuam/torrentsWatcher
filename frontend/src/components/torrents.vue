@@ -6,7 +6,7 @@
       <button :disabled="newTorrentAdding">{{ newTorrentAdding ? 'Adding...' : 'Add' }}</button>
     </form>
 
-    <table v-if="torrents">
+    <table v-if="torrents.length > 0">
       <thead>
         <tr>
           <th>Title</th>
@@ -42,7 +42,7 @@ export default {
     newTorrentUrl: '',
     newTorrentAdding: false,
 
-    torrents: Array
+    torrents: []
   }),
 
   methods: {

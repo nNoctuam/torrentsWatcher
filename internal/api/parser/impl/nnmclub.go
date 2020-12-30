@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/text/encoding/charmap"
+
 	"github.com/PuerkitoBio/goquery"
 
 	"torrentsWatcher/internal/api/models"
@@ -79,6 +81,9 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 }
 
 func (t *NnmClub) MakeSearchRequest(text string) (r *http.Request, err error) {
+
+	encoder := charmap.Windows1251.NewEncoder()
+	text, _ = encoder.String(text)
 
 	params := url.Values{}
 	params.Set("submit", "%CF%EE%E8%F1%EA")

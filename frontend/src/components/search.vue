@@ -3,27 +3,27 @@
 
     <form v-on:submit.prevent="addTorrent">
       <input type="text" name="search" :disabled="searching" v-model="searchText">
-      <button :disabled="searching">{{ newTorrentAdding ? 'Searching...' : 'Search' }}</button>
+      <button :disabled="searching">{{ searching ? 'Searching...' : 'Search' }}</button>
     </form>
 
-    <table v-if="torrents">
+    <table v-if="torrents.length > 0">
       <thead>
         <tr>
-          <th>Title</th>
-          <th>Forum</th>
-          <th>Seeders</th>
-          <th>Size</th>
-          <th>Last upload</th>
+          <th class="forum">Forum</th>
+          <th class="title">Title</th>
+          <th class="seeders">Seeders</th>
+          <th class="size">Size</th>
+          <th class="updated_at">Updated at</th>
         </tr>
       </thead>
 
       <tbody>
-        <tr v-for="torrent in torrents" v-bind:key="torrent.id">
-          <td><a class="open" :href="torrent.pageUrl" target="_blank">{{ torrent.title }}</a></td>
-          <td>{{ torrent.forum }}</td>
-          <td>{{ torrent.seeders }}</td>
-          <td>{{ byteSize(torrent.size) }}</td>
-          <td :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
+        <tr v-for="torrent in torrents" v-bind:key="torrent.page_url">
+          <td class="forum">{{ torrent.forum }}</td>
+          <td class="title"><a class="open" :href="torrent.pageUrl" target="_blank">{{ torrent.title }}</a></td>
+          <td class="seeders">{{ torrent.seeders }}</td>
+          <td class="size">{{ byteSize(torrent.size) }}</td>
+          <td class="updated_at" :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
         </tr>
       </tbody>
     </table>
@@ -37,13 +37,13 @@ import moment from 'moment'
 // import { Torrents } from '../pb/torrentsList_pb'
 
 export default {
-  name: 'torrents',
+  name: 'search',
 
   data: () => ({
     searchText: '',
     searching: false,
 
-    torrents: Array
+    torrents: []
   }),
 
   methods: {
@@ -96,8 +96,15 @@ thead th
   white-space nowrap
   border-bottom: 1px solid gray
   padding-bottom: 10px
+  text-align left
 
-td:nth-child(n+1)
+td
+  text-align left
+
+td.forum
+  max-width 15%
+
+td.size, td.updated_at
   white-space nowrap
 
 </style>
