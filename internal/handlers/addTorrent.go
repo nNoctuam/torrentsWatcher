@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"torrentsWatcher/internal/api/db"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/parser"

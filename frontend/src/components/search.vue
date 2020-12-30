@@ -18,9 +18,9 @@
       </thead>
 
       <tbody>
-        <tr v-for="torrent in torrents" v-bind:key="torrent.page_url">
+        <tr v-for="torrent in torrents" v-bind:key="torrent.pageUrl">
           <td class="forum">{{ torrent.forum }}</td>
-          <td class="title"><a class="open" :href="torrent.pageUrl" target="_blank">{{ torrent.title }}</a></td>
+          <td class="title"><img :src="getFavicon(torrent.pageUrl)" alt="Tracker"><a class="open" :href="torrent.pageUrl" target="_blank">{{ torrent.title }}</a></td>
           <td class="seeders">{{ torrent.seeders }}</td>
           <td class="size">{{ byteSize(torrent.size) }}</td>
           <td class="updated_at" :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
@@ -61,6 +61,11 @@ export default {
     },
     timeFormat (time, format = 'llll') {
       return moment(time).format(format)
+    },
+    getFavicon (url) {
+      var a = document.createElement('a')
+      a.href = url
+      return a.protocol + '//' + a.hostname + '/favicon.ico'
     },
     addTorrent () {
       this.searching = true
@@ -106,5 +111,10 @@ td.forum
 
 td.size, td.updated_at
   white-space nowrap
+
+td.title img
+  width: 16px
+  height: 16px
+  margin-right: 10px
 
 </style>

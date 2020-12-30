@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"net/http"
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/pb"
+
+	"github.com/golang/protobuf/ptypes/timestamp"
+	"google.golang.org/protobuf/proto"
 
 	"torrentsWatcher/internal/api/models"
 )

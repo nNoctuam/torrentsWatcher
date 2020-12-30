@@ -45,7 +45,7 @@ func main() {
 	notificator := getNotificator(cfg)
 	parsers := []*parser.Tracker{
 		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]),
-		//impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
+		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
 	}
 
 	db.InitDB(basePath + "/torrents.db")

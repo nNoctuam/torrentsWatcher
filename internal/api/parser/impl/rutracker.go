@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/text/encoding/charmap"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -36,7 +39,7 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 	info.Title = strings.Trim(info.Title, " \t\n")
 	info.FileUrl, _ = document.Find(".dl-stub.dl-link.dl-topic").First().Attr("href")
 
-	if info.FileUrl[:6] == "dl.php" {
+	if len(info.FileUrl) > 6 && info.FileUrl[:6] == "dl.php" {
 		info.FileUrl = "https://rutracker.org/forum/" + info.FileUrl
 	}
 
@@ -99,11 +102,81 @@ func (t *Rutracker) Login(credentials parser.Credentials) ([]*http.Cookie, error
 	return response.Cookies(), nil
 }
 
-func (t *Rutracker) MakeSearchRequest(text string) (r *http.Request, err error) {
+func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.Torrent, err error) {
+	rows := document.Find("#tor-tbl tbody tr").Nodes
 
-	return
+	for _, row := range rows {
+		torrent := &models.Torrent{}
+		forumTD := row.FirstChild.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling
+		titleTD := forumTD.NextSibling.NextSibling
+		authorTD := titleTD.NextSibling.NextSibling
+		sizeTD := authorTD.NextSibling.NextSibling
+		seedersTD := sizeTD.NextSibling.NextSibling
+		addedTD := row.LastChild.PrevSibling
+
+		for _, attr := range titleTD.FirstChild.NextSibling.FirstChild.NextSibling.Attr {
+			if attr.Key == "href" {
+				torrent.PageUrl = "https://" + RutrackerDomain + "/forum/" + attr.Val
+				break
+			}
+		}
+
+		torrent.Forum = forumTD.FirstChild.NextSibling.FirstChild.FirstChild.Data
+		torrent.Title = titleTD.FirstChild.NextSibling.FirstChild.NextSibling.FirstChild.Data
+		torrent.Title = titleTD.FirstChild.NextSibling.FirstChild.NextSibling.FirstChild.Data
+		torrent.Author = authorTD.FirstChild.NextSibling.FirstChild.FirstChild.Data
+		torrent.Seeders, _ = strconv.ParseUint(seedersTD.FirstChild.NextSibling.FirstChild.Data, 10, 32)
+
+		reg, _ := regexp.Compile(`^([\d.]+).+([KMG])B`)
+		sizeData := reg.FindStringSubmatch(sizeTD.FirstChild.NextSibling.FirstChild.Data)
+		size, _ := strconv.ParseFloat(sizeData[1], 10)
+		switch sizeData[2] {
+		case "K":
+			size *= 1000
+		case "M":
+			size *= 1000 * 1000
+		case "G":
+			size *= 1000 * 1000 * 1000
+		}
+		torrent.Size = uint64(size)
+
+		r := strings.NewReplacer(
+			"Янв", "Jan",
+			"Фев", "Feb",
+			"Мар", "Mar",
+			"Апр", "Apr",
+			"Май", "May",
+			"Июн", "Jun",
+			"Июл", "Jul",
+			"Авг", "Aug",
+			"Сен", "Sep",
+			"Окт", "Oct",
+			"Ноя", "Nov",
+			"Дек", "Dec",
+		)
+		location, _ := time.LoadLocation("Local")
+		torrent.UpdatedAt, _ = time.ParseInLocation("02-Jan-2006", r.Replace(addedTD.FirstChild.NextSibling.FirstChild.Data), location)
+
+		torrents = append(torrents, torrent)
+	}
+
+	return torrents, err
 }
 
-func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.Torrent, err error) {
-	return nil, nil
+func (t *Rutracker) MakeSearchRequest(text string) (r *http.Request, err error) {
+
+	encoder := charmap.Windows1251.NewEncoder()
+	text, _ = encoder.String(text)
+
+	params := url.Values{}
+	params.Set("nm", text)
+	params.Set("o", "10") // sort by seeders
+	r, err = http.NewRequest("POST", "https://"+RutrackerDomain+"/forum/tracker.php", strings.NewReader(params.Encode()))
+	if err != nil {
+		return
+	}
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Set("Content-Length", strconv.Itoa(len(params.Encode())))
+
+	return
 }
