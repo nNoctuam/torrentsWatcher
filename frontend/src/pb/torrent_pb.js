@@ -72,6 +72,10 @@ proto.protobuf.Torrent.toObject = function(includeInstance, msg) {
     title: jspb.Message.getFieldWithDefault(msg, 2, ""),
     pageUrl: jspb.Message.getFieldWithDefault(msg, 3, ""),
     fileUrl: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    forum: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    author: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    size: jspb.Message.getFieldWithDefault(msg, 7, 0),
+    seeders: jspb.Message.getFieldWithDefault(msg, 8, 0),
     createdAt: (f = msg.getCreatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     updatedAt: (f = msg.getUpdatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     uploadedAt: (f = msg.getUploadedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
@@ -128,16 +132,32 @@ proto.protobuf.Torrent.deserializeBinaryFromReader = function(msg, reader) {
       msg.setFileUrl(value);
       break;
     case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setForum(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAuthor(value);
+      break;
+    case 7:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setSize(value);
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setSeeders(value);
+      break;
+    case 9:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setCreatedAt(value);
       break;
-    case 6:
+    case 10:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setUpdatedAt(value);
       break;
-    case 7:
+    case 11:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setUploadedAt(value);
@@ -199,10 +219,38 @@ proto.protobuf.Torrent.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getForum();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
+  f = message.getAuthor();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
+      f
+    );
+  }
+  f = message.getSize();
+  if (f !== 0) {
+    writer.writeUint64(
+      7,
+      f
+    );
+  }
+  f = message.getSeeders();
+  if (f !== 0) {
+    writer.writeUint64(
+      8,
+      f
+    );
+  }
   f = message.getCreatedAt();
   if (f != null) {
     writer.writeMessage(
-      5,
+      9,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -210,7 +258,7 @@ proto.protobuf.Torrent.serializeBinaryToWriter = function(message, writer) {
   f = message.getUpdatedAt();
   if (f != null) {
     writer.writeMessage(
-      6,
+      10,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -218,7 +266,7 @@ proto.protobuf.Torrent.serializeBinaryToWriter = function(message, writer) {
   f = message.getUploadedAt();
   if (f != null) {
     writer.writeMessage(
-      7,
+      11,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -299,12 +347,84 @@ proto.protobuf.Torrent.prototype.setFileUrl = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp created_at = 5;
+ * optional string forum = 5;
+ * @return {string}
+ */
+proto.protobuf.Torrent.prototype.getForum = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.protobuf.Torrent} returns this
+ */
+proto.protobuf.Torrent.prototype.setForum = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string author = 6;
+ * @return {string}
+ */
+proto.protobuf.Torrent.prototype.getAuthor = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.protobuf.Torrent} returns this
+ */
+proto.protobuf.Torrent.prototype.setAuthor = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
+};
+
+
+/**
+ * optional uint64 size = 7;
+ * @return {number}
+ */
+proto.protobuf.Torrent.prototype.getSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.protobuf.Torrent} returns this
+ */
+proto.protobuf.Torrent.prototype.setSize = function(value) {
+  return jspb.Message.setProto3IntField(this, 7, value);
+};
+
+
+/**
+ * optional uint64 seeders = 8;
+ * @return {number}
+ */
+proto.protobuf.Torrent.prototype.getSeeders = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.protobuf.Torrent} returns this
+ */
+proto.protobuf.Torrent.prototype.setSeeders = function(value) {
+  return jspb.Message.setProto3IntField(this, 8, value);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp created_at = 9;
  * @return {?proto.google.protobuf.Timestamp}
  */
 proto.protobuf.Torrent.prototype.getCreatedAt = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 5));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 9));
 };
 
 
@@ -313,7 +433,7 @@ proto.protobuf.Torrent.prototype.getCreatedAt = function() {
  * @return {!proto.protobuf.Torrent} returns this
 */
 proto.protobuf.Torrent.prototype.setCreatedAt = function(value) {
-  return jspb.Message.setWrapperField(this, 5, value);
+  return jspb.Message.setWrapperField(this, 9, value);
 };
 
 
@@ -331,17 +451,17 @@ proto.protobuf.Torrent.prototype.clearCreatedAt = function() {
  * @return {boolean}
  */
 proto.protobuf.Torrent.prototype.hasCreatedAt = function() {
-  return jspb.Message.getField(this, 5) != null;
+  return jspb.Message.getField(this, 9) != null;
 };
 
 
 /**
- * optional google.protobuf.Timestamp updated_at = 6;
+ * optional google.protobuf.Timestamp updated_at = 10;
  * @return {?proto.google.protobuf.Timestamp}
  */
 proto.protobuf.Torrent.prototype.getUpdatedAt = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 10));
 };
 
 
@@ -350,7 +470,7 @@ proto.protobuf.Torrent.prototype.getUpdatedAt = function() {
  * @return {!proto.protobuf.Torrent} returns this
 */
 proto.protobuf.Torrent.prototype.setUpdatedAt = function(value) {
-  return jspb.Message.setWrapperField(this, 6, value);
+  return jspb.Message.setWrapperField(this, 10, value);
 };
 
 
@@ -368,17 +488,17 @@ proto.protobuf.Torrent.prototype.clearUpdatedAt = function() {
  * @return {boolean}
  */
 proto.protobuf.Torrent.prototype.hasUpdatedAt = function() {
-  return jspb.Message.getField(this, 6) != null;
+  return jspb.Message.getField(this, 10) != null;
 };
 
 
 /**
- * optional google.protobuf.Timestamp uploaded_at = 7;
+ * optional google.protobuf.Timestamp uploaded_at = 11;
  * @return {?proto.google.protobuf.Timestamp}
  */
 proto.protobuf.Torrent.prototype.getUploadedAt = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 7));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 11));
 };
 
 
@@ -387,7 +507,7 @@ proto.protobuf.Torrent.prototype.getUploadedAt = function() {
  * @return {!proto.protobuf.Torrent} returns this
 */
 proto.protobuf.Torrent.prototype.setUploadedAt = function(value) {
-  return jspb.Message.setWrapperField(this, 7, value);
+  return jspb.Message.setWrapperField(this, 11, value);
 };
 
 
@@ -405,7 +525,7 @@ proto.protobuf.Torrent.prototype.clearUploadedAt = function() {
  * @return {boolean}
  */
 proto.protobuf.Torrent.prototype.hasUploadedAt = function() {
-  return jspb.Message.getField(this, 7) != null;
+  return jspb.Message.getField(this, 11) != null;
 };
 
 

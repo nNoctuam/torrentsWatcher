@@ -39,7 +39,28 @@ const api = {
     return fetch('/torrent/' + id, {
       method: 'DELETE'
     })
+  },
+
+  search (text) {
+    return fetch('/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: JSON.stringify({
+        text
+      })
+    })
+      .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+        const result = await r.arrayBuffer()
+        return Torrents.deserializeBinary(result).toObject().torrentsList
+      })
   }
+
 }
 
 export default api

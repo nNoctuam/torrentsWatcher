@@ -2,10 +2,13 @@ package parser
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+
+	"golang.org/x/net/html/charset"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -17,6 +20,8 @@ import (
 type TrackerImpl interface {
 	Login(credentials Credentials) ([]*http.Cookie, error)
 	Parse(document *goquery.Document) (*models.Torrent, error)
+	MakeSearchRequest(text string) (r *http.Request, err error)
+	ParseSearch(document *goquery.Document) (torrents []*models.Torrent, err error)
 }
 
 const UnauthorizedError = "unauthorized"
@@ -123,4 +128,47 @@ func (t *Tracker) Download(url string) ([]byte, error) {
 	_, err = io.Copy(&data, body)
 
 	return data.Bytes(), err
+}
+
+func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
+	cookies, err := t.getCookies()
+	if err != nil {
+		return
+	}
+
+	r, err := t.Impl.MakeSearchRequest(text)
+	if err != nil {
+		return
+	}
+
+	for _, cookie := range cookies {
+		r.AddCookie(cookie)
+	}
+
+	client := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	res, err := client.Do(r)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	body, _ := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
+	document, err := goquery.NewDocumentFromReader(body)
+	if err != nil {
+		return
+	}
+
+	torrents, _ = t.Impl.ParseSearch(document)
+
+	//j, _ := json.Marshal(torrents)
+	//fmt.Println(string(j))
+
+	return torrents, nil
 }

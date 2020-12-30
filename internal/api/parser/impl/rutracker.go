@@ -98,3 +98,12 @@ func (t *Rutracker) Login(credentials parser.Credentials) ([]*http.Cookie, error
 
 	return response.Cookies(), nil
 }
+
+func (t *Rutracker) MakeSearchRequest(text string) (r *http.Request, err error) {
+
+	return
+}
+
+func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.Torrent, err error) {
+	return nil, nil
+}

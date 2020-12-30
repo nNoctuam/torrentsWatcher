@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"torrentsWatcher/internal/api/db"
-	"torrentsWatcher/internal/pb"
-
-	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/golang/protobuf/proto"
 
@@ -48,15 +45,7 @@ func AddTorrent(w http.ResponseWriter, r *http.Request, parsers []*parser.Tracke
 		return
 	}
 
-	response, err := proto.Marshal(&pb.Torrent{
-		Id:         uint32(torrent.Id),
-		Title:      torrent.Title,
-		PageUrl:    torrent.PageUrl,
-		FileUrl:    torrent.FileUrl,
-		CreatedAt:  &timestamp.Timestamp{Seconds: torrent.CreatedAt.Unix()},
-		UpdatedAt:  &timestamp.Timestamp{Seconds: torrent.UpdatedAt.Unix()},
-		UploadedAt: &timestamp.Timestamp{Seconds: torrent.UploadedAt.Unix()},
-	})
+	response, err := proto.Marshal(torrent.ToPB())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

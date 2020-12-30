@@ -9,3 +9,5 @@ Vue.config.productionTip = false
 new Vue({
   render: h => h(App)
 }).$mount('#app')
+
+window.api = require('./js/api').default

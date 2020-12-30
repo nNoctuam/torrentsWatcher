@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"runtime"
 	"sync"
 	"syscall"
@@ -39,17 +38,22 @@ func main() {
 	errorChan := make(chan error)
 	wg := new(sync.WaitGroup)
 
-	basePath := path.Dir(os.Args[0])
+	//basePath := path.Dir(os.Args[0])
+	basePath := "./"
 
 	cfg := config.Load(basePath + "/config.yml")
 	notificator := getNotificator(cfg)
 	parsers := []*parser.Tracker{
 		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]),
-		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
+		//impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
 	}
 
 	db.InitDB(basePath + "/torrents.db")
 	defer db.CloseDB()
+
+	//impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]).Search("квартет и")
+	//return
+
 	migrate()
 
 	fmt.Println("Service started")
@@ -77,6 +81,9 @@ func serve(errorChan chan error, host string, port string, basePath string, pars
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents)
 	router.MethodFunc("POST", "/torrent", func(w http.ResponseWriter, r *http.Request) {
 		handlers.AddTorrent(w, r, parsers)
+	})
+	router.MethodFunc("POST", "/search", func(w http.ResponseWriter, r *http.Request) {
+		handlers.Search(w, r, parsers)
 	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, handlers.DownloadTorrent)
 	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent)
