@@ -9,10 +9,10 @@ import (
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
-	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/api/tracking"
 )
 
-func Run(ctx context.Context, wg *sync.WaitGroup, period time.Duration, parsers []*parser.Tracker, notificator notification.Notificator) {
+func Run(ctx context.Context, wg *sync.WaitGroup, period time.Duration, trackers tracking.Trackers, notificator notification.Notificator) {
 	fmt.Printf("Start checking every %s\n", period)
 	ticker := time.After(0)
 	for {
@@ -27,15 +27,15 @@ func Run(ctx context.Context, wg *sync.WaitGroup, period time.Duration, parsers 
 				log.Print("Couldn't get torrents for check")
 			}
 			for _, torrent := range torrents {
-				checkTorrent(&torrent, parsers, notificator)
+				checkTorrent(&torrent, trackers, notificator)
 			}
 			ticker = time.After(period)
 		}
 	}
 }
 
-func checkTorrent(torrent *models.Torrent, parsers []*parser.Tracker, notificator notification.Notificator) {
-	updatedTorrent, err := parser.GetTorrentInfo(torrent.PageUrl, parsers)
+func checkTorrent(torrent *models.Torrent, trackers tracking.Trackers, notificator notification.Notificator) {
+	updatedTorrent, err := trackers.GetTorrentInfo(torrent.PageUrl)
 
 	if err != nil {
 		log.Print("Error parsing torrent: ", err)
@@ -45,7 +45,7 @@ func checkTorrent(torrent *models.Torrent, parsers []*parser.Tracker, notificato
 	isUpdated := torrent.UploadedAt.Unix() != updatedTorrent.UploadedAt.Unix()
 
 	if isUpdated || torrent.FileUrl != "" && torrent.File == nil {
-		file, err := parser.DownloadTorrentFile(torrent, parsers)
+		file, err := trackers.DownloadTorrentFile(torrent)
 		if err != nil {
 			fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
 			return

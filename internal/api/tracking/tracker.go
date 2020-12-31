@@ -1,8 +1,9 @@
-package parser
+package tracking
 
 import (
 	"bytes"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,14 +18,7 @@ import (
 	"torrentsWatcher/internal/api/utils/network"
 )
 
-type TrackerImpl interface {
-	Login(credentials Credentials) ([]*http.Cookie, error)
-	Parse(document *goquery.Document) (*models.Torrent, error)
-	MakeSearchRequest(text string) (r *http.Request, err error)
-	ParseSearch(document *goquery.Document) (torrents []*models.Torrent, err error)
-}
-
-const UnauthorizedError = "unauthorized"
+var UnauthorizedError = errors.New("unauthorized")
 
 type Credentials struct {
 	Login    string
@@ -43,9 +37,9 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 		url = strings.Replace(url, "http://", "https://", 1)
 	}
 
-	torrent, err := t.LoadAndParse(url)
+	torrent, err := t.loadAndParse(url)
 
-	if err != nil && (err.Error() == UnauthorizedError || err.Error() == "record not found") {
+	if err != nil && (err == UnauthorizedError || err.Error() == "record not found") {
 		var cookies []*http.Cookie
 		cookies, err = t.Impl.Login(t.Credentials)
 		if err != nil {
@@ -67,7 +61,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 			}
 		}
 
-		torrent, err = t.LoadAndParse(url)
+		torrent, err = t.loadAndParse(url)
 	}
 
 	if torrent != nil {
@@ -75,42 +69,6 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 	}
 
 	return torrent, err
-}
-
-func (t *Tracker) LoadAndParse(url string) (*models.Torrent, error) {
-	cookies, err := t.getCookies()
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := network.LoadHTML(url, cookies)
-	if err != nil {
-		return nil, err
-	}
-
-	document, err := goquery.NewDocumentFromReader(body)
-	if err != nil {
-		return nil, err
-	}
-
-	return t.Impl.Parse(document)
-}
-
-func (t *Tracker) getCookies() ([]*http.Cookie, error) {
-	var cookies []*http.Cookie
-	if t.Credentials != (Credentials{}) {
-		var savedCookies []models.AuthCookie
-		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).Find(&savedCookies).Error; err != nil {
-			return nil, err
-		}
-		for _, savedCookie := range savedCookies {
-			cookies = append(cookies, &http.Cookie{
-				Name:  savedCookie.Name,
-				Value: savedCookie.Value,
-			})
-		}
-	}
-	return cookies, nil
 }
 
 func (t *Tracker) Download(url string) ([]byte, error) {
@@ -171,4 +129,40 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 	//fmt.Println(string(j))
 
 	return torrents, nil
+}
+
+func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
+	cookies, err := t.getCookies()
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := network.LoadHTML(url, cookies)
+	if err != nil {
+		return nil, err
+	}
+
+	document, err := goquery.NewDocumentFromReader(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return t.Impl.Parse(document)
+}
+
+func (t *Tracker) getCookies() ([]*http.Cookie, error) {
+	var cookies []*http.Cookie
+	if t.Credentials != (Credentials{}) {
+		var savedCookies []models.AuthCookie
+		if err := db.DB.Where(&models.AuthCookie{Domain: t.Domain}).Find(&savedCookies).Error; err != nil {
+			return nil, err
+		}
+		for _, savedCookie := range savedCookies {
+			cookies = append(cookies, &http.Cookie{
+				Name:  savedCookie.Name,
+				Value: savedCookie.Value,
+			})
+		}
+	}
+	return cookies, nil
 }

@@ -1,7 +1,6 @@
 package impl
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -15,15 +14,15 @@ import (
 	"github.com/PuerkitoBio/goquery"
 
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/api/tracking"
 )
 
 type Rutracker struct{}
 
 const RutrackerDomain = "rutracker.org"
 
-func NewRutracker(credentials parser.Credentials) *parser.Tracker {
-	return &parser.Tracker{
+func NewRutracker(credentials tracking.Credentials) *tracking.Tracker {
+	return &tracking.Tracker{
 		Domain:      RutrackerDomain,
 		ForceHttps:  true,
 		Credentials: credentials,
@@ -45,7 +44,7 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 
 	if info.Title != "" && document.Find("#logged-in-username").Size() == 0 {
 		fmt.Println("Unauthorized")
-		return nil, errors.New(parser.UnauthorizedError)
+		return nil, tracking.UnauthorizedError
 	}
 
 	r := strings.NewReplacer(
@@ -74,7 +73,7 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 	return &info, err
 }
 
-func (t *Rutracker) Login(credentials parser.Credentials) ([]*http.Cookie, error) {
+func (t *Rutracker) Login(credentials tracking.Credentials) ([]*http.Cookie, error) {
 	data := url.Values{}
 	data.Set("login_username", credentials.Login)
 	data.Set("login_password", credentials.Password)
@@ -155,7 +154,7 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 			"Дек", "Dec",
 		)
 		location, _ := time.LoadLocation("Local")
-		torrent.UpdatedAt, _ = time.ParseInLocation("02-Jan-2006", r.Replace(addedTD.FirstChild.NextSibling.FirstChild.Data), location)
+		torrent.UpdatedAt, _ = time.ParseInLocation("2-Jan-06", r.Replace(addedTD.FirstChild.NextSibling.FirstChild.Data), location)
 
 		torrents = append(torrents, torrent)
 	}

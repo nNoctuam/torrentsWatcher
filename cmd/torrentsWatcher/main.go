@@ -16,8 +16,8 @@ import (
 	"torrentsWatcher/internal/api/db"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
-	"torrentsWatcher/internal/api/parser"
-	"torrentsWatcher/internal/api/parser/impl"
+	"torrentsWatcher/internal/api/tracking"
+	"torrentsWatcher/internal/api/tracking/impl"
 	"torrentsWatcher/internal/api/watch"
 	"torrentsWatcher/internal/handlers"
 )
@@ -43,24 +43,20 @@ func main() {
 
 	cfg := config.Load(basePath + "/config.yml")
 	notificator := getNotificator(cfg)
-	parsers := []*parser.Tracker{
+	trackers := tracking.Trackers([]*tracking.Tracker{
 		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]),
 		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
-	}
+	})
 
 	db.InitDB(basePath + "/torrents.db")
 	defer db.CloseDB()
-
-	//impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]).Search("квартет и")
-	//return
-
 	migrate()
 
 	fmt.Println("Service started")
 
 	wg.Add(1)
-	go watch.Run(ctx, wg, cfg.Period, parsers, notificator)
-	serve(errorChan, cfg.Host, cfg.Port, basePath, parsers)
+	go watch.Run(ctx, wg, cfg.Period, trackers, notificator)
+	serve(errorChan, cfg.Host, cfg.Port, basePath, trackers)
 
 	select {
 	case err := <-errorChan:
@@ -75,15 +71,15 @@ func main() {
 	wg.Wait()
 }
 
-func serve(errorChan chan error, host string, port string, basePath string, parsers []*parser.Tracker) {
+func serve(errorChan chan error, host string, port string, basePath string, trackers tracking.Trackers) {
 	router := chi.NewRouter()
 
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents)
 	router.MethodFunc("POST", "/torrent", func(w http.ResponseWriter, r *http.Request) {
-		handlers.AddTorrent(w, r, parsers)
+		handlers.AddTorrent(w, r, trackers)
 	})
 	router.MethodFunc("POST", "/search", func(w http.ResponseWriter, r *http.Request) {
-		handlers.Search(w, r, parsers)
+		handlers.Search(w, r, trackers)
 	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, handlers.DownloadTorrent)
 	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent)

@@ -14,15 +14,15 @@ import (
 	"github.com/PuerkitoBio/goquery"
 
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/api/tracking"
 )
 
 type NnmClub struct{}
 
 const NnmClubDomain = "nnmclub.to"
 
-func NewNnmClub(credentials parser.Credentials) *parser.Tracker {
-	return &parser.Tracker{
+func NewNnmClub(credentials tracking.Credentials) *tracking.Tracker {
+	return &tracking.Tracker{
 		Domain:      NnmClubDomain,
 		ForceHttps:  true,
 		Credentials: credentials,
@@ -35,7 +35,7 @@ func (t *NnmClub) Parse(document *goquery.Document) (*models.Torrent, error) {
 	var err error
 
 	if document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Text() != "Скачать" {
-		return &info, errors.New(parser.UnauthorizedError)
+		return &info, tracking.UnauthorizedError
 	}
 
 	info.Title = document.Find(".maintitle").First().Text()
@@ -99,7 +99,7 @@ func (t *NnmClub) MakeSearchRequest(text string) (r *http.Request, err error) {
 	return
 }
 
-func (t *NnmClub) Login(credentials parser.Credentials) ([]*http.Cookie, error) {
+func (t *NnmClub) Login(credentials tracking.Credentials) ([]*http.Cookie, error) {
 	fmt.Println("login", t)
 	code, err := getLoginCode()
 	if err != nil {

@@ -9,10 +9,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/api/tracking"
 )
 
-func AddTorrent(w http.ResponseWriter, r *http.Request, parsers []*parser.Tracker) {
+func AddTorrent(w http.ResponseWriter, r *http.Request, trackers tracking.Trackers) {
 	var torrent *models.Torrent
 	var requestBody struct {
 		Url string
@@ -26,13 +26,13 @@ func AddTorrent(w http.ResponseWriter, r *http.Request, parsers []*parser.Tracke
 
 	fmt.Printf("parsing %s\n", requestBody.Url)
 
-	torrent, err = parser.GetTorrentInfo(requestBody.Url, parsers)
+	torrent, err = trackers.GetTorrentInfo(requestBody.Url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	file, err := parser.DownloadTorrentFile(torrent, parsers)
+	file, err := trackers.DownloadTorrentFile(torrent)
 	if err != nil {
 		fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
 		return

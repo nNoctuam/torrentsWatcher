@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
-	"sync"
 	"torrentsWatcher/internal/pb"
 
 	"google.golang.org/protobuf/proto"
 
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/api/tracking"
 )
 
-func Search(w http.ResponseWriter, r *http.Request, parsers []*parser.Tracker) {
+func Search(w http.ResponseWriter, r *http.Request, trackers tracking.Trackers) {
 	var requestBody struct {
 		Text string
 	}
@@ -25,33 +24,7 @@ func Search(w http.ResponseWriter, r *http.Request, parsers []*parser.Tracker) {
 		return
 	}
 
-	var torrents []*models.Torrent
-
-	wg := sync.WaitGroup{}
-	tChan := make(chan []*models.Torrent)
-	for _, p := range parsers {
-		wg.Add(1)
-		go func(p *parser.Tracker) {
-			found, _ := p.Search(requestBody.Text)
-			tChan <- found
-		}(p)
-	}
-
-	q := make(chan interface{})
-	go func() {
-		for {
-			select {
-			case t := <-tChan:
-				torrents = append(torrents, t...)
-				wg.Done()
-			case <-q:
-				return
-			}
-		}
-	}()
-
-	wg.Wait()
-	q <- nil
+	torrents := trackers.SearchEverywhere(requestBody.Text)
 
 	sort.Slice(torrents, func(i, j int) bool {
 		return torrents[i].Seeders > torrents[j].Seeders
