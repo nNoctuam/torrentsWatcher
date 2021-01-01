@@ -23,15 +23,17 @@ import (
 )
 
 // TODO:
+//  login for search
+//  no ignored errors
+// 	log instead of fmt.Print
+// 	DI
+// 	docker build
+// 	supervisor config
+// 	unit tests
 // 	notifications:
 // 		browser
 // 		messenger
 // 		email
-// 	docker build
-// 	log instead of fmt.Print
-// 	supervisor config
-// 	unit tests
-// 	DI
 
 func main() {
 	ctx, ctxCancel := context.WithCancel(context.Background())

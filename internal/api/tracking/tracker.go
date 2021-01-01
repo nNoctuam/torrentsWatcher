@@ -125,9 +125,6 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 
 	torrents, _ = t.Impl.ParseSearch(document)
 
-	//j, _ := json.Marshal(torrents)
-	//fmt.Println(string(j))
-
 	return torrents, nil
 }
 
