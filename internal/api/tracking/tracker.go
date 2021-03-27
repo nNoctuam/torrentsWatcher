@@ -1,11 +1,15 @@
-package parser
+package tracking
 
 import (
 	"bytes"
+	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+
+	"golang.org/x/net/html/charset"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -14,12 +18,7 @@ import (
 	"torrentsWatcher/internal/storage"
 )
 
-type TrackerImpl interface {
-	Login(credentials Credentials) ([]*http.Cookie, error)
-	Parse(document *goquery.Document) (*models.Torrent, error)
-}
-
-const UnauthorizedError = "unauthorized"
+var UnauthorizedError = errors.New("unauthorized")
 
 type Credentials struct {
 	Login    string
@@ -40,9 +39,9 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 		url = strings.Replace(url, "http://", "https://", 1)
 	}
 
-	torrent, err := t.LoadAndParse(url)
+	torrent, err := t.loadAndParse(url)
 
-	if err != nil && (err.Error() == UnauthorizedError || err.Error() == "record not found") {
+	if err != nil && (err == UnauthorizedError || err.Error() == "record not found") {
 		var cookies []*http.Cookie
 		cookies, err = t.Impl.Login(t.Credentials)
 		if err != nil {
@@ -64,7 +63,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 			}
 		}
 
-		torrent, err = t.LoadAndParse(url)
+		torrent, err = t.loadAndParse(url)
 	}
 
 	if torrent != nil {
@@ -74,7 +73,64 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 	return torrent, err
 }
 
-func (t *Tracker) LoadAndParse(url string) (*models.Torrent, error) {
+func (t *Tracker) Download(url string) ([]byte, error) {
+	cookies, err := t.getCookies()
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := network.LoadBytes(url, cookies)
+	if err != nil {
+		return nil, err
+	}
+
+	var data bytes.Buffer
+	_, err = io.Copy(&data, body)
+
+	return data.Bytes(), err
+}
+
+func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
+	cookies, err := t.getCookies()
+	if err != nil {
+		return
+	}
+
+	r, err := t.Impl.MakeSearchRequest(text)
+	if err != nil {
+		return
+	}
+
+	for _, cookie := range cookies {
+		r.AddCookie(cookie)
+	}
+
+	client := http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	res, err := client.Do(r)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	body, _ := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
+	document, err := goquery.NewDocumentFromReader(body)
+	if err != nil {
+		return
+	}
+
+	torrents, _ = t.Impl.ParseSearch(document)
+
+	return torrents, nil
+}
+
+func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
 	cookies, err := t.getCookies()
 	if err != nil {
 		return nil, err
@@ -108,21 +164,4 @@ func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 		}
 	}
 	return cookies, nil
-}
-
-func (t *Tracker) Download(url string) ([]byte, error) {
-	cookies, err := t.getCookies()
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := network.LoadBytes(url, cookies)
-	if err != nil {
-		return nil, err
-	}
-
-	var data bytes.Buffer
-	_, err = io.Copy(&data, body)
-
-	return data.Bytes(), err
 }

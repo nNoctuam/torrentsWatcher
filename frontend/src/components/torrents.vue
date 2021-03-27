@@ -6,7 +6,7 @@
       <button :disabled="newTorrentAdding">{{ newTorrentAdding ? 'Adding...' : 'Add' }}</button>
     </form>
 
-    <table v-if="torrents">
+    <table v-if="torrents.length > 0">
       <thead>
         <tr>
           <th>Title</th>
@@ -18,10 +18,11 @@
 
       <tbody>
         <tr v-for="torrent in torrents" v-bind:key="torrent.id">
-          <td><a class="open" :href="torrent.page_url" target="_blank">{{ torrent.title }}</a></td>
-          <td><a class="download" v-if="torrent.file_url" :href="'/torrent/' + torrent.id + '/download'"><img src="../assets/transmission-logo.png" alt=""></a></td>
+          <td><a class="open" :href="torrent.pageUrl" target="_blank">{{ torrent.title }}</a></td>
+          <td><a class="download" v-if="torrent.fileUrl" :href="'/torrent/' + torrent.id + '/download'"><img src="../assets/transmission-logo.png" alt=""></a></td>
           <td :title="timeFormat(torrent.uploadedAt.seconds * 1000)">{{ timeFromNow(torrent.uploadedAt.seconds * 1000) }}</td>
           <td :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
+          <td><div class="delete" v-on:click="deleteTorrent(torrent)"><img src="../assets/delete.png" alt=""></div></td>
         </tr>
       </tbody>
     </table>
@@ -32,7 +33,7 @@
 <script>
 import api from '../js/api'
 import moment from 'moment'
-import {Torrents} from '../pb/torrentsList_pb'
+// import { Torrents } from '../pb/torrentsList_pb'
 
 export default {
   name: 'torrents',
@@ -41,7 +42,7 @@ export default {
     newTorrentUrl: '',
     newTorrentAdding: false,
 
-    torrents: Array
+    torrents: []
   }),
 
   methods: {
@@ -54,13 +55,6 @@ export default {
     addTorrent () {
       this.newTorrentAdding = true
       api.addTorrent(this.newTorrentUrl)
-        .then(async r => {
-          if (r.status !== 200) {
-            const text = await r.text()
-            throw new Error(text)
-          }
-          return r.json()
-        })
         .then(r => {
           this.torrents.push(r)
         })
@@ -71,21 +65,27 @@ export default {
           this.newTorrentUrl = ''
           this.newTorrentAdding = false
         })
+    },
+    deleteTorrent (torrent) {
+      api.deleteTorrent(torrent.id)
+        .then(async r => {
+          if (r.status !== 200) {
+            const text = await r.text()
+            throw new Error(text)
+          }
+          this.torrents.splice(torrent, 1)
+        })
+        .catch(e => {
+          alert('failed to delete torrent:' + e)
+        })
     }
   },
 
   mounted () {
     api.getTorrents()
-      .then(async (r) => {
-        console.log(r)
-        let result = await r.arrayBuffer();
-        const data = Torrents.deserializeBinary(result);
-        console.log(data.toObject());
-        this.torrents = data.toObject().torrentsList;
+      .then(r => {
+        this.torrents = r
       })
-      // .then(r => {
-      //   this.torrents = r
-      // })
   }
 }
 </script>
@@ -101,8 +101,15 @@ a
 .download img
   height: 25px
 
+.delete img
+  height: 25px
+
+.delete
+  cursor pointer
+
 table
   margin-top: 30px
+  width: 100%
 
 thead th
   white-space nowrap

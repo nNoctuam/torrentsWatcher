@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"runtime"
+	"sync"
+	"syscall"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -14,8 +19,8 @@ import (
 	"torrentsWatcher/config"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
-	"torrentsWatcher/internal/api/parser"
-	"torrentsWatcher/internal/api/parser/impl"
+	"torrentsWatcher/internal/api/tracking"
+	"torrentsWatcher/internal/api/tracking/impl"
 	"torrentsWatcher/internal/api/watch"
 	"torrentsWatcher/internal/handlers"
 	"torrentsWatcher/internal/storage"
@@ -23,19 +28,32 @@ import (
 )
 
 // TODO:
+//  login for search
+//  no ignored errors
+// 	log instead of fmt.Print
+// 	DI
+// 	docker build
+// 	supervisor config
+// 	unit tests
 // 	notifications:
 // 		browser
 // 		messenger
 // 		email
-// 	docker build
-// 	log instead of fmt.Print
-// 	supervisor config
-// 	unit tests
-// 	DI
 
 func main() {
-	cfg := config.Load()
+	ctx, ctxCancel := context.WithCancel(context.Background())
+	errorChan := make(chan error)
+	wg := new(sync.WaitGroup)
+
+	//basePath := path.Dir(os.Args[0])
+	basePath := "./"
+
+	cfg := config.Load(basePath + "/config.yml")
 	notificator := getNotificator(cfg)
+	trackers := tracking.Trackers([]*tracking.Tracker{
+		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]),
+		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
+	})
 
 	db, err := gorm.Open("sqlite3", "./torrents.db")
 	if err != nil {
@@ -48,46 +66,61 @@ func main() {
 	torrentsStorage := impl2.NewTorrentsSqliteStorage(db)
 	cookiesStorage := impl2.NewCookiesSqliteStorage(db)
 
-	parsers := []*parser.Tracker{
-		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain], torrentsStorage, cookiesStorage),
-		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain], torrentsStorage, cookiesStorage),
-	}
 
+	wg.Add(1)
 	go watch.Watch(
+		ctx,
+		wg,
 		cfg.Interval,
-		parsers,
+		trackers,
 		notificator,
 		torrentsStorage,
 		cookiesStorage,
-	)
-	serve(cfg.Host, cfg.Port, parsers, torrentsStorage)
+		)
+	serve(errorChan, cfg.Host, cfg.Port, basePath, trackers, , torrentsStorage)
+
+	fmt.Println("Service started")
+	select {
+	case err := <-errorChan:
+		fmt.Println(err)
+	case <-ctx.Done():
+		fmt.Println("Service context stopped")
+	case <-waitExitSignal():
+		fmt.Println("Service stopped by signal")
+	}
+
+	ctxCancel()
+	wg.Wait()
 }
 
-func serve(
-	host string,
-	port string,
-	parsers []*parser.Tracker,
-	torrentsStorage storage.Torrents,
-) {
+func serve(errorChan chan error, host string, port string, basePath string, trackers tracking.Trackers, torrentsStorage storage.Torrents) {
 	router := chi.NewRouter()
 
 	router.MethodFunc("GET", "/torrents", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetTorrents(w, r, torrentsStorage)
 	})
 	router.MethodFunc("POST", "/torrent", func(w http.ResponseWriter, r *http.Request) {
-		handlers.AddTorrent(w, r, parsers, torrentsStorage)
+		handlers.AddTorrent(w, r, trackers, torrentsStorage)
+	})
+	router.MethodFunc("POST", "/search", func(w http.ResponseWriter, r *http.Request) {
+		handlers.Search(w, r, trackers, torrentsStorage)
 	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, func(w http.ResponseWriter, r *http.Request) {
 		handlers.DownloadTorrent(w, r, torrentsStorage)
 	})
-	router.Handle("/*", http.FileServer(http.Dir("./frontend/dist")))
+	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, func(w http.ResponseWriter, r *http.Request) {
+		handlers.DeleteTorrent(w, r, torrentsStorage)
+	})
+	router.Handle("/*", http.FileServer(http.Dir(basePath+"/frontend/dist")))
 
 	server := http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, port),
 		Handler: router,
 	}
 
-	_ = server.ListenAndServe()
+	go func() {
+		errorChan <- server.ListenAndServe()
+	}()
 }
 
 func getNotificator(cfg *config.AppConfig) notification.Notificator {
@@ -99,4 +132,11 @@ func getNotificator(cfg *config.AppConfig) notification.Notificator {
 	default:
 		return &notification.Linux{Config: notification.Config(cfg.Notifications)}
 	}
+}
+
+func waitExitSignal() chan os.Signal {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+
+	return ch
 }

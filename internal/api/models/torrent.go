@@ -3,6 +3,10 @@ package models
 import (
 	"encoding/json"
 	"time"
+	"torrentsWatcher/internal/api/db"
+	"torrentsWatcher/internal/pb"
+
+	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
 type Torrent struct {
@@ -11,6 +15,10 @@ type Torrent struct {
 	PageUrl    string     `json:"page_url" gorm:"unique"`
 	FileUrl    string     `json:"file_url"`
 	File       []byte     `json:"-"`
+	Forum      string     `gorm:"-"`
+	Author     string     `gorm:"-"`
+	Size       uint64     `gorm:"-"`
+	Seeders    uint64     `gorm:"-"`
 	CreatedAt  time.Time  `json:"created_at"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 	UploadedAt time.Time  `json:"uploaded_at"`
@@ -41,8 +49,33 @@ func (t *Torrent) GetDeletedAt() int64 {
 	return t.DeletedAt.Unix()
 }
 
-func (t *Torrent) UpdateFrom(updatedTorrent *Torrent) {
+func (t *Torrent) UpdateFrom(updatedTorrent *Torrent) error {
 	t.Title = updatedTorrent.Title
 	t.UploadedAt = updatedTorrent.UploadedAt
 	t.FileUrl = updatedTorrent.FileUrl
+
+	return db.DB.Save(&t).Error
+}
+
+func (t *Torrent) ToPB() *pb.Torrent {
+	return &pb.Torrent{
+		Id:         uint32(t.Id),
+		Title:      t.Title,
+		PageUrl:    t.PageUrl,
+		FileUrl:    t.FileUrl,
+		Forum:      t.Forum,
+		Author:     t.Author,
+		Size:       t.Size,
+		Seeders:    t.Seeders,
+		CreatedAt:  &timestamp.Timestamp{Seconds: t.CreatedAt.Unix()},
+		UpdatedAt:  &timestamp.Timestamp{Seconds: t.UpdatedAt.Unix()},
+		UploadedAt: &timestamp.Timestamp{Seconds: t.UploadedAt.Unix()},
+	}
+}
+
+func TorrentsToPB(torrents []*Torrent) (result []*pb.Torrent) {
+	for _, t := range torrents {
+		result = append(result, t.ToPB())
+	}
+	return result
 }

@@ -1,47 +1,55 @@
 package watch
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
-	"torrentsWatcher/internal/api/parser"
+	"torrentsWatcher/internal/api/tracking"
 	"torrentsWatcher/internal/storage"
 )
 
-func Watch(
+func Run(
+	ctx context.Context,
+	wg *sync.WaitGroup,
 	period time.Duration,
-	parsers []*parser.Tracker,
+	trackers tracking.Trackers,
 	notificator notification.Notificator,
 	torrentsStorage storage.Torrents,
 	cookiesStorage storage.Cookies,
 ) {
 	fmt.Printf("Start checking every %s\n", period)
+	ticker := time.After(0)
 	for {
-		go func() {
+		select {
+		case <-ctx.Done():
+			wg.Done()
+			return
+		case <-ticker:
 			var torrents []models.Torrent
 			err := torrentsStorage.Find(&torrents, nil)
 			if err != nil {
 				log.Print("Couldn't get torrents for check")
 			}
 			for _, torrent := range torrents {
-				checkTorrent(&torrent, parsers, notificator, torrentsStorage)
+				checkTorrent(&torrent, trackers, notificator, torrentsStorage)
 			}
-		}()
-
-		time.Sleep(period)
+			ticker = time.After(period)
+		}
 	}
 }
 
 func checkTorrent(
 	torrent *models.Torrent,
-	parsers []*parser.Tracker,
+	trackers tracking.Trackers,
 	notificator notification.Notificator,
 	torrentsStorage storage.Torrents,
 ) {
-	updatedTorrent, err := parser.GetTorrentInfo(torrent.PageUrl, parsers)
+	updatedTorrent, err := trackers.GetTorrentInfo(torrent.PageUrl)
 
 	if err != nil {
 		log.Print("Error parsing torrent: ", err)
@@ -51,7 +59,7 @@ func checkTorrent(
 	isUpdated := torrent.UploadedAt.Unix() != updatedTorrent.UploadedAt.Unix()
 
 	if isUpdated || torrent.FileUrl != "" && torrent.File == nil {
-		file, err := parser.DownloadTorrentFile(torrent, parsers)
+		file, err := trackers.DownloadTorrentFile(torrent)
 		if err != nil {
 			fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
 			return
