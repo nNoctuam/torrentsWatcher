@@ -43,25 +43,9 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 	torrent, err := t.loadAndParse(url)
 
 	if err != nil && (err == UnauthorizedError || err.Error() == "record not found") {
-		var cookies []*http.Cookie
-		cookies, err = t.Impl.Login(t.Credentials)
+		err = t.login()
 		if err != nil {
 			return nil, err
-		}
-
-		if err := t.CookiesStorage.DeleteByDomain(t.Domain); err != nil {
-			fmt.Println("error removing old cookies")
-		}
-
-		for _, cookie := range cookies {
-			err = t.CookiesStorage.Save(&models.AuthCookie{
-				Domain: t.Domain,
-				Name:   cookie.Name,
-				Value:  cookie.Value,
-			})
-			if err != nil {
-				return nil, err
-			}
 		}
 
 		torrent, err = t.loadAndParse(url)
@@ -123,9 +107,33 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 		fmt.Println(err)
 		return
 	}
-	body, _ := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
+	if res.StatusCode == 302 && strings.Contains(res.Header.Get("Location"), "login") {
+		err = t.login()
+		if err != nil {
+			return nil, err
+		}
+		cookies, err = t.getCookies()
+		if err != nil {
+			return
+		}
+		for _, cookie := range cookies {
+			r.AddCookie(cookie)
+		}
+
+		res, err = client.Do(r)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
+	body, err := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
+	if err != nil {
+		log.Printf("failed to search in %s code=%d len=%d\n%+v", t.Domain, res.StatusCode, res.ContentLength, res.Header)
+		return
+	}
 	if body == nil {
-		log.Printf("failed to search in %s", t.Domain)
+		log.Printf("failed to search in %s %d\n%+v", t.Domain, res.StatusCode, res.Header)
 		return
 	}
 	document, err := goquery.NewDocumentFromReader(body)
@@ -172,4 +180,28 @@ func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 		}
 	}
 	return cookies, nil
+}
+
+func (t *Tracker) login() error {
+	var cookies []*http.Cookie
+	cookies, err := t.Impl.Login(t.Credentials)
+	if err != nil {
+		return err
+	}
+
+	if err := t.CookiesStorage.DeleteByDomain(t.Domain); err != nil {
+		fmt.Println("error removing old cookies")
+	}
+
+	for _, cookie := range cookies {
+		err = t.CookiesStorage.Save(&models.AuthCookie{
+			Domain: t.Domain,
+			Name:   cookie.Name,
+			Value:  cookie.Value,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

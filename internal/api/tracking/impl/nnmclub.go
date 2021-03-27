@@ -52,15 +52,25 @@ func (t *NnmClub) Parse(document *goquery.Document) (*models.Torrent, error) {
 }
 
 func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.Torrent, err error) {
-	rows := document.Find("table.forumline.tablesorter tbody tr.prow1").Nodes
+	headers := document.Find("table.forumline.tablesorter thead th").Nodes
+	columns := map[string]int{}
 
-	for _, row := range rows {
+	for i, th := range headers {
+		if th.FirstChild == nil || th.FirstChild.FirstChild == nil {
+			continue
+		}
+		columns[th.FirstChild.FirstChild.Data] = i
+	}
+
+	document.Find("table.forumline.tablesorter tbody tr.prow1").Each(func(i int, row *goquery.Selection) {
 		torrent := &models.Torrent{}
-		titleTD := row.FirstChild.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling
-		authorTD := titleTD.NextSibling.NextSibling
-		sizeTD := authorTD.NextSibling.NextSibling.NextSibling.NextSibling
-		seedersTD := sizeTD.NextSibling.NextSibling.NextSibling.NextSibling
-		addedTD := row.LastChild.PrevSibling
+		tds := row.Find("td")
+		forumTD := tds.Get(columns["Forum"])
+		titleTD := tds.Get(columns["Topic"])
+		authorTD := tds.Get(columns["Author"])
+		sizeTD := tds.Get(columns["Size"])
+		seedersTD := tds.Get(columns["S"])
+		addedTD := tds.Get(columns["Added"])
 
 		for _, attr := range titleTD.FirstChild.Attr {
 			if attr.Key == "href" {
@@ -69,19 +79,16 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 			}
 		}
 
-		torrent.Forum = row.FirstChild.NextSibling.NextSibling.NextSibling.FirstChild.FirstChild.Data
+		torrent.Forum = forumTD.FirstChild.FirstChild.Data
 		torrent.Title = titleTD.FirstChild.FirstChild.FirstChild.Data
-		if seedersTD.FirstChild == nil || seedersTD.FirstChild.FirstChild == nil {
-			seedersTD = seedersTD.PrevSibling.PrevSibling
-		}
-		torrent.Seeders, _ = strconv.ParseUint(seedersTD.FirstChild.FirstChild.Data, 10, 32)
-		torrent.Size, _ = strconv.ParseUint(sizeTD.FirstChild.FirstChild.Data, 10, 32)
+		torrent.Seeders, _ = strconv.ParseUint(seedersTD.FirstChild.FirstChild.Data, 10, 64)
+		torrent.Size, _ = strconv.ParseUint(sizeTD.FirstChild.FirstChild.Data, 10, 64)
 		torrent.Author = authorTD.FirstChild.FirstChild.Data
 		date := addedTD.FirstChild.NextSibling.Data + " " + addedTD.FirstChild.NextSibling.NextSibling.NextSibling.Data
 		torrent.UpdatedAt, _ = time.Parse("02-01-2006 15:04", strings.Trim(date, " "))
 
 		torrents = append(torrents, torrent)
-	}
+	})
 
 	return torrents, err
 }
