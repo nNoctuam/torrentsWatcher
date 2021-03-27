@@ -59,7 +59,7 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 		titleTD := row.FirstChild.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling
 		authorTD := titleTD.NextSibling.NextSibling
 		sizeTD := authorTD.NextSibling.NextSibling.NextSibling.NextSibling
-		seedersTD := sizeTD.NextSibling.NextSibling
+		seedersTD := sizeTD.NextSibling.NextSibling.NextSibling.NextSibling
 		addedTD := row.LastChild.PrevSibling
 
 		for _, attr := range titleTD.FirstChild.Attr {
@@ -117,7 +117,7 @@ func (t *NnmClub) Login(credentials tracking.Credentials) ([]*http.Cookie, error
 	params.Set("code", code)
 	params.Set("login", "%C2%F5%EE%E4")
 
-	r, err := http.NewRequest("POST", "https://"+NnmClubDomain+"forum/login.php", strings.NewReader(params.Encode()))
+	r, err := http.NewRequest("POST", "https://"+NnmClubDomain+"/forum/login.php", strings.NewReader(params.Encode()))
 	if err != nil {
 		return nil, err
 	}

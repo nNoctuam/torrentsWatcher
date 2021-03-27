@@ -20,10 +20,10 @@ func (f Trackers) GetTorrentInfo(torrentUrl string) (*models.Torrent, error) {
 	return torrent, err
 }
 
-func (f Trackers) DownloadTorrentFile(torrent *models.Torrent) ([]byte, error) {
+func (f Trackers) DownloadTorrentFile(torrent *models.Torrent) (string, []byte, error) {
 	parser, err := f.getTracker(torrent.FileUrl)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	return parser.Download(torrent.FileUrl)
 }

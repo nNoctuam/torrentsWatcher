@@ -9,4 +9,5 @@ type Cookies interface {
 	Find(authCookies *[]models.AuthCookie, query interface{}, args ...interface{}) error
 	First(authCookie *models.AuthCookie, where ...interface{}) error
 	Delete(where ...interface{}) error
+	DeleteByDomain(domain string) error
 }

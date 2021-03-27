@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
@@ -48,7 +49,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 			return nil, err
 		}
 
-		if err := t.CookiesStorage.Delete(&models.AuthCookie{Domain: t.Domain}); err != nil {
+		if err := t.CookiesStorage.DeleteByDomain(t.Domain); err != nil {
 			fmt.Println("error removing old cookies")
 		}
 
@@ -73,21 +74,24 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 	return torrent, err
 }
 
-func (t *Tracker) Download(url string) ([]byte, error) {
+func (t *Tracker) Download(url string) (string, []byte, error) {
 	cookies, err := t.getCookies()
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	body, err := network.LoadBytes(url, cookies)
+	headers, body, err := network.LoadBytes(url, cookies)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
-
 	var data bytes.Buffer
 	_, err = io.Copy(&data, body)
 
-	return data.Bytes(), err
+	fileName := headers.Get("Content-Disposition")
+	fileName = strings.Replace(fileName, "attachment; filename=", "", -1)
+	fileName = strings.Replace(fileName, `"`, ``, -1)
+
+	return fileName, data.Bytes(), err
 }
 
 func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
@@ -120,6 +124,10 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 		return
 	}
 	body, _ := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
+	if body == nil {
+		log.Printf("failed to search in %s", t.Domain)
+		return
+	}
 	document, err := goquery.NewDocumentFromReader(body)
 	if err != nil {
 		return
@@ -136,7 +144,7 @@ func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	body, err := network.LoadHTML(url, cookies)
+	_, body, err := network.LoadHTML(url, cookies)
 	if err != nil {
 		return nil, err
 	}

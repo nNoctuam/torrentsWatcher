@@ -10,3 +10,4 @@ notifications:
   KDEMessage: true
   openInBrowser: true
   openFile: true
+autoDownloadDir: /var/torrents

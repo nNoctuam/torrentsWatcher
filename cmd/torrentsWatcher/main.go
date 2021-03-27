@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
+	"torrentsWatcher/internal/api/torrentclient"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -79,7 +80,9 @@ func main() {
 		torrentsStorage,
 		cookiesStorage,
 	)
-	serve(errorChan, cfg.Host, cfg.Port, trackers, torrentsStorage)
+
+	torrentClient := torrentclient.New(cfg.AutoDownloadDir)
+	serve(errorChan, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient)
 
 	fmt.Println("Service started")
 	select {
@@ -95,7 +98,14 @@ func main() {
 	wg.Wait()
 }
 
-func serve(errorChan chan error, host string, port string, trackers tracking.Trackers, torrentsStorage storage.Torrents) {
+func serve(
+	errorChan chan error,
+	host string,
+	port string,
+	trackers tracking.Trackers,
+	torrentsStorage storage.Torrents,
+	torrentClient *torrentclient.TorrentClient,
+) {
 	router := chi.NewRouter()
 
 	router.MethodFunc("GET", "/torrents", func(w http.ResponseWriter, r *http.Request) {
@@ -106,6 +116,9 @@ func serve(errorChan chan error, host string, port string, trackers tracking.Tra
 	})
 	router.MethodFunc("POST", "/search", func(w http.ResponseWriter, r *http.Request) {
 		handlers.Search(w, r, trackers)
+	})
+	router.MethodFunc("POST", "/download", func(w http.ResponseWriter, r *http.Request) {
+		handlers.DownloadWithClient(w, r, trackers, torrentClient)
 	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, func(w http.ResponseWriter, r *http.Request) {
 		handlers.DownloadTorrent(w, r, torrentsStorage)

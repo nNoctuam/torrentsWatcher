@@ -32,7 +32,7 @@ func AddTorrent(w http.ResponseWriter, r *http.Request, trackers tracking.Tracke
 		return
 	}
 
-	file, err := trackers.DownloadTorrentFile(torrent)
+	_, file, err := trackers.DownloadTorrentFile(torrent)
 	if err != nil {
 		fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
 		return

@@ -59,6 +59,24 @@ const api = {
         const result = await r.arrayBuffer()
         return Torrents.deserializeBinary(result).toObject().torrentsList
       })
+  },
+
+  downloadTorrent (pageUrl) {
+    return fetch('/download', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: JSON.stringify({
+        Url: pageUrl
+      })
+    })
+      .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+      })
   }
 
 }

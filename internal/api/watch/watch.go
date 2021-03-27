@@ -59,7 +59,7 @@ func checkTorrent(
 	isUpdated := torrent.UploadedAt.Unix() != updatedTorrent.UploadedAt.Unix()
 
 	if isUpdated || torrent.FileUrl != "" && torrent.File == nil {
-		file, err := trackers.DownloadTorrentFile(torrent)
+		_, file, err := trackers.DownloadTorrentFile(torrent)
 		if err != nil {
 			fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
 			return

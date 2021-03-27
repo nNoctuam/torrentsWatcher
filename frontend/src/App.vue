@@ -2,7 +2,8 @@
   <div id="app">
     <img alt="Watch" src="./assets/transmission-logo.png" :class="{active:mode==='watch'}" v-on:click="mode='watch'">
     <img alt="Search" src="./assets/search.png" :class="{active:mode==='search'}" v-on:click="mode='search'">
-    <h1>Torrents Watcher</h1>
+    <h1 v-if="mode==='watch'">Torrents Watcher</h1>
+    <h1 v-if="mode==='search'">Torrents Seeker</h1>
     <torrents v-if="mode==='watch'"/>
     <search v-if="mode==='search'"/>
   </div>
@@ -15,7 +16,7 @@ import search from './components/search'
 export default {
   name: 'App',
   data: () => ({
-    mode: 'watch'
+    mode: 'search'
   }),
   components: {
     torrents,

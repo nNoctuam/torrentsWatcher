@@ -22,6 +22,7 @@ type AppConfig struct {
 		OpenInBrowser bool `yaml:"openInBrowser"`
 		OpenFile      bool `yaml:"openFile"`
 	}
+	AutoDownloadDir string `yaml:"autoDownloadDir"`
 }
 
 func Load(filePath string) *AppConfig {
