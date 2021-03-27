@@ -59,7 +59,7 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 		titleTD := row.FirstChild.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling
 		authorTD := titleTD.NextSibling.NextSibling
 		sizeTD := authorTD.NextSibling.NextSibling.NextSibling.NextSibling
-		seedersTD := sizeTD.NextSibling.NextSibling
+		seedersTD := sizeTD.NextSibling.NextSibling.NextSibling.NextSibling
 		addedTD := row.LastChild.PrevSibling
 
 		for _, attr := range titleTD.FirstChild.Attr {
@@ -71,6 +71,9 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 
 		torrent.Forum = row.FirstChild.NextSibling.NextSibling.NextSibling.FirstChild.FirstChild.Data
 		torrent.Title = titleTD.FirstChild.FirstChild.FirstChild.Data
+		if seedersTD.FirstChild == nil || seedersTD.FirstChild.FirstChild == nil {
+			seedersTD = seedersTD.PrevSibling.PrevSibling
+		}
 		torrent.Seeders, _ = strconv.ParseUint(seedersTD.FirstChild.FirstChild.Data, 10, 32)
 		torrent.Size, _ = strconv.ParseUint(sizeTD.FirstChild.FirstChild.Data, 10, 32)
 		torrent.Author = authorTD.FirstChild.FirstChild.Data
