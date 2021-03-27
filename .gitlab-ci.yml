@@ -36,7 +36,7 @@ deploy:
       docker run -d --name ${CI_PROJECT_PATH_SLUG}
       --volume /var/${CI_PROJECT_PATH_SLUG}/torrents.db:/torrents.db
       --volume /var/${CI_PROJECT_PATH_SLUG}/config.yml:/config.yml
-      -p 8802:8802
+      -p ${PORT}:8803
       ${CI_PROJECT_PATH_SLUG}:latest
   only:
     - master
