@@ -59,7 +59,7 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 		titleTD := row.FirstChild.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling
 		authorTD := titleTD.NextSibling.NextSibling
 		sizeTD := authorTD.NextSibling.NextSibling.NextSibling.NextSibling
-		seedersTD := sizeTD.NextSibling.NextSibling.NextSibling.NextSibling
+		seedersTD := sizeTD.NextSibling.NextSibling
 		addedTD := row.LastChild.PrevSibling
 
 		for _, attr := range titleTD.FirstChild.Attr {

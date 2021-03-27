@@ -8,6 +8,7 @@ ADD frontend .
 RUN npm run build
 
 FROM golang:1.16 AS builder
+RUN apt-get update && apt-get install -y ca-certificates openssl
 WORKDIR /var/torrentsWatcher
 ADD . .
 COPY --from=frontendBuilder /var/torrentsWatcherFrontend/dist /var/torrentsWatcher/cmd/torrentsWatcher/dist
@@ -18,4 +19,5 @@ FROM scratch
 WORKDIR /
 # the main program:
 COPY --from=builder /go/bin/torrentsWatcher /torrentsWatcher
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 CMD ["/torrentsWatcher"]
