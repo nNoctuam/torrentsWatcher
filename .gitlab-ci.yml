@@ -36,6 +36,7 @@ deploy:
       docker run -d --name ${CI_PROJECT_PATH_SLUG}
       --volume /var/${CI_PROJECT_PATH_SLUG}/torrents.db:/torrents.db
       --volume /var/${CI_PROJECT_PATH_SLUG}/config.yml:/config.yml
+      --volume {DOWNLOADS_DIR}:/downloads
       -p ${PORT}:8803
       --restart=always
       ${CI_PROJECT_PATH_SLUG}:latest

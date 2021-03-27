@@ -27,7 +27,7 @@ func (t cookiesSqliteStorage) Delete(query ...interface{}) error {
 }
 
 func (t cookiesSqliteStorage) DeleteByDomain(domain string) error {
-	return t.db.Debug().Where("domain = ?", domain).Delete(&models.AuthCookie{}).Error
+	return t.db.Where("domain = ?", domain).Delete(&models.AuthCookie{}).Error
 }
 
 func NewCookiesSqliteStorage(db *gorm.DB) *cookiesSqliteStorage {
