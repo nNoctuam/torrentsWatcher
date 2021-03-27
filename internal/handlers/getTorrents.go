@@ -10,15 +10,12 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
-	"google.golang.org/protobuf/proto"
-
 	"torrentsWatcher/internal/api/models"
 )
 
 func GetTorrents(w http.ResponseWriter, r *http.Request, torrentsStorage storage.Torrents) {
 	var torrents []models.Torrent
-	err := torrentsStorage.Find(&torrents, nil)
+	err := torrentsStorage.Find(&torrents, "")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

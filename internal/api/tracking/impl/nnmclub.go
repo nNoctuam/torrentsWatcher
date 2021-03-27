@@ -24,12 +24,12 @@ const NnmClubDomain = "nnmclub.to"
 
 func NewNnmClub(credentials tracking.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *tracking.Tracker {
 	return &tracking.Tracker{
-		Domain:      NnmClubDomain,
-		ForceHttps:  true,
-		Credentials: credentials,
+		Domain:          NnmClubDomain,
+		ForceHttps:      true,
+		Credentials:     credentials,
 		TorrentsStorage: torrentsStorage,
 		CookiesStorage:  cookiesStorage,
-		Impl:        &NnmClub{},
+		Impl:            &NnmClub{},
 	}
 }
 

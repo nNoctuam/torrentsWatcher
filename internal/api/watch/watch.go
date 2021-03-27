@@ -31,7 +31,7 @@ func Run(
 			return
 		case <-ticker:
 			var torrents []models.Torrent
-			err := torrentsStorage.Find(&torrents, nil)
+			err := torrentsStorage.Find(&torrents, "")
 			if err != nil {
 				log.Print("Couldn't get torrents for check")
 			}

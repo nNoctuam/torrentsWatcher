@@ -20,11 +20,11 @@ import (
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
 	"torrentsWatcher/internal/api/tracking"
-	"torrentsWatcher/internal/api/tracking/impl"
+	trackingImpl "torrentsWatcher/internal/api/tracking/impl"
 	"torrentsWatcher/internal/api/watch"
 	"torrentsWatcher/internal/handlers"
 	"torrentsWatcher/internal/storage"
-	impl2 "torrentsWatcher/internal/storage/impl"
+	storageImpl "torrentsWatcher/internal/storage/impl"
 )
 
 // TODO:
@@ -50,10 +50,6 @@ func main() {
 
 	cfg := config.Load(basePath + "/config.yml")
 	notificator := getNotificator(cfg)
-	trackers := tracking.Trackers([]*tracking.Tracker{
-		impl.NewNnmClub(cfg.Credentials[impl.NnmClubDomain]),
-		impl.NewRutracker(cfg.Credentials[impl.RutrackerDomain]),
-	})
 
 	db, err := gorm.Open("sqlite3", "./torrents.db")
 	if err != nil {
@@ -63,12 +59,16 @@ func main() {
 	defer db.Close()
 	db.AutoMigrate(&models.Torrent{}, &models.AuthCookie{})
 
-	torrentsStorage := impl2.NewTorrentsSqliteStorage(db)
-	cookiesStorage := impl2.NewCookiesSqliteStorage(db)
+	torrentsStorage := storageImpl.NewTorrentsSqliteStorage(db)
+	cookiesStorage := storageImpl.NewCookiesSqliteStorage(db)
 
+	trackers := tracking.Trackers([]*tracking.Tracker{
+		trackingImpl.NewNnmClub(cfg.Credentials[trackingImpl.NnmClubDomain], torrentsStorage, cookiesStorage),
+		trackingImpl.NewRutracker(cfg.Credentials[trackingImpl.RutrackerDomain], torrentsStorage, cookiesStorage),
+	})
 
 	wg.Add(1)
-	go watch.Watch(
+	go watch.Run(
 		ctx,
 		wg,
 		cfg.Interval,
@@ -76,8 +76,8 @@ func main() {
 		notificator,
 		torrentsStorage,
 		cookiesStorage,
-		)
-	serve(errorChan, cfg.Host, cfg.Port, basePath, trackers, , torrentsStorage)
+	)
+	serve(errorChan, cfg.Host, cfg.Port, basePath, trackers, torrentsStorage)
 
 	fmt.Println("Service started")
 	select {
@@ -103,7 +103,7 @@ func serve(errorChan chan error, host string, port string, basePath string, trac
 		handlers.AddTorrent(w, r, trackers, torrentsStorage)
 	})
 	router.MethodFunc("POST", "/search", func(w http.ResponseWriter, r *http.Request) {
-		handlers.Search(w, r, trackers, torrentsStorage)
+		handlers.Search(w, r, trackers)
 	})
 	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, func(w http.ResponseWriter, r *http.Request) {
 		handlers.DownloadTorrent(w, r, torrentsStorage)

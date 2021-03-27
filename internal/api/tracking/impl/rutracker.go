@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"torrentsWatcher/internal/storage"
 
 	"golang.org/x/text/encoding/charmap"
 
@@ -21,12 +22,14 @@ type Rutracker struct{}
 
 const RutrackerDomain = "rutracker.org"
 
-func NewRutracker(credentials tracking.Credentials) *tracking.Tracker {
+func NewRutracker(credentials tracking.Credentials, torrents storage.Torrents, cookies storage.Cookies) *tracking.Tracker {
 	return &tracking.Tracker{
-		Domain:      RutrackerDomain,
-		ForceHttps:  true,
-		Credentials: credentials,
-		Impl:        &Rutracker{},
+		Domain:          RutrackerDomain,
+		ForceHttps:      true,
+		Credentials:     credentials,
+		TorrentsStorage: torrents,
+		CookiesStorage:  cookies,
+		Impl:            &Rutracker{},
 	}
 }
 

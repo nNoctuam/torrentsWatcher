@@ -1,0 +1,75 @@
+# github.com/PuerkitoBio/goquery v1.5.1
+## explicit
+github.com/PuerkitoBio/goquery
+# github.com/andybalholm/cascadia v1.1.0
+github.com/andybalholm/cascadia
+# github.com/go-chi/chi v4.1.1+incompatible
+## explicit
+github.com/go-chi/chi
+# github.com/golang/protobuf v1.4.0
+## explicit
+github.com/golang/protobuf/proto
+github.com/golang/protobuf/ptypes/timestamp
+# github.com/jinzhu/gorm v1.9.12
+## explicit
+github.com/jinzhu/gorm
+github.com/jinzhu/gorm/dialects/sqlite
+# github.com/jinzhu/inflection v1.0.0
+github.com/jinzhu/inflection
+# github.com/mattn/go-sqlite3 v2.0.1+incompatible
+github.com/mattn/go-sqlite3
+# golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+## explicit
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/html/charset
+# golang.org/x/text v0.3.0
+## explicit
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/internal/tag
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/language
+golang.org/x/text/runes
+golang.org/x/text/transform
+# google.golang.org/protobuf v1.21.0
+## explicit
+google.golang.org/protobuf/encoding/prototext
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/descfmt
+google.golang.org/protobuf/internal/descopts
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/encoding/tag
+google.golang.org/protobuf/internal/encoding/text
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/fieldnum
+google.golang.org/protobuf/internal/fieldsort
+google.golang.org/protobuf/internal/filedesc
+google.golang.org/protobuf/internal/filetype
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genname
+google.golang.org/protobuf/internal/impl
+google.golang.org/protobuf/internal/mapsort
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/set
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/internal/version
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+google.golang.org/protobuf/runtime/protoimpl
+google.golang.org/protobuf/types/known/timestamppb
+# gopkg.in/yaml.v2 v2.2.8
+## explicit
+gopkg.in/yaml.v2

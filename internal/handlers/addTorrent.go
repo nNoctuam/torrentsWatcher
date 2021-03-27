@@ -9,7 +9,6 @@ import (
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/tracking"
-	"torrentsWatcher/internal/api/parser"
 	"torrentsWatcher/internal/storage"
 )
 

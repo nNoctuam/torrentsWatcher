@@ -1,5 +1,5 @@
 .idea
-torrents.db
+torrents.db*
 config.yml
 docs/graph.png
 torrentsWatcher
