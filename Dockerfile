@@ -1,8 +1,11 @@
 FROM node:13 AS frontendBuilder
 WORKDIR /var/torrentsWatcherFrontend
 RUN npm i -g @vue/cli
+ADD frontend/package.json .
+ADD frontend/package-lock.json .
+RUN npm ci
 ADD frontend .
-RUN npm ci && npm run build
+RUN npm run build
 
 FROM golang:1.16 AS builder
 WORKDIR /var/torrentsWatcher
