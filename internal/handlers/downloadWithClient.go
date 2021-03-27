@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"torrentsWatcher/internal/api/torrentclient"
 
@@ -40,6 +41,7 @@ func DownloadWithClient(
 	}
 
 	if err := torrentClient.StartDownload(name, content); err != nil {
+		log.Printf("cannot save .torrent file [%s]: %s", name, err)
 		http.Error(w, "cannot save .torrent file to auto-download dir", http.StatusUnprocessableEntity)
 		return
 	}

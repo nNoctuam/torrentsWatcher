@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"strings"
 
@@ -70,10 +71,15 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 	}
 	var data bytes.Buffer
 	_, err = io.Copy(&data, body)
+	if err != nil {
+		return "", nil, err
+	}
 
-	fileName := headers.Get("Content-Disposition")
-	fileName = strings.Replace(fileName, "attachment; filename=", "", -1)
-	fileName = strings.Replace(fileName, `"`, ``, -1)
+	_, params, err := mime.ParseMediaType(headers.Get("Content-Disposition"))
+	if err != nil {
+		return "", nil, err
+	}
+	fileName := params["filename"]
 
 	return fileName, data.Bytes(), err
 }
