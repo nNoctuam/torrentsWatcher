@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -40,15 +42,15 @@ import (
 // 		messenger
 // 		email
 
+//go:embed dist/*
+var distContent embed.FS
+
 func main() {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	errorChan := make(chan error)
 	wg := new(sync.WaitGroup)
 
-	//basePath := path.Dir(os.Args[0])
-	basePath := "./"
-
-	cfg := config.Load(basePath + "/config.yml")
+	cfg := config.Load("./config.yml")
 	notificator := getNotificator(cfg)
 
 	db, err := gorm.Open("sqlite3", "./torrents.db")
@@ -77,7 +79,7 @@ func main() {
 		torrentsStorage,
 		cookiesStorage,
 	)
-	serve(errorChan, cfg.Host, cfg.Port, basePath, trackers, torrentsStorage)
+	serve(errorChan, cfg.Host, cfg.Port, trackers, torrentsStorage)
 
 	fmt.Println("Service started")
 	select {
@@ -93,7 +95,7 @@ func main() {
 	wg.Wait()
 }
 
-func serve(errorChan chan error, host string, port string, basePath string, trackers tracking.Trackers, torrentsStorage storage.Torrents) {
+func serve(errorChan chan error, host string, port string, trackers tracking.Trackers, torrentsStorage storage.Torrents) {
 	router := chi.NewRouter()
 
 	router.MethodFunc("GET", "/torrents", func(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +113,9 @@ func serve(errorChan chan error, host string, port string, basePath string, trac
 	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, func(w http.ResponseWriter, r *http.Request) {
 		handlers.DeleteTorrent(w, r, torrentsStorage)
 	})
-	router.Handle("/*", http.FileServer(http.Dir(basePath+"/frontend/dist")))
+
+	content, _ := fs.Sub(distContent, "dist")
+	router.Handle("/*", http.FileServer(http.FS(content)))
 
 	server := http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, port),

@@ -1,0 +1,44 @@
+stages:
+#  - test
+  - build
+  - deploy
+
+variables:
+  REGISTRY_PATH: "fileshare.local:5000/${CI_PROJECT_PATH_SLUG}"
+
+#gofmt:
+#  stage: test
+#  image: golang:1.16
+#  tags:
+#    - docker-exec
+#  before_script: [] # prevent run `docker login`
+#  script:
+#    - test -z "$(gofmt -s -l -e -d $(find . -name '*.go' -type f -print | grep -v vendor | tr '\n' ' ') | tee /dev/stderr)"
+
+build:
+  stage: build
+  image: docker
+  script:
+    - docker build -t ${CI_PROJECT_PATH_SLUG}:latest .
+#    - docker tag ${CI_PROJECT_PATH_SLUG}:latest ${REGISTRY_PATH}:latest
+#    - docker push ${REGISTRY_PATH}:latest
+  only:
+    - master
+  except:
+    - tags
+
+deploy:
+  stage: deploy
+  image: docker
+  script:
+    - docker stop ${CI_PROJECT_PATH_SLUG} && docker rm ${CI_PROJECT_PATH_SLUG} || true
+    - >
+      docker run -d --name ${CI_PROJECT_PATH_SLUG}
+      --volume /var/${CI_PROJECT_PATH_SLUG}/torrents.db:/torrents.db
+      --volume /var/${CI_PROJECT_PATH_SLUG}/config.yml:/config.yml
+      -p 8802:8802
+      ${CI_PROJECT_PATH_SLUG}:latest
+  only:
+    - master
+  except:
+    - tags
