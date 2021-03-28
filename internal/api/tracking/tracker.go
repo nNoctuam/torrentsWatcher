@@ -84,7 +84,7 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 		log.Printf("%+v", headers)
 		log.Printf("body size: %d", data.Len())
 		fileName = fmt.Sprintf("download_%d.torrent", time.Now().Unix())
-
+		err = nil
 		//return "", nil, err
 	} else {
 		fileName = params["filename"]
