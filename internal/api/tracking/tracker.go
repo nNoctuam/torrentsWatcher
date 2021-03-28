@@ -77,11 +77,18 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 		return "", nil, err
 	}
 
+	var fileName string
 	_, params, err := mime.ParseMediaType(headers.Get("Content-Disposition"))
 	if err != nil {
-		return "", nil, err
+		log.Printf("cannot get media type: %v", err)
+		log.Printf("%+v", headers)
+		log.Printf("body size: %d", data.Len())
+		fileName = fmt.Sprintf("download_%d.torrent", time.Now().Unix())
+
+		//return "", nil, err
+	} else {
+		fileName = params["filename"]
 	}
-	fileName := params["filename"]
 
 	return fileName, data.Bytes(), err
 }
