@@ -33,6 +33,7 @@ func DownloadWithClient(
 
 	name, content, err := trackers.DownloadTorrentFile(torrent)
 	if err != nil {
+		log.Println("cannot download .torrent file", err)
 		http.Error(w, "cannot download .torrent file", http.StatusUnprocessableEntity)
 		return
 	}

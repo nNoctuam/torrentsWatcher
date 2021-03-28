@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"golang.org/x/net/html/charset"
 )
@@ -30,7 +31,14 @@ func Load(url string, cookies []*http.Cookie, wrap func(response *http.Response)
 		r.AddCookie(cookie)
 	}
 
-	client := &http.Client{}
+	r.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:87.0) Gecko/20100101 Firefox/87.0")
+	r.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+	r.Header.Set("Accept-Language", "ru,en-US;q=0.7,en;q=0.3")
+	r.Header.Set("DNT", "1")
+
+	client := &http.Client{
+		Timeout: time.Duration(10) * time.Second,
+	}
 	res, err := client.Do(r)
 	if err != nil {
 		return nil, nil, err

@@ -68,6 +68,7 @@ func main() {
 	trackers := tracking.Trackers([]*tracking.Tracker{
 		trackingImpl.NewNnmClub(cfg.Credentials[trackingImpl.NnmClubDomain], torrentsStorage, cookiesStorage),
 		trackingImpl.NewRutracker(cfg.Credentials[trackingImpl.RutrackerDomain], torrentsStorage, cookiesStorage),
+		trackingImpl.NewKinozal(cfg.Credentials[trackingImpl.KinozalDomain], torrentsStorage, cookiesStorage),
 	})
 
 	wg.Add(1)

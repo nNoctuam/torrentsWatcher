@@ -10,6 +10,7 @@ import (
 	"mime"
 	"net/http"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html/charset"
 
@@ -60,6 +61,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 }
 
 func (t *Tracker) Download(url string) (string, []byte, error) {
+	log.Println("downloading ", url)
 	cookies, err := t.getCookies()
 	if err != nil {
 		return "", nil, err
@@ -85,6 +87,7 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 }
 
 func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
+	log.Println("Search " + text)
 	cookies, err := t.getCookies()
 	if err != nil {
 		return
@@ -100,6 +103,7 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 	}
 
 	client := http.Client{
+		Timeout: time.Duration(10) * time.Second,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
@@ -153,6 +157,7 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 }
 
 func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
+	log.Println("loadAndParse " + url)
 	cookies, err := t.getCookies()
 	if err != nil {
 		return nil, err

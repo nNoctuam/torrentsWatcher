@@ -2,7 +2,9 @@ package tracking
 
 import (
 	"fmt"
+	"log"
 	"net/url"
+	"strings"
 	"sync"
 
 	"torrentsWatcher/internal/api/models"
@@ -61,6 +63,7 @@ func (f Trackers) SearchEverywhere(text string) (torrents []*models.Torrent) {
 func (f Trackers) getTracker(torrentUrl string) (*Tracker, error) {
 	parsedUrl, err := url.Parse(torrentUrl)
 	if err != nil {
+		log.Printf("couldn't parse url %s", torrentUrl)
 		return nil, fmt.Errorf("couldn't parse url %s", torrentUrl)
 	}
 
@@ -69,5 +72,11 @@ func (f Trackers) getTracker(torrentUrl string) (*Tracker, error) {
 			return parser, nil
 		}
 	}
+	for _, parser := range f {
+		if strings.Contains(parsedUrl.Host, parser.Domain) {
+			return parser, nil
+		}
+	}
+	log.Printf("tracking not found for %s", torrentUrl)
 	return nil, fmt.Errorf("tracking not found for %s", torrentUrl)
 }
