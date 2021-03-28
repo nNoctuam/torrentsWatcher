@@ -85,10 +85,16 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 		log.Printf("body size: %d", data.Len())
 		fileName = fmt.Sprintf("download_%d.torrent", time.Now().Unix())
 		err = nil
-		//return "", nil, err
-	} else {
-		fileName = params["filename"]
+		return fileName, data.Bytes(), err
 	}
+
+	mediaType, _, _ := mime.ParseMediaType(headers.Get("Content-Type"))
+	if mediaType != "application/x-bittorrent" {
+		log.Printf("wrong media type for .torrent: %s", mediaType)
+		return "", nil, errors.New("wrong media type for .torrent: " + mediaType)
+	}
+
+	fileName = params["filename"]
 
 	return fileName, data.Bytes(), err
 }

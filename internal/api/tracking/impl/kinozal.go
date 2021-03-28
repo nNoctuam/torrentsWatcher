@@ -51,6 +51,7 @@ func (t *Kinozal) Parse(document *goquery.Document) (*models.Torrent, error) {
 	//info.UploadedAt, err = parseKinozalUploadedAt(document) todo
 	info.FileUrl, _ = document.Find(".mn1_content td.nw a").First().Attr("href")
 	info.FileUrl = "http:" + info.FileUrl
+	info.FileUrl = strings.Replace(info.FileUrl, "dl."+KinozalDomain, KinozalDomain, 1)
 
 	return &info, err
 }
