@@ -70,6 +70,11 @@ func main() {
 		trackingImpl.NewRutracker(cfg.Credentials[trackingImpl.RutrackerDomain], torrentsStorage, cookiesStorage),
 		trackingImpl.NewKinozal(cfg.Credentials[trackingImpl.KinozalDomain], torrentsStorage, cookiesStorage),
 	})
+	for i, t := range trackers {
+		if t.Credentials.Login == "" {
+			trackers = append(trackers[:i], trackers[i+1:]...)
+		}
+	}
 
 	wg.Add(1)
 	go watch.Run(
