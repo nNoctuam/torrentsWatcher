@@ -24,7 +24,7 @@ import (
 	"torrentsWatcher/internal/api/notification"
 	"torrentsWatcher/internal/api/tracking"
 	trackingImpl "torrentsWatcher/internal/api/tracking/impl"
-	"torrentsWatcher/internal/api/watch"
+	"torrentsWatcher/internal/api/watcher"
 	"torrentsWatcher/internal/handlers"
 	"torrentsWatcher/internal/storage"
 	storageImpl "torrentsWatcher/internal/storage/impl"
@@ -77,15 +77,7 @@ func main() {
 	}
 
 	wg.Add(1)
-	go watch.Run(
-		ctx,
-		wg,
-		cfg.Interval,
-		trackers,
-		notificator,
-		torrentsStorage,
-		cookiesStorage,
-	)
+	go watcher.New(ctx, wg, cfg.Interval, trackers, notificator, torrentsStorage).Run()
 
 	torrentClient := torrentclient.New(cfg.AutoDownloadDir)
 	serve(errorChan, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient)
@@ -114,24 +106,11 @@ func serve(
 ) {
 	router := chi.NewRouter()
 
-	router.MethodFunc("GET", "/torrents", func(w http.ResponseWriter, r *http.Request) {
-		handlers.GetTorrents(w, r, torrentsStorage)
-	})
-	router.MethodFunc("POST", "/torrent", func(w http.ResponseWriter, r *http.Request) {
-		handlers.AddTorrent(w, r, trackers, torrentsStorage)
-	})
-	router.MethodFunc("POST", "/search", func(w http.ResponseWriter, r *http.Request) {
-		handlers.Search(w, r, trackers)
-	})
-	router.MethodFunc("POST", "/download", func(w http.ResponseWriter, r *http.Request) {
-		handlers.DownloadWithClient(w, r, trackers, torrentClient)
-	})
-	router.MethodFunc("GET", `/torrent/{id:\d+}/download`, func(w http.ResponseWriter, r *http.Request) {
-		handlers.DownloadTorrent(w, r, torrentsStorage)
-	})
-	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, func(w http.ResponseWriter, r *http.Request) {
-		handlers.DeleteTorrent(w, r, torrentsStorage)
-	})
+	router.MethodFunc("GET", "/torrents", handlers.GetTorrents(torrentsStorage))
+	router.MethodFunc("POST", "/torrent", handlers.AddTorrent(trackers, torrentsStorage))
+	router.MethodFunc("POST", "/search", handlers.Search(trackers))
+	router.MethodFunc("POST", "/download", handlers.DownloadWithClient(trackers, torrentClient))
+	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent(torrentsStorage))
 
 	content, _ := fs.Sub(distContent, "dist")
 	router.Handle("/*", http.FileServer(http.FS(content)))
