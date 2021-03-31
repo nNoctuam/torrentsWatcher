@@ -42,6 +42,7 @@ import (
 // 		browser
 // 		messenger
 // 		email
+// direct url for search
 
 //go:embed dist/*
 var distContent embed.FS

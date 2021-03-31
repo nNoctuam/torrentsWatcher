@@ -44,3 +44,5 @@ deploy:
     - master
   except:
     - tags
+    - variables:
+      - $CI_COMMIT_MESSAGE =~ /\/\/no-build/
