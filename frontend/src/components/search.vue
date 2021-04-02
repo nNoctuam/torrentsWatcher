@@ -1,5 +1,6 @@
 <template>
   <div id="search">
+      <h1>Torrents search</h1>
 
     <form v-on:submit.prevent="search">
       <input type="text" name="search" :disabled="searching" v-model="searchText">
@@ -103,6 +104,13 @@ export default {
           torrent.isBeingDownloaded = false
         })
       return false
+    }
+  },
+
+  mounted () {
+    if (this.$route.query.s) {
+      this.searchText = this.$route.query.s
+      this.search()
     }
   }
 }

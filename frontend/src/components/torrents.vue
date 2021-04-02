@@ -1,5 +1,6 @@
 <template>
   <div id="torrents">
+    <h1>Torrents Watch</h1>
 
     <form v-on:submit.prevent="addTorrent">
       <input type="url" name="url" :disabled="newTorrentAdding" v-model="newTorrentUrl">
