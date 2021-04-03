@@ -31,6 +31,20 @@
       </tbody>
     </table>
 
+    <div class="folders" v-if="showSelectFolder">
+      <div class="content">
+        <h4>В какую папку?</h4>
+        <ul>
+          <li v-for="folder in folders" v-bind:key="folder">
+            <button v-on:click="folderSelect(folder)" v-text="folder"></button>
+          </li>
+        </ul>
+        <div class="bottom">
+          <button class="close" v-on:click="folderSelectCancel()">Отмена</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -45,6 +59,11 @@ export default {
   data: () => ({
     searchText: '',
     searching: false,
+
+    folders: [],
+    showSelectFolder: false,
+    folderSelect: null,
+    folderSelectCancel: null,
 
     torrents: []
   }),
@@ -88,21 +107,30 @@ export default {
         })
     },
     download (torrent) {
-      if (torrent.isBeingDownloaded) {
+      if (torrent.isBeingDownloaded || this.showSelectFolder) {
         return
       }
-      console.log('downloading torrent', torrent.pageUrl, torrent.isBeingDownloaded)
-      torrent.isBeingDownloaded = true
-      api.downloadTorrent(torrent.pageUrl)
-        .then(() => {
-          alert("torrent '" + torrent.title + "' send to download")
-        })
-        .catch(e => {
-          alert('download failed: ' + e)
-        })
-        .then(() => {
-          torrent.isBeingDownloaded = false
-        })
+      this.folderSelect = (folder) => {
+        console.log('downloading torrent', torrent.pageUrl, torrent.isBeingDownloaded, folder)
+        this.showSelectFolder = false
+        torrent.isBeingDownloaded = true
+        api.downloadTorrent(torrent.pageUrl, folder)
+          .then(() => {
+            alert("torrent '" + torrent.title + "' send to download")
+          })
+          .catch(e => {
+            alert('download failed: ' + e)
+          })
+          .then(() => {
+            torrent.isBeingDownloaded = false
+          })
+      }
+      this.folderSelectCancel = () => {
+        this.showSelectFolder = false
+      }
+
+      this.showSelectFolder = true
+
       return false
     }
   },
@@ -112,6 +140,10 @@ export default {
       this.searchText = this.$route.query.s
       this.search()
     }
+    api.getDownloadFolders()
+      .then(folders => {
+        this.folders = folders
+      })
   }
 }
 </script>
@@ -156,4 +188,27 @@ td.title img
   cursor: default
   opacity 0.25
 
+.folders
+  position absolute
+  top 0
+  right 0
+  left 0
+  bottom 0
+  background-color: rgba(#64798a, 0.25)
+
+  .content
+    border-radius 5px
+    box-shadow 0 0 10px 1px gray
+    background-color: #fff
+    width: 400px
+    margin: 20% auto 0
+    padding 20px
+
+    li
+      display inline-block
+      margin-right: 5px
+
+    .bottom
+      padding-top: 20px
+      text-align right
 </style>

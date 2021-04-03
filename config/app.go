@@ -23,6 +23,12 @@ type AppConfig struct {
 		OpenFile      bool `yaml:"openFile"`
 	}
 	AutoDownloadDir string `yaml:"autoDownloadDir"`
+	Transmission    struct {
+		RpcUrl   string `yaml:"rpcUrl"`
+		Login    string
+		Password string
+		Folders  map[string]string
+	}
 }
 
 func Load(filePath string) *AppConfig {

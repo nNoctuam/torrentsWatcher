@@ -12,10 +12,12 @@ import (
 func DownloadWithClient(
 	trackers tracking.Trackers,
 	torrentClient *torrentclient.TorrentClient,
+	folders map[string]string,
 ) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var requestBody struct {
-			Url string
+			Url    string
+			Folder string
 		}
 
 		err := json.NewDecoder(r.Body).Decode(&requestBody)
@@ -23,6 +25,9 @@ func DownloadWithClient(
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		folder, ok := folders[requestBody.Folder]
+		log.Println(folder, ok)
 
 		torrent, err := trackers.GetTorrentInfo(requestBody.Url)
 		if err != nil || torrent.FileUrl == "" {
@@ -40,9 +45,9 @@ func DownloadWithClient(
 			name = torrent.Title + ".torrent" // todo sanitize
 		}
 
-		if err := torrentClient.StartDownload(name, content); err != nil {
+		if err := torrentClient.AddTorrent(content, folder); err != nil {
 			log.Printf("cannot save .torrent file [%s]: %s", name, err)
-			http.Error(w, "cannot save .torrent file to auto-download dir", http.StatusUnprocessableEntity)
+			http.Error(w, "cannot add torrent: "+err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
 	}

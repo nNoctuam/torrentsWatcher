@@ -13,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"torrentsWatcher/internal/api/torrentclient"
+	"torrentsWatcher/internal/api/torrentclient/impl"
+	"torrentsWatcher/internal/api/watcher"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -24,7 +26,6 @@ import (
 	"torrentsWatcher/internal/api/notification"
 	"torrentsWatcher/internal/api/tracking"
 	trackingImpl "torrentsWatcher/internal/api/tracking/impl"
-	"torrentsWatcher/internal/api/watcher"
 	"torrentsWatcher/internal/handlers"
 	"torrentsWatcher/internal/storage"
 	storageImpl "torrentsWatcher/internal/storage/impl"
@@ -76,12 +77,16 @@ func main() {
 			trackers = append(trackers[:i], trackers[i+1:]...)
 		}
 	}
-
 	wg.Add(1)
 	go watcher.New(ctx, wg, cfg.Interval, trackers, notificator, torrentsStorage).Run()
 
-	torrentClient := torrentclient.New(cfg.AutoDownloadDir)
-	serve(errorChan, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient)
+	transmissionClient, err := impl.NewTransmission(cfg.Transmission.RpcUrl, cfg.Transmission.Login, cfg.Transmission.Password)
+	if err != nil {
+		log.Fatal("err")
+	}
+	torrentClient := torrentclient.New(cfg.AutoDownloadDir, transmissionClient)
+
+	serve(errorChan, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient, cfg.Transmission.Folders)
 
 	fmt.Println("Service started")
 	select {
@@ -104,13 +109,15 @@ func serve(
 	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
 	torrentClient *torrentclient.TorrentClient,
+	downloadFolders map[string]string,
 ) {
 	router := chi.NewRouter()
 
+	router.MethodFunc("GET", "/download-folders", handlers.GetDownloadFolders(downloadFolders))
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents(torrentsStorage))
 	router.MethodFunc("POST", "/torrent", handlers.AddTorrent(trackers, torrentsStorage))
 	router.MethodFunc("POST", "/search", handlers.Search(trackers))
-	router.MethodFunc("POST", "/download", handlers.DownloadWithClient(trackers, torrentClient))
+	router.MethodFunc("POST", "/download", handlers.DownloadWithClient(trackers, torrentClient, downloadFolders))
 	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent(torrentsStorage))
 
 	content, _ := fs.Sub(distContent, "dist")

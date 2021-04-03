@@ -11,3 +11,9 @@ notifications:
   openInBrowser: true
   openFile: true
 autoDownloadDir: /var/torrents
+transmission:
+  login:
+  password:
+  rpcUrl:
+  folders:
+    folderName: /absolute/path

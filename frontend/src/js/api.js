@@ -15,6 +15,17 @@ const api = {
       })
   },
 
+  getDownloadFolders () {
+    return fetch('/download-folders')
+      .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+        return r.json()
+      })
+  },
+
   addTorrent (url) {
     return fetch('/torrent', {
       method: 'POST',
@@ -61,14 +72,15 @@ const api = {
       })
   },
 
-  downloadTorrent (pageUrl) {
+  downloadTorrent (pageUrl, folder) {
     return fetch('/download', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
       },
       body: JSON.stringify({
-        Url: pageUrl
+        Url: pageUrl,
+        Folder: folder
       })
     })
       .then(async (r) => {
