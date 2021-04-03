@@ -23,7 +23,7 @@ build:
 #    - docker tag ${CI_PROJECT_PATH_SLUG}:latest ${REGISTRY_PATH}:latest
 #    - docker push ${REGISTRY_PATH}:latest
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master" && $CI_COMMIT_MESSAGE =~ "/\/\/no-build$/"'
+    - if: '$CI_COMMIT_BRANCH == "master"'
       when: always
 
 deploy:
@@ -40,5 +40,5 @@ deploy:
       --restart=always
       ${CI_PROJECT_PATH_SLUG}:latest
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master" && $CI_COMMIT_MESSAGE =~ "/\/\/no-build$/"'
+    - if: '$CI_COMMIT_BRANCH == "master"'
       when: always
