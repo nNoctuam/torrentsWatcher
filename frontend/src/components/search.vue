@@ -54,7 +54,7 @@
     <div class="popup renaming" v-show="downloadedName">
       <div class="content">
         <p>Загружено как "{{ downloadedName }}". Переименовать?</p>
-        <form v-on:submit="renameTorrent(downloadedHash, newName)">
+        <form v-on:submit.prevent="renameTorrent(downloadedHash, newName)">
           <input type="text" v-model="newName">
 
         <div class="bottom">
@@ -86,25 +86,13 @@ export default {
     folderSelectCancel: null,
 
     downloading: false,
-    downloadedName: 'gflfkdlfk.mkv',
-    downloadedHash: 'sdsdsds',
+    downloadedName: null,
+    downloadedHash: null,
 
-    newName: 'gflfkdlfk.mkv',
+    newName: null,
     renaming: false,
 
-    torrents: [{
-      id: 1,
-      title: 'test',
-      author: 't',
-      createdAt: null,
-      fileUrl: null,
-      forum: null,
-      pageUrl: null,
-      seeders: null,
-      size: null,
-      updatedAt: 1093493434,
-      uploadedAt: null
-    }]
+    torrents: []
   }),
 
   methods: {
