@@ -2,9 +2,10 @@ import { Torrent } from '../pb/torrent_pb'
 import { Torrents } from '../pb/torrentsList_pb'
 
 const api = {
+  domain: '',
 
   getTorrents () {
-    return fetch('/torrents')
+    return fetch(this.domain + 'torrents')
       .then(async (r) => {
         if (r.status !== 200) {
           const text = await r.text()
@@ -16,7 +17,7 @@ const api = {
   },
 
   getDownloadFolders () {
-    return fetch('/download-folders')
+    return fetch(this.domain + '/download-folders')
       .then(async (r) => {
         if (r.status !== 200) {
           const text = await r.text()
@@ -27,7 +28,7 @@ const api = {
   },
 
   addTorrent (url) {
-    return fetch('/torrent', {
+    return fetch(this.domain + '/torrent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
@@ -47,13 +48,13 @@ const api = {
   },
 
   deleteTorrent (id) {
-    return fetch('/torrent/' + id, {
+    return fetch(this.domain + '/torrent/' + id, {
       method: 'DELETE'
     })
   },
 
   search (text) {
-    return fetch('/search', {
+    return fetch(this.domain + '/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
@@ -73,7 +74,7 @@ const api = {
   },
 
   downloadTorrent (pageUrl, folder) {
-    return fetch('/download', {
+    return fetch(this.domain + '/download', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
@@ -88,9 +89,29 @@ const api = {
           const text = await r.text()
           throw new Error(text)
         }
+        return r.json()
+      })
+  },
+
+  renameTorrent (hash, newName) {
+    return fetch(this.domain + '/rename', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: JSON.stringify({
+        hash,
+        newName
+      })
+    })
+      .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+        return r
       })
   }
-
 }
 
 export default api

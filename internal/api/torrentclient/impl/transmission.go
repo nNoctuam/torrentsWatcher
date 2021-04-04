@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"torrentsWatcher/internal/api/torrentclient"
 )
 
 type Transmission struct {
@@ -16,12 +17,6 @@ type Transmission struct {
 	password  string
 	rpcUrl    *url.URL
 	csrfToken string
-}
-
-type Torrent struct {
-	Id          int
-	Name        string
-	DateCreated time.Time `json:"dateCreated"`
 }
 
 func NewTransmission(rpcUrl string, login string, password string) (*Transmission, error) {
@@ -36,12 +31,19 @@ func NewTransmission(rpcUrl string, login string, password string) (*Transmissio
 	}, nil
 }
 
-func (t *Transmission) AddTorrent(content []byte, dir string) error {
+func (t *Transmission) AddTorrent(content []byte, dir string) (string, string, error) {
 	var responseModel struct {
 		Arguments struct {
 			TorrentAdded struct {
+				ID   int    `json:"id"`
 				Name string `json:"name"`
+				Hash string `json:"hashString"`
 			} `json:"torrent-added"`
+			TorrentDuplicate struct {
+				ID   int    `json:"id"`
+				Name string `json:"name"`
+				Hash string `json:"hashString"`
+			} `json:"torrent-duplicate"`
 		} `json:"arguments"`
 		Result string `json:"result"`
 	}
@@ -50,27 +52,60 @@ func (t *Transmission) AddTorrent(content []byte, dir string) error {
 		"metainfo":     base64.StdEncoding.EncodeToString(content),
 	}, &responseModel)
 	if err != nil {
+		return "", "", err
+	}
+
+	if responseModel.Result != "success" {
+		return "", "", errors.New("torrent-add result: " + responseModel.Result)
+	}
+
+	hash := responseModel.Arguments.TorrentAdded.Hash
+	if hash == "" {
+		hash = responseModel.Arguments.TorrentDuplicate.Hash
+	}
+	name := responseModel.Arguments.TorrentAdded.Name
+	if name == "" {
+		name = responseModel.Arguments.TorrentDuplicate.Name
+	}
+
+	return hash, name, nil
+}
+
+func (t *Transmission) GetTorrents() ([]torrentclient.Torrent, error) {
+	var responseModel struct {
+		Arguments struct {
+			Torrents []torrentclient.Torrent `json:"torrents"`
+		} `json:"arguments"`
+	}
+	err := t.call("torrent-get", map[string]interface{}{
+		"fields": []string{"id", "name", "hashString", "dateCreated"},
+	}, &responseModel)
+
+	return responseModel.Arguments.Torrents, err
+}
+
+func (t *Transmission) Rename(id int, oldPath string, newPath string) error {
+	var responseModel struct {
+		Arguments struct {
+			ID   int    `json:"id"`
+			Path string `json:"path"`
+			Name string `json:"name"`
+		} `json:"arguments"`
+		Result string `json:"result"`
+	}
+	err := t.call("torrent-rename-path", map[string]interface{}{
+		"ids":  []int{id},
+		"path": oldPath,
+		"name": newPath,
+	}, &responseModel)
+	if err != nil {
 		return err
 	}
 
 	if responseModel.Result != "success" {
 		return errors.New("torrent-add result: " + responseModel.Result)
 	}
-
 	return nil
-}
-
-func (t *Transmission) GetTorrents() ([]Torrent, error) {
-	var responseModel struct {
-		Arguments struct {
-			Torrents []Torrent
-		}
-	}
-	err := t.call("torrent-get", map[string]interface{}{
-		"fields": []string{"id", "name", "dateCreated"},
-	}, &responseModel)
-
-	return responseModel.Arguments.Torrents, err
 }
 
 func (t *Transmission) call(method string, arguments interface{}, responseModel interface{}) error {

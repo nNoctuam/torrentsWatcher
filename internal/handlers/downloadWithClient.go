@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/torrentclient"
+	"torrentsWatcher/internal/storage"
 
 	"torrentsWatcher/internal/api/tracking"
 )
@@ -12,6 +15,7 @@ import (
 func DownloadWithClient(
 	trackers tracking.Trackers,
 	torrentClient *torrentclient.TorrentClient,
+	torrentsStorage storage.Torrents,
 	folders map[string]string,
 ) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -45,10 +49,28 @@ func DownloadWithClient(
 			name = torrent.Title + ".torrent" // todo sanitize
 		}
 
-		if err := torrentClient.AddTorrent(content, folder); err != nil {
+		hash, name, err := torrentClient.AddTorrent(content, folder)
+		if err != nil {
 			log.Printf("cannot save .torrent file [%s]: %s", name, err)
 			http.Error(w, "cannot add torrent: "+err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
+		transmissionTorrent := &models.TransmissionTorrent{
+			Hash: hash,
+		}
+		err = torrentsStorage.SaveTransmission(transmissionTorrent)
+		if err != nil {
+			log.Printf("cannot save transmissionTorrent: %s", err)
+			http.Error(w, "cannot save transmissionTorrent: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response, _ := json.Marshal(map[string]string{
+			"hash": hash,
+			"name": name,
+		})
+
+		w.Header().Add("Content-Type", "application/json")
+		_, _ = fmt.Fprintln(w, string(response))
 	}
 }

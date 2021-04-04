@@ -1,6 +1,10 @@
 package torrentclient
 
-import "os"
+import (
+	"encoding/json"
+	"os"
+	"time"
+)
 
 type TorrentClient struct {
 	autoDownloadDir string
@@ -8,7 +12,36 @@ type TorrentClient struct {
 }
 
 type Client interface {
-	AddTorrent(content []byte, dir string) error
+	AddTorrent(content []byte, dir string) (string, string, error)
+	GetTorrents() ([]Torrent, error)
+	Rename(id int, oldPath string, newPath string) error
+}
+
+type Torrent struct {
+	Id          int
+	Name        string
+	Hash        string
+	DateCreated time.Time `json:"dateCreated"`
+}
+
+func (t *Torrent) UnmarshalJSON(data []byte) error {
+	type Alias struct {
+		Id          int
+		Name        string
+		Hash        string `json:"hashString"`
+		DateCreated int64  `json:"dateCreated"`
+	}
+	torrent := &Alias{}
+	err := json.Unmarshal(data, &torrent)
+	if err != nil {
+		return err
+	}
+	t.Id = torrent.Id
+	t.Name = torrent.Name
+	t.Hash = torrent.Hash
+	t.DateCreated = time.Unix(torrent.DateCreated, 0)
+
+	return nil
 }
 
 func New(autoDownloadDir string, client Client) *TorrentClient {
@@ -22,6 +55,14 @@ func (c *TorrentClient) SaveToAutoDownloadFolder(name string, content []byte) er
 	return os.WriteFile(c.autoDownloadDir+"/"+name, content, 0660)
 }
 
-func (c *TorrentClient) AddTorrent(content []byte, dir string) error {
+func (c *TorrentClient) AddTorrent(content []byte, dir string) (string, string, error) {
 	return c.client.AddTorrent(content, dir)
+}
+
+func (c *TorrentClient) GetTorrents() ([]Torrent, error) {
+	return c.client.GetTorrents()
+}
+
+func (c *TorrentClient) Rename(id int, oldPath string, newPath string) error {
+	return c.client.Rename(id, oldPath, newPath)
 }

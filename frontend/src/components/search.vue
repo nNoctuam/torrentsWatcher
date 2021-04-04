@@ -26,12 +26,12 @@
           <td class="seeders">{{ torrent.seeders }}</td>
           <td class="size">{{ byteSize(torrent.size) }}</td>
           <td class="updated_at" :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
-          <td><a :class="{download: true, pending: torrent.isBeingDownloaded}" v-on:click="download(torrent)"><img src="../assets/transmission-logo.png" :alt="torrent.title"></a></td>
+          <td><a class="download" v-on:click="download(torrent)"><img src="../assets/transmission-logo.png" :alt="torrent.title"></a></td>
         </tr>
       </tbody>
     </table>
 
-    <div class="folders" v-if="showSelectFolder">
+    <div class="popup folders" v-if="showSelectFolder">
       <div class="content">
         <h4>В какую папку?</h4>
         <ul>
@@ -42,6 +42,26 @@
         <div class="bottom">
           <button class="close" v-on:click="folderSelectCancel()">Отмена</button>
         </div>
+      </div>
+    </div>
+
+    <div class="popup downloading" v-show="downloading">
+      <div class="content">
+        <h5>Загружается...</h5>
+      </div>
+    </div>
+
+    <div class="popup renaming" v-show="downloadedName">
+      <div class="content">
+        <p>Загружено как "{{ downloadedName }}". Переименовать?</p>
+        <form v-on:submit="renameTorrent(downloadedHash, newName)">
+          <input type="text" v-model="newName">
+
+        <div class="bottom">
+          <input :disabled="renaming" type="submit" value="Переименовать" />
+          <button :disabled="renaming" @click.prevent="downloadedName = null">Отмена</button>
+        </div>
+        </form>
       </div>
     </div>
 
@@ -65,7 +85,26 @@ export default {
     folderSelect: null,
     folderSelectCancel: null,
 
-    torrents: []
+    downloading: false,
+    downloadedName: 'gflfkdlfk.mkv',
+    downloadedHash: 'sdsdsds',
+
+    newName: 'gflfkdlfk.mkv',
+    renaming: false,
+
+    torrents: [{
+      id: 1,
+      title: 'test',
+      author: 't',
+      createdAt: null,
+      fileUrl: null,
+      forum: null,
+      pageUrl: null,
+      seeders: null,
+      size: null,
+      updatedAt: 1093493434,
+      uploadedAt: null
+    }]
   }),
 
   methods: {
@@ -94,9 +133,6 @@ export default {
       api.search(this.searchText)
         .then(r => {
           console.log(r)
-          r.forEach(torrent => {
-            torrent.isBeingDownloaded = false
-          })
           this.torrents = r
         })
         .catch(e => {
@@ -107,22 +143,25 @@ export default {
         })
     },
     download (torrent) {
-      if (torrent.isBeingDownloaded || this.showSelectFolder) {
+      if (this.downloading || this.showSelectFolder) {
         return
       }
       this.folderSelect = (folder) => {
         console.log('downloading torrent', torrent.pageUrl, torrent.isBeingDownloaded, folder)
         this.showSelectFolder = false
-        torrent.isBeingDownloaded = true
+        this.downloading = true
         api.downloadTorrent(torrent.pageUrl, folder)
-          .then(() => {
-            alert("torrent '" + torrent.title + "' send to download")
+          .then((r) => {
+            console.log(r)
+            this.downloadedName = r.name
+            this.newName = r.name
+            this.downloadedHash = r.hash
           })
           .catch(e => {
             alert('download failed: ' + e)
           })
           .then(() => {
-            torrent.isBeingDownloaded = false
+            this.downloading = false
           })
       }
       this.folderSelectCancel = () => {
@@ -132,6 +171,21 @@ export default {
       this.showSelectFolder = true
 
       return false
+    },
+    renameTorrent (downloadedHash, newName) {
+      console.log('renaming ' + downloadedHash + ' to ' + newName)
+      this.renaming = true
+      // setTimeout(() => {
+      //   this.downloadedName = null
+      // }, 1000)
+      api.renameTorrent(downloadedHash, newName)
+        .catch(e => {
+          alert('Не удалось переименовать: ' + e)
+        })
+        .then(() => {
+          this.renaming = false
+          this.downloadedName = null
+        })
     }
   },
 
@@ -142,7 +196,7 @@ export default {
     }
     api.getDownloadFolders()
       .then(folders => {
-        this.folders = folders
+        this.folders = folders.sort()
       })
   }
 }
@@ -188,8 +242,8 @@ td.title img
   cursor: default
   opacity 0.25
 
-.folders
-  position absolute
+.popup
+  position fixed
   top 0
   right 0
   left 0
@@ -204,11 +258,16 @@ td.title img
     margin: 20% auto 0
     padding 20px
 
+.folders
     li
       display inline-block
       margin-right: 5px
+      margin-bottom: 5px
 
     .bottom
       padding-top: 20px
       text-align right
+
+//.downloading
+
 </style>
