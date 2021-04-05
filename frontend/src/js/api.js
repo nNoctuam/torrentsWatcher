@@ -2,7 +2,7 @@ import { Torrent } from '../pb/torrent_pb'
 import { Torrents } from '../pb/torrentsList_pb'
 
 const api = {
-  domain: 'http://localhost:8803',
+  domain: '',
 
   getTorrents () {
     return fetch(this.domain + 'torrents')
