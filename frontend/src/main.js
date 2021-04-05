@@ -4,6 +4,9 @@ import App from './App.vue'
 import Search from './components/search'
 import Watch from './components/torrents'
 import moment from 'moment'
+// import 'spectre.css/dist/spectre.min.css'
+// import 'spectre.css/dist/spectre-exp.min.css'
+// import 'spectre.css/dist/spectre-icons.min.css'
 
 moment.locale('ru')
 

@@ -1,20 +1,22 @@
 <template>
   <div id="search">
-      <h1>Torrents search</h1>
+      <h1>Торрент-поисковик</h1>
 
-    <form v-on:submit.prevent="search">
-      <input type="text" name="search" :disabled="searching" v-model="searchText">
-      <button :disabled="searching">{{ searching ? 'Searching...' : 'Search' }}</button>
+    <form class="form-group" id="search-form" v-on:submit.prevent="search">
+      <div class="input-group">
+        <input type="text" class="form-input" name="search" :disabled="searching" v-model="searchText"/>
+        <button class="btn" :disabled="searching">{{ searching ? 'Ищем...' : 'Искать' }}</button>
+      </div>
     </form>
 
-    <table v-if="torrents.length > 0">
+    <table class="table table-striped" v-if="torrents.length > 0">
       <thead>
         <tr>
-          <th class="forum">Forum</th>
-          <th class="title">Title</th>
-          <th class="seeders">Seeders</th>
-          <th class="size">Size</th>
-          <th class="updated_at">Updated at</th>
+          <th class="forum">Раздел</th>
+          <th class="title">Название</th>
+          <th class="seeders">Качают</th>
+          <th class="size">Размер</th>
+          <th class="updated_at">Обновлен</th>
           <th class="download"></th>
         </tr>
       </thead>
@@ -26,42 +28,77 @@
           <td class="seeders">{{ torrent.seeders }}</td>
           <td class="size">{{ byteSize(torrent.size) }}</td>
           <td class="updated_at" :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
-          <td><a class="download" v-on:click="download(torrent)"><img src="../assets/transmission-logo.png" :alt="torrent.title"></a></td>
+          <td>
+            <a class="download" v-on:click="download(torrent)">
+              <i class="icon icon-2x icon-download"></i>
+            </a>
+          </td>
         </tr>
       </tbody>
     </table>
 
-    <div class="popup folders" v-if="showSelectFolder">
-      <div class="content">
-        <h4>В какую папку?</h4>
+    <div class="modal folders" :class="{active: showSelectFolder}">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <button href="#close" class="btn btn-clear float-right" v-on:click="folderSelectCancel()"></button>
+          <h5>В какую папку?</h5>
+        </div>
+        <div class="modal-body">
         <ul>
           <li v-for="folder in folders" v-bind:key="folder">
-            <button v-on:click="folderSelect(folder)" v-text="folder"></button>
+            <button class="btn" v-on:click="folderSelect(folder)" v-text="folder"></button>
           </li>
         </ul>
-        <div class="bottom">
-          <button class="close" v-on:click="folderSelectCancel()">Отмена</button>
+        </div>
+        <div class="modal-footer">
+          <button class="btn close" v-on:click="folderSelectCancel()">Отмена</button>
         </div>
       </div>
     </div>
 
-    <div class="popup downloading" v-show="downloading">
-      <div class="content">
-        <h5>Загружается...</h5>
+    <div class="modal modal-sm downloading" :class="{active: downloading}">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header"></div>
+        <div class="modal-body">
+          <h5>Загружается...</h5>
+        </div>
+        <div class="modal-footer"></div>
       </div>
     </div>
 
-    <div class="popup renaming" v-show="downloadedName">
-      <div class="content">
-        <p>Загружено как "{{ downloadedName }}". Переименовать?</p>
-        <form v-on:submit.prevent="renameTorrent(downloadedHash, newName)">
-          <input type="text" v-model="newName">
-
-        <div class="bottom">
-          <input :disabled="renaming" type="submit" value="Переименовать" />
-          <button :disabled="renaming" @click.prevent="downloadedName = null">Отмена</button>
+    <div class="modal renaming" :class="{active: downloadedName}">
+      <div class="modal-overlay"></div>
+      <form class="modal-container form-group" v-on:submit.prevent="renameTorrent(downloadedHash, newName)">
+        <div class="modal-header">
+          <button href="#close" class="btn btn-clear float-right" @click.prevent="downloadedName = null"></button>
+          <h5>Торрент загружается. Переименовать?</h5>
         </div>
-        </form>
+        <div class="modal-body">
+
+          <input type="text" class="form-input" v-model="newName">
+        </div>
+
+        <div class="modal-footer">
+          <input class="btn float-left" :disabled="renaming" type="submit" value="Переименовать" />
+          <button class="btn" :disabled="renaming" @click.prevent="downloadedName = null">Оставить как есть</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal error" :class="{active: error}">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <h5>Что-то пошло не так</h5>
+        </div>
+        <div class="modal-body">
+          <span>{{error}}</span>
+        </div>
+        <div class="modal-footer">
+          <button class="btn close" v-on:click="error=null">Закрыть</button>
+        </div>
       </div>
     </div>
 
@@ -91,6 +128,8 @@ export default {
 
     newName: null,
     renaming: false,
+
+    error: null,
 
     torrents: []
   }),
@@ -124,7 +163,7 @@ export default {
           this.torrents = r
         })
         .catch(e => {
-          alert(e)
+          this.error = e
         })
         .then(() => {
           this.searching = false
@@ -146,7 +185,7 @@ export default {
             this.downloadedHash = r.hash
           })
           .catch(e => {
-            alert('download failed: ' + e)
+            this.error = 'Не удалось скачать: ' + e
           })
           .then(() => {
             this.downloading = false
@@ -168,7 +207,7 @@ export default {
       // }, 1000)
       api.renameTorrent(downloadedHash, newName)
         .catch(e => {
-          alert('Не удалось переименовать: ' + e)
+          this.error = 'Не удалось переименовать: ' + e
         })
         .then(() => {
           this.renaming = false
@@ -179,7 +218,7 @@ export default {
 
   mounted () {
     if (this.$route.query.s) {
-      this.searchText = this.$route.query.s
+      this.searchText = this.$route.query.s6666
       this.search()
     }
     api.getDownloadFolders()
@@ -197,6 +236,20 @@ h3
 
 a
   color #42b983
+  display inline
+  transition: 0.2s all
+  padding-top: 7px
+  //background: red
+  text-decoration underline rgba(0,0,0,0)
+  text-underline-color white
+  &:hover
+    text-decoration underline darken(#42b983, 20%)
+    color darken(#42b983, 20%)
+
+#search-form
+  width: 500px
+  text-align: center
+  margin: 0 auto
 
 table
   margin-top: 30px
@@ -204,12 +257,6 @@ table
 
 thead th
   white-space nowrap
-  border-bottom: 1px solid gray
-  padding-bottom: 10px
-  text-align left
-
-td
-  text-align left
 
 td.forum
   max-width 15%
@@ -222,40 +269,27 @@ td.title img
   height: 16px
   margin-right: 10px
 
-.download img
-  height: 25px
+.download
   cursor: pointer
+  padding-left: 10px
+  padding-right: 20px
+  img
+    height: 25px
+    cursor: pointer
 
 .download.pending img
   cursor: default
   opacity 0.25
 
-.popup
-  position fixed
-  top 0
-  right 0
-  left 0
-  bottom 0
-  background-color: rgba(#64798a, 0.25)
+.modal-header h5
+  text-align: center
 
-  .content
-    border-radius 5px
-    box-shadow 0 0 10px 1px gray
-    background-color: #fff
-    width: 400px
-    margin: 20% auto 0
-    padding 20px
+.downloading h5
+  text-align: center
 
 .folders
     li
       display inline-block
       margin-right: 5px
-      margin-bottom: 5px
-
-    .bottom
-      padding-top: 20px
-      text-align right
-
-//.downloading
 
 </style>
