@@ -23,7 +23,7 @@ export default {
 
 <style lang="scss">
 
-$primary-color: #1abc9c !default;
+$primary-color: #16a085 !default;
 @import "../node_modules/spectre.css/src/variables";
 @import "../node_modules/spectre.css/src/mixins";
 

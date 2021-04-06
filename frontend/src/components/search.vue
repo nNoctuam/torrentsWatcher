@@ -237,7 +237,7 @@ h3
   margin 40px 0 0
 
 a
-  color #1abc9c
+  color #16a085
   display inline
   transition: 0.2s all
   padding-top: 7px
@@ -245,7 +245,7 @@ a
   text-decoration underline rgba(0,0,0,0)
   text-underline-color white
   &:hover
-    text-decoration underline darken(#1abc9c, 20%)
+    text-decoration underline darken(#16a085, 20%)
     color darken(#1abc9c, 20%)
 
 #search-form
@@ -258,7 +258,7 @@ table
   width: 100%
 
 .table tbody tr.active
-  background: saturation(rgba(#1abc9c, 20%), 50%)
+  background: saturation(rgba(#16a085, 20%), 50%)
 
 thead th
   white-space nowrap
