@@ -5,7 +5,7 @@ ADD frontend/package.json .
 ADD frontend/package-lock.json .
 RUN npm ci
 ADD frontend .
-RUN npm run build
+RUN npm run build-prod
 
 FROM golang:1.16 AS builder
 RUN apt-get update && apt-get install -y ca-certificates openssl

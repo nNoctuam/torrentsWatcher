@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --mode=dev --fix",
+    "build": "vue-cli-service build --mode=development --fix",
+    "build-prod": "vue-cli-service build --mode production --fix",
     "lint": "vue-cli-service lint --fix",
     "copy-dist": "cp -r dist ../cmd/torrentsWatcher/",
     "all": "npm run lint; npm run build && npm run copy-dist"
