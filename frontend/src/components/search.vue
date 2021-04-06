@@ -218,7 +218,7 @@ export default {
 
   mounted () {
     if (this.$route.query.s) {
-      this.searchText = this.$route.query.s6666
+      this.searchText = this.$route.query.s
       this.search()
     }
     api.getDownloadFolders()
