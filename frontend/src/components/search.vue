@@ -245,8 +245,8 @@ a
   text-decoration underline rgba(0,0,0,0)
   text-underline-color white
   &:hover
-    text-decoration underline darken(#42b983, 20%)
-    color darken(#42b983, 20%)
+    text-decoration underline darken(#1abc9c, 20%)
+    color darken(#1abc9c, 20%)
 
 #search-form
   width: 500px
