@@ -9,7 +9,7 @@
       </div>
     </form>
 
-    <table class="table table-striped" v-if="torrents.length > 0">
+    <table class="table table-striped table-hover" v-if="torrents.length > 0">
       <thead>
         <tr>
           <th class="forum">Раздел</th>
@@ -22,9 +22,9 @@
       </thead>
 
       <tbody>
-        <tr v-for="torrent in torrents" v-bind:key="torrent.pageUrl">
+        <tr :class="{active: selectedRow===i}" v-for="(torrent, i) in torrents" @click="selectedRow=i" v-bind:key="torrent.pageUrl">
           <td class="forum">{{ torrent.forum }}</td>
-          <td class="title"><img :src="getFavicon(torrent.pageUrl)" alt="Tracker"><a class="open" :href="torrent.pageUrl" target="_blank">{{ torrent.title }}</a></td>
+          <td class="title"><img :src="getFavicon(torrent.pageUrl)"><a class="open" :href="torrent.pageUrl" target="_blank">{{ torrent.title }}</a></td>
           <td class="seeders">{{ torrent.seeders }}</td>
           <td class="size">{{ byteSize(torrent.size) }}</td>
           <td class="updated_at" :title="timeFormat(torrent.updatedAt.seconds * 1000)">{{ timeFromNow(torrent.updatedAt.seconds * 1000) }}</td>
@@ -116,6 +116,8 @@ export default {
   data: () => ({
     searchText: '',
     searching: false,
+
+    selectedRow: null,
 
     folders: [],
     showSelectFolder: false,
@@ -235,7 +237,7 @@ h3
   margin 40px 0 0
 
 a
-  color #42b983
+  color #1abc9c
   display inline
   transition: 0.2s all
   padding-top: 7px
@@ -254,6 +256,9 @@ a
 table
   margin-top: 30px
   width: 100%
+
+.table tbody tr.active
+  background: saturation(rgba(#1abc9c, 20%), 50%)
 
 thead th
   white-space nowrap
