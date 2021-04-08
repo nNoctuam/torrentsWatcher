@@ -105,16 +105,29 @@ func (t *Rutracker) Login(credentials tracking.Credentials) ([]*http.Cookie, err
 }
 
 func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.Torrent, err error) {
-	rows := document.Find("#tor-tbl tbody tr").Nodes
+	headers := document.Find("#tor-tbl thead th").Nodes
+	columns := map[string]int{}
 
-	for _, row := range rows {
+	for i, th := range headers {
+		if th.FirstChild == nil {
+			continue
+		}
+		columns[th.FirstChild.Data] = i
+	}
+
+	document.Find("#tor-tbl tbody tr").Each(func(i int, row *goquery.Selection) {
 		torrent := &models.Torrent{}
-		forumTD := row.FirstChild.NextSibling.NextSibling.NextSibling.NextSibling.NextSibling
-		titleTD := forumTD.NextSibling.NextSibling
-		authorTD := titleTD.NextSibling.NextSibling
-		sizeTD := authorTD.NextSibling.NextSibling
-		seedersTD := sizeTD.NextSibling.NextSibling
-		addedTD := row.LastChild.PrevSibling
+		tds := row.Find("td")
+		forumTD := tds.Get(columns["Форум"])
+		titleTD := tds.Get(columns["Тема"])
+		authorTD := tds.Get(columns["Автор"])
+		sizeTD := tds.Get(columns["Размер"])
+		seedersTD := tds.Get(columns["S"])
+		addedTD := tds.Get(columns["Добавлен"])
+
+		if strings.Contains(titleTD.FirstChild.Data, "Не найдено") {
+			return
+		}
 
 		for _, attr := range titleTD.FirstChild.NextSibling.FirstChild.NextSibling.Attr {
 			if attr.Key == "href" {
@@ -160,7 +173,7 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 		torrent.UpdatedAt, _ = time.ParseInLocation("2-Jan-06", r.Replace(addedTD.FirstChild.NextSibling.FirstChild.Data), location)
 
 		torrents = append(torrents, torrent)
-	}
+	})
 
 	return torrents, err
 }
