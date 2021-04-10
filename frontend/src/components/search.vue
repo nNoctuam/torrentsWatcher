@@ -14,7 +14,7 @@
         <tr>
           <th class="forum">Раздел</th>
           <th class="title">Название</th>
-          <th class="seeders">Качают</th>
+          <th class="seeders">Раздают</th>
           <th class="size">Размер</th>
           <th class="updated_at">Обновлен</th>
           <th class="download"></th>
