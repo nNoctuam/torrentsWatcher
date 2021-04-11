@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"google.golang.org/protobuf/proto"
 
 	"torrentsWatcher/internal/api/models"
@@ -12,7 +14,8 @@ import (
 	"torrentsWatcher/internal/storage"
 )
 
-func AddTorrent(trackers tracking.Trackers, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func AddTorrent(logger *zap.Logger, trackers tracking.Trackers, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+	logger = logger.With(zap.String("method", "AddTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var torrent *models.Torrent
 		var requestBody struct {
@@ -25,7 +28,7 @@ func AddTorrent(trackers tracking.Trackers, torrentsStorage storage.Torrents) fu
 			return
 		}
 
-		fmt.Printf("parsing %s\n", requestBody.Url)
+		logger.Info("parsing ", zap.String("url", requestBody.Url))
 
 		torrent, err = trackers.GetTorrentInfo(requestBody.Url)
 		if err != nil {
@@ -35,24 +38,26 @@ func AddTorrent(trackers tracking.Trackers, torrentsStorage storage.Torrents) fu
 
 		_, file, err := trackers.DownloadTorrentFile(torrent)
 		if err != nil {
-			fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
+			logger.Error("Failed to load torrent file", zap.Error(err), zap.String("url", torrent.FileUrl))
 			return
 		}
 		torrent.File = file
 
 		err = torrentsStorage.Save(torrent)
 		if err != nil {
+			logger.Error("Failed to save torrent to storage", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		response, err := proto.Marshal(torrent.ToPB())
 		if err != nil {
+			logger.Error("Failed to marshal response", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Add("Content-Type", "application/protobuf")
-		fmt.Fprint(w, string(response))
+		_, _ = fmt.Fprint(w, string(response))
 	}
 }

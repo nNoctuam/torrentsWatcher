@@ -1,13 +1,13 @@
 package impl
 
 import (
-	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"go.uber.org/zap"
 
 	"golang.org/x/text/encoding/charmap"
 
@@ -18,18 +18,23 @@ import (
 	"torrentsWatcher/internal/storage"
 )
 
-type Kinozal struct{}
+type Kinozal struct {
+	logger *zap.Logger
+}
 
 const KinozalDomain = "kinozal.tv"
 
-func NewKinozal(credentials tracking.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *tracking.Tracker {
+func NewKinozal(logger *zap.Logger, credentials tracking.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *tracking.Tracker {
 	return &tracking.Tracker{
+		Logger:          logger,
 		Domain:          KinozalDomain,
 		ForceHttps:      false,
 		Credentials:     credentials,
 		TorrentsStorage: torrentsStorage,
 		CookiesStorage:  cookiesStorage,
-		Impl:            &Kinozal{},
+		Impl: &Kinozal{
+			logger: logger,
+		},
 	}
 }
 
@@ -38,12 +43,8 @@ func (t *Kinozal) Parse(document *goquery.Document) (*models.Torrent, error) {
 	var err error
 
 	authLink := document.Find(".menu form ul.men a")
-	if authLink.Size() > 0 {
-		a := authLink.Get(0)
-		log.Printf("%+v", a)
-	}
 	if authLink.Size() > 0 && authLink.Get(0).FirstChild != nil && authLink.Get(0).FirstChild.Data == "Гость! ( Зарегистрируйтесь )" {
-		log.Println(KinozalDomain+" unauthorized:", authLink.Get(0).FirstChild.Data)
+		t.logger.Warn(KinozalDomain+" unauthorized:", zap.Any("authLinkTitle", authLink.Get(0).FirstChild.Data))
 		return &info, tracking.UnauthorizedError
 	}
 
@@ -133,8 +134,6 @@ func (t *Kinozal) MakeSearchRequest(text string) (r *http.Request, err error) {
 }
 
 func (t *Kinozal) Login(credentials tracking.Credentials) ([]*http.Cookie, error) {
-	fmt.Println(KinozalDomain + " login")
-
 	params := url.Values{}
 	params.Set("username", credentials.Login)
 	params.Set("password", credentials.Password)
@@ -154,7 +153,6 @@ func (t *Kinozal) Login(credentials tracking.Credentials) ([]*http.Cookie, error
 	}
 	res, err := client.Do(r)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 

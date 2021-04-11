@@ -7,12 +7,15 @@ import (
 	"time"
 	"torrentsWatcher/internal/storage"
 
+	"go.uber.org/zap"
+
 	"github.com/go-chi/chi"
 
 	"torrentsWatcher/internal/api/models"
 )
 
-func DeleteTorrent(torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func DeleteTorrent(logger *zap.Logger, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+	logger = logger.With(zap.String("method", "DeleteTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -39,7 +42,7 @@ func DeleteTorrent(torrentsStorage storage.Torrents) func(w http.ResponseWriter,
 		torrent.DeletedAt = &now
 
 		if err = torrentsStorage.Save(&torrent); err != nil {
-			fmt.Println("error updating torrent", err)
+			logger.Error("failed to update torrent", zap.Error(err))
 			return
 		}
 	}

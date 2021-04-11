@@ -1,6 +1,7 @@
 host: 0.0.0.0
 port: 8803
 interval: 1h
+logLevel: info
 credentials:
   site.domain:
     login:

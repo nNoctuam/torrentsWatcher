@@ -7,12 +7,14 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/storage"
 )
 
-func DownloadTorrent(torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func DownloadTorrent(logger *zap.Logger, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+	logger = logger.With(zap.String("method", "DownloadTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var torrent models.Torrent
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -33,7 +35,7 @@ func DownloadTorrent(torrentsStorage storage.Torrents) func(w http.ResponseWrite
 
 		_, err = w.Write(torrent.File)
 		if err != nil {
-			fmt.Println("error writing torrent file")
+			logger.Error("failed to write torrent file", zap.Error(err))
 			return
 		}
 	}

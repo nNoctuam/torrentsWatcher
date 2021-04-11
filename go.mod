@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/cors v1.2.0
 	github.com/golang/protobuf v1.4.0
 	github.com/jinzhu/gorm v1.9.12
+	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
 	golang.org/x/text v0.3.0
 	google.golang.org/protobuf v1.21.0

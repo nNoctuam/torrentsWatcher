@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"golang.org/x/net/html/charset"
 
 	"github.com/PuerkitoBio/goquery"
@@ -29,6 +31,7 @@ type Credentials struct {
 }
 
 type Tracker struct {
+	Logger          *zap.Logger
 	Domain          string
 	ForceHttps      bool
 	Credentials     Credentials
@@ -47,7 +50,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 	if err != nil && (err == UnauthorizedError || err.Error() == "record not found") {
 		err = t.login()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("login: %w", err)
 		}
 
 		torrent, err = t.loadAndParse(url)
@@ -80,9 +83,7 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 	var fileName string
 	_, params, err := mime.ParseMediaType(headers.Get("Content-Disposition"))
 	if err != nil {
-		log.Printf("cannot get media type: %v", err)
-		log.Printf("%+v", headers)
-		log.Printf("body size: %d", data.Len())
+		t.Logger.Warn("cannot get media type", zap.Error(err), zap.Any("headers", headers), zap.Any("bodySize", data.Len()))
 		fileName = fmt.Sprintf("download_%d.torrent", time.Now().Unix())
 		err = nil
 		return fileName, data.Bytes(), err
@@ -90,7 +91,7 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 
 	mediaType, _, _ := mime.ParseMediaType(headers.Get("Content-Type"))
 	if mediaType != "application/x-bittorrent" {
-		log.Printf("wrong media type for .torrent: %s", mediaType)
+		t.Logger.Warn("wrong media type for .torrent: %s", zap.String("mediaType", mediaType))
 		return "", nil, errors.New("wrong media type for .torrent: " + mediaType)
 	}
 
@@ -100,7 +101,7 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 }
 
 func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
-	log.Println("Search " + text)
+	t.Logger.Info("Search", zap.String("text", text), zap.String("tracker", t.Domain))
 	cookies, err := t.getCookies()
 	if err != nil {
 		return
@@ -127,13 +128,13 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 
 	res, err := client.Do(r)
 	if err != nil {
-		fmt.Println(err)
+		t.Logger.Info("Search failed", zap.Error(err), zap.String("text", text), zap.String("tracker", t.Domain))
 		return
 	}
 	if res.StatusCode == 302 && strings.Contains(res.Header.Get("Location"), "login") {
 		err = t.login()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("login: %w", err)
 		}
 		cookies, err = t.getCookies()
 		if err != nil {
@@ -145,18 +146,18 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 
 		res, err = client.Do(r)
 		if err != nil {
-			fmt.Println(err)
+			t.Logger.Info("Search failed after login", zap.Error(err), zap.String("text", text), zap.String("tracker", t.Domain))
 			return
 		}
 	}
 
 	body, err := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
 	if err != nil {
-		log.Printf("failed to search in %s code=%d len=%d\n%+v", t.Domain, res.StatusCode, res.ContentLength, res.Header)
+		t.Logger.Warn(fmt.Sprintf("failed to search in %s code=%d len=%d\n%+v", t.Domain, res.StatusCode, res.ContentLength, res.Header))
 		return
 	}
 	if body == nil {
-		log.Printf("failed to search in %s %d\n%+v", t.Domain, res.StatusCode, res.Header)
+		t.Logger.Warn(fmt.Sprintf("failed to search in %s %d\n%+v", t.Domain, res.StatusCode, res.Header))
 		return
 	}
 	document, err := goquery.NewDocumentFromReader(body)
@@ -170,7 +171,7 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 }
 
 func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
-	log.Println("loadAndParse " + url)
+	t.Logger.Debug("loadAndParse", zap.String("url", url))
 	cookies, err := t.getCookies()
 	if err != nil {
 		return nil, err
@@ -208,13 +209,14 @@ func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 
 func (t *Tracker) login() error {
 	var cookies []*http.Cookie
+	t.Logger.Info("login: " + t.Domain)
 	cookies, err := t.Impl.Login(t.Credentials)
 	if err != nil {
 		return err
 	}
 
 	if err := t.CookiesStorage.DeleteByDomain(t.Domain); err != nil {
-		fmt.Println("error removing old cookies")
+		t.Logger.Error("removing old cookies", zap.Error(err))
 	}
 
 	for _, cookie := range cookies {

@@ -30,6 +30,8 @@ import (
 	"torrentsWatcher/internal/handlers"
 	"torrentsWatcher/internal/storage"
 	storageImpl "torrentsWatcher/internal/storage/impl"
+
+	"go.uber.org/zap"
 )
 
 // TODO:
@@ -46,7 +48,14 @@ func main() {
 	errorChan := make(chan error)
 	wg := new(sync.WaitGroup)
 
-	cfg := config.Load("./config.yml")
+	cfg, err := config.Load("./config.yml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger, err := newLogger(cfg.LogLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
 	notificator := getNotificator(cfg)
 
 	db, err := gorm.Open("sqlite3", "./torrents.db")
@@ -61,9 +70,9 @@ func main() {
 	cookiesStorage := storageImpl.NewCookiesSqliteStorage(db)
 
 	trackers := tracking.Trackers([]*tracking.Tracker{
-		trackingImpl.NewNnmClub(cfg.Credentials[trackingImpl.NnmClubDomain], torrentsStorage, cookiesStorage),
-		trackingImpl.NewRutracker(cfg.Credentials[trackingImpl.RutrackerDomain], torrentsStorage, cookiesStorage),
-		trackingImpl.NewKinozal(cfg.Credentials[trackingImpl.KinozalDomain], torrentsStorage, cookiesStorage),
+		trackingImpl.NewNnmClub(logger, cfg.Credentials[trackingImpl.NnmClubDomain], torrentsStorage, cookiesStorage),
+		trackingImpl.NewRutracker(logger, cfg.Credentials[trackingImpl.RutrackerDomain], torrentsStorage, cookiesStorage),
+		trackingImpl.NewKinozal(logger, cfg.Credentials[trackingImpl.KinozalDomain], torrentsStorage, cookiesStorage),
 	})
 	for i, t := range trackers {
 		if t.Credentials.Login == "" {
@@ -71,20 +80,20 @@ func main() {
 		}
 	}
 	wg.Add(1)
-	go watcher.New(ctx, wg, cfg.Interval, trackers, notificator, torrentsStorage).Run()
+	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, notificator, torrentsStorage).Run()
 
 	transmissionClient, err := impl.NewTransmission(cfg.Transmission.RpcUrl, cfg.Transmission.Login, cfg.Transmission.Password)
 	if err != nil {
-		log.Fatal("err")
+		log.Fatal(err)
 	}
 	torrentClient := torrentclient.New(cfg.AutoDownloadDir, transmissionClient)
 
-	serve(errorChan, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient, cfg.Transmission.Folders)
+	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient, cfg.Transmission.Folders)
 
-	fmt.Println("Service started")
+	logger.Info("Service started")
 	select {
 	case err := <-errorChan:
-		fmt.Println(err)
+		logger.Panic("Service crashed", zap.Error(err))
 	case <-ctx.Done():
 		fmt.Println("Service context stopped")
 	case <-waitExitSignal():
@@ -97,6 +106,7 @@ func main() {
 
 func serve(
 	errorChan chan error,
+	logger *zap.Logger,
 	host string,
 	port string,
 	trackers tracking.Trackers,
@@ -118,13 +128,13 @@ func serve(
 	router.Use(corsMiddleware.Handler)
 
 	router.MethodFunc("GET", "/download-folders", handlers.GetDownloadFolders(downloadFolders))
-	router.MethodFunc("GET", "/torrents", handlers.GetTorrents(torrentsStorage))
+	router.MethodFunc("GET", "/torrents", handlers.GetTorrents(logger, torrentsStorage))
 	router.MethodFunc("GET", "/transmission-torrents", handlers.GetTransmissionTorrents(torrentsStorage, torrentClient))
-	router.MethodFunc("POST", "/torrent", handlers.AddTorrent(trackers, torrentsStorage))
-	router.MethodFunc("POST", "/search", handlers.Search(trackers))
-	router.MethodFunc("POST", "/download", handlers.DownloadWithClient(trackers, torrentClient, torrentsStorage, downloadFolders))
-	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent(torrentsStorage))
-	router.MethodFunc("POST", `/rename`, handlers.Rename(torrentClient))
+	router.MethodFunc("POST", "/torrent", handlers.AddTorrent(logger, trackers, torrentsStorage))
+	router.MethodFunc("POST", "/search", handlers.Search(logger, trackers))
+	router.MethodFunc("POST", "/download", handlers.DownloadWithClient(logger, trackers, torrentClient, torrentsStorage, downloadFolders))
+	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent(logger, torrentsStorage))
+	router.MethodFunc("POST", `/rename`, handlers.Rename(logger, torrentClient))
 
 	content, _ := fs.Sub(distContent, "dist")
 	router.Handle("/*", http.FileServer(http.FS(content)))
@@ -135,7 +145,7 @@ func serve(
 	}
 
 	go func() {
-		fmt.Printf("serving at http://%s\n", server.Addr)
+		logger.Info("Webserver start", zap.String("host", "http://"+server.Addr))
 		errorChan <- server.ListenAndServe()
 	}()
 }
@@ -156,4 +166,19 @@ func waitExitSignal() chan os.Signal {
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 
 	return ch
+}
+
+func newLogger(level string) (*zap.Logger, error) {
+	cfg := zap.NewProductionConfig()
+	cfg.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+
+	atom := zap.NewAtomicLevel()
+	err := atom.UnmarshalText([]byte(level))
+	if err != nil {
+		return nil, err
+	}
+
+	cfg.Level = atom
+
+	return cfg.Build()
 }

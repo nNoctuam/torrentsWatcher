@@ -7,13 +7,16 @@ import (
 	"sort"
 	"torrentsWatcher/internal/pb"
 
+	"go.uber.org/zap"
+
 	"google.golang.org/protobuf/proto"
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/tracking"
 )
 
-func Search(trackers tracking.Trackers) func(w http.ResponseWriter, r *http.Request) {
+func Search(logger *zap.Logger, trackers tracking.Trackers) func(w http.ResponseWriter, r *http.Request) {
+	logger = logger.With(zap.String("method", "Search"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var requestBody struct {
 			Text string
@@ -35,11 +38,12 @@ func Search(trackers tracking.Trackers) func(w http.ResponseWriter, r *http.Requ
 			Torrents: models.TorrentsToPB(torrents),
 		})
 		if err != nil {
+			logger.Error("failed to marshall torrents", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Add("Content-Type", "application/protobuf")
-		fmt.Fprint(w, string(response))
+		_, _ = fmt.Fprint(w, string(response))
 	}
 }

@@ -3,21 +3,24 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/torrentclient"
 	"torrentsWatcher/internal/storage"
 
 	"torrentsWatcher/internal/api/tracking"
+
+	"go.uber.org/zap"
 )
 
 func DownloadWithClient(
+	logger *zap.Logger,
 	trackers tracking.Trackers,
 	torrentClient *torrentclient.TorrentClient,
 	torrentsStorage storage.Torrents,
 	folders map[string]string,
 ) func(w http.ResponseWriter, r *http.Request) {
+	logger = logger.With(zap.String("method", "DownloadWithClient"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var requestBody struct {
 			Url    string
@@ -31,27 +34,25 @@ func DownloadWithClient(
 		}
 
 		folder, ok := folders[requestBody.Folder]
-		log.Println(folder, ok)
+		logger.Debug("folders matching", zap.String("folderName", requestBody.Folder), zap.String("path", folder), zap.Bool("found", ok))
 
 		torrent, err := trackers.GetTorrentInfo(requestBody.Url)
 		if err != nil || torrent.FileUrl == "" {
+			logger.Error("failed to get link to .torrent file", zap.Error(err))
 			http.Error(w, "cannot get link to .torrent file", http.StatusUnprocessableEntity)
 			return
 		}
 
-		name, content, err := trackers.DownloadTorrentFile(torrent)
+		_, content, err := trackers.DownloadTorrentFile(torrent)
 		if err != nil {
-			log.Println("cannot download .torrent file", err)
+			logger.Error("failed to download .torrent file", zap.Error(err))
 			http.Error(w, "cannot download .torrent file", http.StatusUnprocessableEntity)
 			return
-		}
-		if name == "" {
-			name = torrent.Title + ".torrent" // todo sanitize
 		}
 
 		hash, name, err := torrentClient.AddTorrent(content, folder)
 		if err != nil {
-			log.Printf("cannot save .torrent file [%s]: %s", name, err)
+			logger.Error("failed to add .torrent to client", zap.Error(err), zap.String("name", name))
 			http.Error(w, "cannot add torrent: "+err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
@@ -60,7 +61,7 @@ func DownloadWithClient(
 		}
 		err = torrentsStorage.SaveTransmission(transmissionTorrent)
 		if err != nil {
-			log.Printf("cannot save transmissionTorrent: %s", err)
+			logger.Error("failed to save torrent to storage", zap.Error(err))
 			http.Error(w, "cannot save transmissionTorrent: "+err.Error(), http.StatusInternalServerError)
 			return
 		}

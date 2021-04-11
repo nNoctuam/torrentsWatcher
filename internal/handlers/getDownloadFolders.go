@@ -19,6 +19,6 @@ func GetDownloadFolders(downloadFolders map[string]string) func(w http.ResponseW
 		}
 
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, string(response))
+		_, _ = fmt.Fprint(w, string(response))
 	}
 }

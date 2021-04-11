@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -103,7 +104,7 @@ func (t *Transmission) Rename(id int, oldPath string, newPath string) error {
 	}
 
 	if responseModel.Result != "success" {
-		return errors.New("torrent-add result: " + responseModel.Result)
+		return errors.New("torrent-rename result: " + responseModel.Result)
 	}
 	return nil
 }
@@ -114,12 +115,12 @@ func (t *Transmission) call(method string, arguments interface{}, responseModel 
 		Arguments interface{} `json:"arguments"`
 	}{Method: method, Arguments: arguments})
 	if err != nil {
-		return err
+		return fmt.Errorf("transmission request marshalling: %w", err)
 	}
 
 	responseBytes, err := t.rpcRequest(body)
 	if err != nil {
-		return err
+		return fmt.Errorf("transmission rpc request: %w", err)
 	}
 	return json.Unmarshal(responseBytes, responseModel)
 }

@@ -1,14 +1,15 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
-	"log"
 	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
 type AppConfig struct {
+	LogLevel    string `yaml:"logLevel" yaml_default:"info"`
 	Host        string
 	Port        string
 	Interval    time.Duration `yaml:"interval"`
@@ -31,18 +32,18 @@ type AppConfig struct {
 	}
 }
 
-func Load(filePath string) *AppConfig {
+func Load(filePath string) (*AppConfig, error) {
 	config := &AppConfig{}
 
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		log.Fatalf("error loading config: %v", err)
+		return nil, fmt.Errorf("loading config: %w", err)
 	}
 
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
-		log.Fatalf("error parsing config: %v", err)
+		return nil, fmt.Errorf("parsing config: %w", err)
 	}
 
-	return config
+	return config, nil
 }

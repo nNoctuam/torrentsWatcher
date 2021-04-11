@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"golang.org/x/text/encoding/charmap"
 
 	"github.com/PuerkitoBio/goquery"
@@ -18,18 +20,23 @@ import (
 	"torrentsWatcher/internal/storage"
 )
 
-type NnmClub struct{}
+type NnmClub struct {
+	logger *zap.Logger
+}
 
 const NnmClubDomain = "nnmclub.to"
 
-func NewNnmClub(credentials tracking.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *tracking.Tracker {
+func NewNnmClub(logger *zap.Logger, credentials tracking.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *tracking.Tracker {
 	return &tracking.Tracker{
+		Logger:          logger,
 		Domain:          NnmClubDomain,
 		ForceHttps:      true,
 		Credentials:     credentials,
 		TorrentsStorage: torrentsStorage,
 		CookiesStorage:  cookiesStorage,
-		Impl:            &NnmClub{},
+		Impl: &NnmClub{
+			logger: logger,
+		},
 	}
 }
 
@@ -113,7 +120,6 @@ func (t *NnmClub) MakeSearchRequest(text string) (r *http.Request, err error) {
 }
 
 func (t *NnmClub) Login(credentials tracking.Credentials) ([]*http.Cookie, error) {
-	fmt.Println("login", t)
 	code, err := getLoginCode()
 	if err != nil {
 		return nil, err
@@ -141,7 +147,6 @@ func (t *NnmClub) Login(credentials tracking.Credentials) ([]*http.Cookie, error
 	}
 	res, err := client.Do(r)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 

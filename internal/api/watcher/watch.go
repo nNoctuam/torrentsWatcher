@@ -3,9 +3,10 @@ package watcher
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 
 	"torrentsWatcher/internal/api/models"
 	"torrentsWatcher/internal/api/notification"
@@ -16,6 +17,7 @@ import (
 type Watcher struct {
 	ctx             context.Context
 	wg              *sync.WaitGroup
+	logger          *zap.Logger
 	interval        time.Duration
 	trackers        tracking.Trackers
 	notificator     notification.Notificator
@@ -25,6 +27,7 @@ type Watcher struct {
 func New(
 	ctx context.Context,
 	wg *sync.WaitGroup,
+	logger *zap.Logger,
 	interval time.Duration,
 	trackers tracking.Trackers,
 	notificator notification.Notificator,
@@ -33,6 +36,7 @@ func New(
 	return &Watcher{
 		ctx:             ctx,
 		wg:              wg,
+		logger:          logger,
 		interval:        interval,
 		trackers:        trackers,
 		notificator:     notificator,
@@ -52,7 +56,7 @@ func (w *Watcher) Run() {
 			var torrents []models.Torrent
 			err := w.torrentsStorage.Find(&torrents, "")
 			if err != nil {
-				log.Print("Couldn't get torrents for check")
+				w.logger.Error("Couldn't get torrents for check", zap.Error(err))
 			}
 			for _, torrent := range torrents {
 				w.checkTorrent(&torrent)
@@ -66,7 +70,7 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 	updatedTorrent, err := w.trackers.GetTorrentInfo(torrent.PageUrl)
 
 	if err != nil {
-		log.Print("Error parsing torrent: ", err)
+		w.logger.Error("Failed to parse torrent", zap.Error(err))
 		return
 	}
 
@@ -75,7 +79,7 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 	if isUpdated || torrent.FileUrl != "" && torrent.File == nil {
 		_, file, err := w.trackers.DownloadTorrentFile(torrent)
 		if err != nil {
-			fmt.Printf("Failed to load torrent file '%s': %v", torrent.FileUrl, err)
+			w.logger.Error("Failed to load torrent file", zap.Error(err), zap.String("url", torrent.FileUrl))
 			return
 		}
 		torrent.File = file
@@ -84,12 +88,12 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 	torrent.UpdateFrom(updatedTorrent)
 	err = w.torrentsStorage.Save(torrent)
 	if err != nil {
-		log.Printf("Couldn't save torrent: %v", updatedTorrent)
+		w.logger.Error("Failed to save torrent to storage", zap.Error(err), zap.Any("torrent", updatedTorrent))
 		return
 	}
 
 	if isUpdated {
-		log.Printf("torrent '%s' (%s) was updated!", torrent.Title, torrent.PageUrl)
+		w.logger.Info("torrent was updated", zap.String("title", torrent.Title), zap.String("url", torrent.PageUrl))
 		notification.NotifyAbout(torrent, w.notificator)
 	}
 }

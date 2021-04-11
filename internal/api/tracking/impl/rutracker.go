@@ -10,6 +10,8 @@ import (
 	"time"
 	"torrentsWatcher/internal/storage"
 
+	"go.uber.org/zap"
+
 	"golang.org/x/text/encoding/charmap"
 
 	"github.com/PuerkitoBio/goquery"
@@ -18,12 +20,16 @@ import (
 	"torrentsWatcher/internal/api/tracking"
 )
 
-type Rutracker struct{}
+type Rutracker struct {
+	//nolint:structcheck,unused
+	logger *zap.Logger
+}
 
 const RutrackerDomain = "rutracker.org"
 
-func NewRutracker(credentials tracking.Credentials, torrents storage.Torrents, cookies storage.Cookies) *tracking.Tracker {
+func NewRutracker(logger *zap.Logger, credentials tracking.Credentials, torrents storage.Torrents, cookies storage.Cookies) *tracking.Tracker {
 	return &tracking.Tracker{
+		Logger:          logger,
 		Domain:          RutrackerDomain,
 		ForceHttps:      true,
 		Credentials:     credentials,
@@ -81,8 +87,6 @@ func (t *Rutracker) Login(credentials tracking.Credentials) ([]*http.Cookie, err
 	data.Set("login_username", credentials.Login)
 	data.Set("login_password", credentials.Password)
 	data.Set("login", "%E2%F5%EE%E4")
-
-	fmt.Println("login...")
 
 	request, err := http.NewRequest("POST", "https://rutracker.org/forum/login.php", strings.NewReader(data.Encode()))
 	if err != nil {

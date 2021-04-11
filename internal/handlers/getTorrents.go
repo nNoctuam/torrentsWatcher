@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"torrentsWatcher/internal/pb"
 	"torrentsWatcher/internal/storage"
 
@@ -13,11 +15,13 @@ import (
 	"torrentsWatcher/internal/api/models"
 )
 
-func GetTorrents(torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func GetTorrents(logger *zap.Logger, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+	logger = logger.With(zap.String("method", "GetTorrents"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var torrents []models.Torrent
 		err := torrentsStorage.Find(&torrents, "")
 		if err != nil {
+			logger.Error("failed to get torrents", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -37,11 +41,12 @@ func GetTorrents(torrentsStorage storage.Torrents) func(w http.ResponseWriter, r
 
 		response, err := proto.Marshal(transformed)
 		if err != nil {
+			logger.Error("failed to marshall torrents", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		//
 		w.Header().Add("Content-Type", "application/protobuf")
-		fmt.Fprint(w, string(response))
+		_, _ = fmt.Fprint(w, string(response))
 	}
 }

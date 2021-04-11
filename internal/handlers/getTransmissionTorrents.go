@@ -40,6 +40,6 @@ func GetTransmissionTorrents(torrentsStorage storage.Torrents, torrentClient tor
 
 		response, _ := json.Marshal(result)
 		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprint(w, string(response))
+		_, _ = fmt.Fprint(w, string(response))
 	}
 }
