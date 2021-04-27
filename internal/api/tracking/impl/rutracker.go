@@ -146,8 +146,13 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 		torrent.Author = authorTD.FirstChild.NextSibling.FirstChild.FirstChild.Data
 		torrent.Seeders, _ = strconv.ParseUint(seedersTD.FirstChild.NextSibling.FirstChild.Data, 10, 32)
 
-		reg, _ := regexp.Compile(`^([\d.]+).+([KMG])B`)
-		sizeData := reg.FindStringSubmatch(sizeTD.FirstChild.NextSibling.FirstChild.Data)
+		var sizeData []string
+		reg, _ := regexp.Compile(`^\s*([\d.]+).+([KMG])B`)
+		if sizeTD.FirstChild.NextSibling != nil {
+			sizeData = reg.FindStringSubmatch(sizeTD.FirstChild.NextSibling.FirstChild.Data)
+		} else {
+			sizeData = reg.FindStringSubmatch(sizeTD.FirstChild.Data)
+		}
 		size, _ := strconv.ParseFloat(sizeData[1], 10)
 		switch sizeData[2] {
 		case "K":
