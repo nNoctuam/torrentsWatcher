@@ -121,38 +121,32 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 
 	document.Find("#tor-tbl tbody tr").Each(func(i int, row *goquery.Selection) {
 		torrent := &models.Torrent{}
-		tds := row.Find("td")
-		forumTD := tds.Get(columns["Форум"])
-		titleTD := tds.Get(columns["Тема"])
-		authorTD := tds.Get(columns["Автор"])
-		sizeTD := tds.Get(columns["Размер"])
-		seedersTD := tds.Get(columns["S"])
-		addedTD := tds.Get(columns["Добавлен"])
+		forumTD := row.Find(fmt.Sprintf("td:nth-child(%d)", 1+columns["Форум"]))
+		titleTD := row.Find(fmt.Sprintf("td:nth-child(%d)", 1+columns["Тема"]))
+		authorTD := row.Find(fmt.Sprintf("td:nth-child(%d)", 1+columns["Автор"]))
+		sizeTD := row.Find(fmt.Sprintf("td:nth-child(%d)", 1+columns["Размер"]))
+		seedersTD := row.Find(fmt.Sprintf("td:nth-child(%d)", 1+columns["S"]))
+		addedTD := row.Find(fmt.Sprintf("td:nth-child(%d)", 1+columns["Добавлен"]))
 
-		if strings.Contains(titleTD.FirstChild.Data, "Не найдено") {
+		if strings.Contains(titleTD.Get(0).Data, "Не найдено") {
 			return
 		}
 
-		for _, attr := range titleTD.FirstChild.NextSibling.FirstChild.NextSibling.Attr {
+		for _, attr := range titleTD.Find("a").Get(0).Attr {
 			if attr.Key == "href" {
 				torrent.PageUrl = "https://" + RutrackerDomain + "/forum/" + attr.Val
 				break
 			}
 		}
 
-		torrent.Forum = forumTD.FirstChild.NextSibling.FirstChild.FirstChild.Data
-		torrent.Title = titleTD.FirstChild.NextSibling.FirstChild.NextSibling.FirstChild.Data
-		torrent.Title = titleTD.FirstChild.NextSibling.FirstChild.NextSibling.FirstChild.Data
-		torrent.Author = authorTD.FirstChild.NextSibling.FirstChild.FirstChild.Data
-		torrent.Seeders, _ = strconv.ParseUint(seedersTD.FirstChild.NextSibling.FirstChild.Data, 10, 32)
+		torrent.Forum = strings.Trim(forumTD.Text(), "\n \t")
+		torrent.Title = strings.Trim(titleTD.Text(), "\n \t")
+		torrent.Author = strings.Trim(authorTD.Text(), "\n \t")
+		torrent.Seeders, _ = strconv.ParseUint(strings.Trim(seedersTD.Text(), "\n \t"), 10, 32)
 
 		var sizeData []string
-		reg, _ := regexp.Compile(`^\s*([\d.]+).+([KMG])B`)
-		if sizeTD.FirstChild.NextSibling != nil {
-			sizeData = reg.FindStringSubmatch(sizeTD.FirstChild.NextSibling.FirstChild.Data)
-		} else {
-			sizeData = reg.FindStringSubmatch(sizeTD.FirstChild.Data)
-		}
+		reg, _ := regexp.Compile(`^\s*([\d.]+).+([KMG])B.*`)
+		sizeData = reg.FindStringSubmatch(strings.Trim(sizeTD.Text(), "\n \t"))
 		size, _ := strconv.ParseFloat(sizeData[1], 10)
 		switch sizeData[2] {
 		case "K":
@@ -179,7 +173,7 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 			"Дек", "Dec",
 		)
 		location, _ := time.LoadLocation("Local")
-		torrent.UpdatedAt, _ = time.ParseInLocation("2-Jan-06", r.Replace(addedTD.FirstChild.NextSibling.FirstChild.Data), location)
+		torrent.UpdatedAt, _ = time.ParseInLocation("2-Jan-06", r.Replace(strings.Trim(addedTD.Text(), "\n \t")), location)
 
 		torrents = append(torrents, torrent)
 	})
