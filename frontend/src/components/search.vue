@@ -4,7 +4,7 @@
 
     <form class="form-group" id="search-form" v-on:submit.prevent="search">
       <div class="input-group">
-        <input type="text" class="form-input" name="search" :disabled="searching" v-model="searchText"/>
+        <input type="text" class="form-input" name="search" placeholder="Что ищем?" :disabled="searching" v-model="searchText"/>
         <button class="btn" :disabled="searching">{{ searching ? 'Ищем...' : 'Искать' }}</button>
       </div>
     </form>

@@ -2,10 +2,10 @@
   <div id="app">
     <div class="main-menu">
       <router-link to="/search">
-        <img alt="Search" src="./assets/search.png" :class="{active:mode==='search'}" v-on:click="mode='search'">
+        <img alt="Search" src="./assets/search.png" :class="{active:$route.path==='/search'}">
       </router-link>
       <router-link to="/watch">
-        <img alt="Watch" src="./assets/transmission-logo.png" :class="{active:mode==='watch'}" v-on:click="mode='watch'">
+        <img alt="Watch" src="./assets/transmission-logo.png" :class="{active:$route.path==='/watch'}">
       </router-link>
     </div>
     <router-view/>
@@ -15,9 +15,7 @@
 <script>
 export default {
   name: 'App',
-  data: () => ({
-    mode: 'search'
-  })
+  data: () => ({})
 }
 </script>
 

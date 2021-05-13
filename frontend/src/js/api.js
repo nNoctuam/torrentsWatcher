@@ -5,7 +5,7 @@ const api = {
   domain: '',
 
   getTorrents () {
-    return fetch(this.domain + 'torrents')
+    return fetch(this.domain + '/torrents')
       .then(async (r) => {
         if (r.status !== 200) {
           const text = await r.text()

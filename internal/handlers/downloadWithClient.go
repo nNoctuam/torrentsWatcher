@@ -50,14 +50,14 @@ func DownloadWithClient(
 			return
 		}
 
-		hash, name, err := torrentClient.AddTorrent(content, folder)
+		addedTorrent, err := torrentClient.AddTorrent(content, folder)
 		if err != nil {
-			logger.Error("failed to add .torrent to client", zap.Error(err), zap.String("name", name))
+			logger.Error("failed to add .torrent to client", zap.Error(err), zap.String("name", addedTorrent.Name))
 			http.Error(w, "cannot add torrent: "+err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
 		transmissionTorrent := &models.TransmissionTorrent{
-			Hash: hash,
+			Hash: addedTorrent.Hash,
 		}
 		err = torrentsStorage.SaveTransmission(transmissionTorrent)
 		if err != nil {
@@ -67,8 +67,8 @@ func DownloadWithClient(
 		}
 
 		response, _ := json.Marshal(map[string]string{
-			"hash": hash,
-			"name": name,
+			"hash": addedTorrent.Hash,
+			"name": addedTorrent.Name,
 		})
 
 		w.Header().Add("Content-Type", "application/json")

@@ -12,7 +12,9 @@ type TorrentClient struct {
 }
 
 type Client interface {
-	AddTorrent(content []byte, dir string) (string, string, error)
+	AddTorrent(content []byte, dir string) (Torrent, error)
+	UpdateTorrent(url string, content []byte) error
+	RemoveTorrents(ids []int, deleteLocalData bool) error
 	GetTorrents() ([]Torrent, error)
 	Rename(id int, oldPath string, newPath string) error
 }
@@ -21,6 +23,8 @@ type Torrent struct {
 	Id          int
 	Name        string
 	Hash        string
+	Comment     string
+	DownloadDir string    `json:"downloadDir"`
 	DateCreated time.Time `json:"dateCreated"`
 }
 
@@ -55,8 +59,12 @@ func (c *TorrentClient) SaveToAutoDownloadFolder(name string, content []byte) er
 	return os.WriteFile(c.autoDownloadDir+"/"+name, content, 0660)
 }
 
-func (c *TorrentClient) AddTorrent(content []byte, dir string) (string, string, error) {
+func (c *TorrentClient) AddTorrent(content []byte, dir string) (Torrent, error) {
 	return c.client.AddTorrent(content, dir)
+}
+
+func (c *TorrentClient) UpdateTorrent(url string, content []byte) error {
+	return c.client.UpdateTorrent(url, content)
 }
 
 func (c *TorrentClient) GetTorrents() ([]Torrent, error) {

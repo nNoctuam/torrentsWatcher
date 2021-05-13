@@ -79,14 +79,15 @@ func main() {
 			trackers = append(trackers[:i], trackers[i+1:]...)
 		}
 	}
-	wg.Add(1)
-	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, notificator, torrentsStorage).Run()
 
 	transmissionClient, err := impl.NewTransmission(cfg.Transmission.RpcUrl, cfg.Transmission.Login, cfg.Transmission.Password)
 	if err != nil {
 		log.Fatal(err)
 	}
 	torrentClient := torrentclient.New(cfg.AutoDownloadDir, transmissionClient)
+
+	wg.Add(1)
+	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, notificator, torrentClient, torrentsStorage).Run()
 
 	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient, cfg.Transmission.Folders)
 

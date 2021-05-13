@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"sync"
 	"time"
+	"torrentsWatcher/internal/api/notification"
+	"torrentsWatcher/internal/api/torrentclient"
 
 	"go.uber.org/zap"
 
 	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/notification"
 	"torrentsWatcher/internal/api/tracking"
 	"torrentsWatcher/internal/storage"
 )
@@ -21,6 +22,7 @@ type Watcher struct {
 	interval        time.Duration
 	trackers        tracking.Trackers
 	notificator     notification.Notificator
+	torrentClient   *torrentclient.TorrentClient
 	torrentsStorage storage.Torrents
 }
 
@@ -31,6 +33,7 @@ func New(
 	interval time.Duration,
 	trackers tracking.Trackers,
 	notificator notification.Notificator,
+	torrentClient *torrentclient.TorrentClient,
 	torrentsStorage storage.Torrents,
 ) *Watcher {
 	return &Watcher{
@@ -40,6 +43,7 @@ func New(
 		interval:        interval,
 		trackers:        trackers,
 		notificator:     notificator,
+		torrentClient:   torrentClient,
 		torrentsStorage: torrentsStorage,
 	}
 }
@@ -94,6 +98,9 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 
 	if isUpdated {
 		w.logger.Info("torrent was updated", zap.String("title", torrent.Title), zap.String("url", torrent.PageUrl))
-		notification.NotifyAbout(torrent, w.notificator)
+		err = w.torrentClient.UpdateTorrent(torrent.PageUrl, torrent.File)
+		if err != nil {
+			w.logger.Error("torrent replace", zap.String("title", torrent.Title), zap.String("url", torrent.PageUrl), zap.Error(err))
+		}
 	}
 }

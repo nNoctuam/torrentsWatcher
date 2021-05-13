@@ -1,19 +1,22 @@
 <template>
   <div id="torrents">
-    <h1>Torrents Watch</h1>
+    <h1>Торрент-монитор</h1>
 
-    <form v-on:submit.prevent="addTorrent">
-      <input type="url" name="url" :disabled="newTorrentAdding" v-model="newTorrentUrl">
-      <button :disabled="newTorrentAdding">{{ newTorrentAdding ? 'Adding...' : 'Add' }}</button>
+    <form class="form-group" id="add-form" v-on:submit.prevent="addTorrent">
+      <div class="input-group">
+        <input type="url" class="form-input" name="url" placeholder="Ссылка на страницу" :disabled="newTorrentAdding" v-model="newTorrentUrl">
+        <button class="btn" :disabled="newTorrentAdding">{{ newTorrentAdding ? 'Добавляем...' : 'Добавить' }}</button>
+      </div>
     </form>
 
-    <table v-if="torrents.length > 0">
+    <table class="table table-striped table-hover" v-if="torrents.length > 0">
       <thead>
         <tr>
-          <th>Title</th>
+          <th>Название</th>
           <th></th>
-          <th>Last upload</th>
-          <th>Last check</th>
+          <th>Обновлен</th>
+          <th>Проверен</th>
+          <th></th>
         </tr>
       </thead>
 
@@ -98,6 +101,11 @@ h3
 
 a
   color #42b983
+
+#add-form
+  width: 500px
+  text-align: center
+  margin: 0 auto
 
 .download img
   height: 25px
