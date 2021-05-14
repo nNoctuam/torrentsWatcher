@@ -50,7 +50,7 @@ func DownloadWithClient(
 			return
 		}
 
-		addedTorrent, err := torrentClient.AddTorrent(content, folder)
+		addedTorrent, err := torrentClient.AddTorrent(content, folder, false)
 		if err != nil {
 			logger.Error("failed to add .torrent to client", zap.Error(err), zap.String("name", addedTorrent.Name))
 			http.Error(w, "cannot add torrent: "+err.Error(), http.StatusUnprocessableEntity)

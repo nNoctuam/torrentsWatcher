@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 	"torrentsWatcher/internal/api/torrentclient"
 )
@@ -32,7 +33,7 @@ func NewTransmission(rpcUrl string, login string, password string) (*Transmissio
 	}, nil
 }
 
-func (t *Transmission) AddTorrent(content []byte, dir string) (torrent torrentclient.Torrent, err error) {
+func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torrent torrentclient.Torrent, err error) {
 	var responseModel struct {
 		Arguments struct {
 			TorrentAdded     torrentclient.Torrent `json:"torrent-added"`
@@ -40,9 +41,10 @@ func (t *Transmission) AddTorrent(content []byte, dir string) (torrent torrentcl
 		} `json:"arguments"`
 		Result string `json:"result"`
 	}
-	err = t.call("torrent-add", map[string]string{
+	err = t.call("torrent-add", map[string]interface{}{
 		"download-dir": dir,
 		"metainfo":     base64.StdEncoding.EncodeToString(content),
+		"paused":       paused,
 	}, &responseModel)
 	if err != nil {
 		return torrentclient.Torrent{}, err
@@ -70,7 +72,7 @@ func (t *Transmission) GetTorrents() ([]torrentclient.Torrent, error) {
 		} `json:"arguments"`
 	}
 	err := t.call("torrent-get", map[string]interface{}{
-		"fields": []string{"id", "name", "hashString", "dateCreated", "comment"},
+		"fields": []string{"id", "name", "hashString", "dateCreated", "comment", "labels", "downloadDir"},
 	}, &responseModel)
 
 	return responseModel.Arguments.Torrents, err
@@ -92,12 +94,10 @@ func (c *Transmission) UpdateTorrent(url string, content []byte) error {
 	}
 
 	for _, oldTorrent := range torrents {
-		if oldTorrent.Comment == url {
-			err = c.RemoveTorrents([]int{oldTorrent.Id}, false)
-			if err != nil {
-				return fmt.Errorf("delete old torrent: %w", err)
-			}
-			newTorrent, err := c.AddTorrent(content, oldTorrent.DownloadDir)
+		if oldTorrent.Comment == url ||
+			oldTorrent.Comment == strings.Replace(url, "http:", "https:", 1) ||
+			oldTorrent.Comment == strings.Replace(url, "https:", "http:", 1) {
+			newTorrent, err := c.AddTorrent(content, oldTorrent.DownloadDir, true)
 			if err != nil {
 				return fmt.Errorf("replace torrent: %w", err)
 			}
@@ -105,6 +105,18 @@ func (c *Transmission) UpdateTorrent(url string, content []byte) error {
 			if err != nil {
 				return fmt.Errorf("rename torrent: %w", err)
 			}
+			err = c.Start([]int{newTorrent.Id})
+			if err != nil {
+				return fmt.Errorf("start torrent: %w", err)
+			}
+
+			_ = c.Verify([]int{newTorrent.Id})
+
+			err = c.RemoveTorrents([]int{oldTorrent.Id}, false)
+			if err != nil {
+				return fmt.Errorf("delete old torrent: %w", err)
+			}
+
 			return nil
 		}
 	}
@@ -132,6 +144,42 @@ func (t *Transmission) Rename(id int, oldPath string, newPath string) error {
 
 	if responseModel.Result != "success" {
 		return errors.New("torrent-rename result: " + responseModel.Result)
+	}
+	return nil
+}
+
+func (t *Transmission) Start(ids []int) error {
+	var responseModel struct {
+		Arguments struct{} `json:"arguments"`
+		Result    string   `json:"result"`
+	}
+	err := t.call("torrent-start", map[string]interface{}{
+		"ids": ids,
+	}, &responseModel)
+	if err != nil {
+		return err
+	}
+
+	if responseModel.Result != "success" {
+		return errors.New("torrent-start result: " + responseModel.Result)
+	}
+	return nil
+}
+
+func (t *Transmission) Verify(ids []int) error {
+	var responseModel struct {
+		Arguments struct{} `json:"arguments"`
+		Result    string   `json:"result"`
+	}
+	err := t.call("torrent-verify", map[string]interface{}{
+		"ids": ids,
+	}, &responseModel)
+	if err != nil {
+		return err
+	}
+
+	if responseModel.Result != "success" {
+		return errors.New("torrent-verify result: " + responseModel.Result)
 	}
 	return nil
 }

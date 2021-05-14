@@ -12,7 +12,7 @@ type TorrentClient struct {
 }
 
 type Client interface {
-	AddTorrent(content []byte, dir string) (Torrent, error)
+	AddTorrent(content []byte, dir string, paused bool) (Torrent, error)
 	UpdateTorrent(url string, content []byte) error
 	RemoveTorrents(ids []int, deleteLocalData bool) error
 	GetTorrents() ([]Torrent, error)
@@ -23,15 +23,18 @@ type Torrent struct {
 	Id          int
 	Name        string
 	Hash        string
-	Comment     string
+	Comment     string    `json:"comment"`
 	DownloadDir string    `json:"downloadDir"`
 	DateCreated time.Time `json:"dateCreated"`
+	Labels      []string  `json:"labels"`
 }
 
 func (t *Torrent) UnmarshalJSON(data []byte) error {
 	type Alias struct {
 		Id          int
 		Name        string
+		Comment     string `json:"comment"`
+		DownloadDir string `json:"downloadDir"`
 		Hash        string `json:"hashString"`
 		DateCreated int64  `json:"dateCreated"`
 	}
@@ -43,6 +46,8 @@ func (t *Torrent) UnmarshalJSON(data []byte) error {
 	t.Id = torrent.Id
 	t.Name = torrent.Name
 	t.Hash = torrent.Hash
+	t.Comment = torrent.Comment
+	t.DownloadDir = torrent.DownloadDir
 	t.DateCreated = time.Unix(torrent.DateCreated, 0)
 
 	return nil
@@ -59,8 +64,8 @@ func (c *TorrentClient) SaveToAutoDownloadFolder(name string, content []byte) er
 	return os.WriteFile(c.autoDownloadDir+"/"+name, content, 0660)
 }
 
-func (c *TorrentClient) AddTorrent(content []byte, dir string) (Torrent, error) {
-	return c.client.AddTorrent(content, dir)
+func (c *TorrentClient) AddTorrent(content []byte, dir string, paused bool) (Torrent, error) {
+	return c.client.AddTorrent(content, dir, paused)
 }
 
 func (c *TorrentClient) UpdateTorrent(url string, content []byte) error {
