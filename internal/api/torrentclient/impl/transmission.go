@@ -79,11 +79,21 @@ func (t *Transmission) GetTorrents() ([]torrentclient.Torrent, error) {
 }
 
 func (t *Transmission) RemoveTorrents(ids []int, deleteLocalData bool) error {
-	err := t.call("torrent-get", map[string]interface{}{
+	var responseModel struct {
+		Arguments struct{} `json:"arguments"`
+		Result    string   `json:"result"`
+	}
+	err := t.call("torrent-remove", map[string]interface{}{
 		"ids":               ids,
 		"delete-local-data": deleteLocalData,
-	}, nil)
+	}, &responseModel)
+	if err != nil {
+		return err
+	}
 
+	if responseModel.Result != "success" {
+		return errors.New("torrent-remove result: " + responseModel.Result)
+	}
 	return err
 }
 
