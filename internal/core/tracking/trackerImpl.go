@@ -2,10 +2,15 @@ package tracking
 
 import (
 	"net/http"
-	"torrentsWatcher/internal/api/models"
+	"torrentsWatcher/internal/core/models"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+type Credentials struct {
+	Login    string
+	Password string
+}
 
 type TrackerImpl interface {
 	Login(credentials Credentials) ([]*http.Cookie, error)

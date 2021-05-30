@@ -5,18 +5,17 @@ import (
 	"mime"
 	"net/http"
 	"strconv"
+	models2 "torrentsWatcher/internal/core/models"
+	storage2 "torrentsWatcher/internal/core/storage"
 
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
-
-	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/storage"
 )
 
-func DownloadTorrent(logger *zap.Logger, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func DownloadTorrent(logger *zap.Logger, torrentsStorage storage2.Torrents) func(w http.ResponseWriter, r *http.Request) {
 	logger = logger.With(zap.String("method", "DownloadTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
-		var torrent models.Torrent
+		var torrent models2.Torrent
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
 			_, _ = fmt.Fprintf(w, "invalid torrent id '%s'", chi.URLParam(r, "id"))
@@ -24,7 +23,7 @@ func DownloadTorrent(logger *zap.Logger, torrentsStorage storage.Torrents) func(
 			return
 		}
 
-		if err = torrentsStorage.First(&torrent, models.Torrent{Id: uint(id)}); err != nil {
+		if err = torrentsStorage.First(&torrent, models2.Torrent{Id: uint(id)}); err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}

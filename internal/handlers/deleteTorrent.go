@@ -5,16 +5,15 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"torrentsWatcher/internal/storage"
+	models2 "torrentsWatcher/internal/core/models"
+	storage2 "torrentsWatcher/internal/core/storage"
 
 	"go.uber.org/zap"
 
 	"github.com/go-chi/chi"
-
-	"torrentsWatcher/internal/api/models"
 )
 
-func DeleteTorrent(logger *zap.Logger, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func DeleteTorrent(logger *zap.Logger, torrentsStorage storage2.Torrents) func(w http.ResponseWriter, r *http.Request) {
 	logger = logger.With(zap.String("method", "DeleteTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -24,8 +23,8 @@ func DeleteTorrent(logger *zap.Logger, torrentsStorage storage.Torrents) func(w 
 			return
 		}
 
-		var torrents []models.Torrent
-		err = torrentsStorage.Find(&torrents, models.Torrent{
+		var torrents []models2.Torrent
+		err = torrentsStorage.Find(&torrents, models2.Torrent{
 			Id: uint(id),
 		})
 		if err != nil {

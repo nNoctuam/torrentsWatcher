@@ -12,9 +12,16 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
-	"torrentsWatcher/internal/api/torrentclient"
-	"torrentsWatcher/internal/api/torrentclient/impl"
-	"torrentsWatcher/internal/api/watcher"
+	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/core/notifications"
+	"torrentsWatcher/internal/core/storage"
+	"torrentsWatcher/internal/core/torrentclient"
+	"torrentsWatcher/internal/core/tracking"
+	"torrentsWatcher/internal/core/watcher"
+	"torrentsWatcher/internal/impl/notification"
+	storageImpl "torrentsWatcher/internal/impl/storage"
+	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
+	trackingImpl "torrentsWatcher/internal/impl/tracking"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -23,22 +30,14 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"torrentsWatcher/config"
-	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/notification"
-	"torrentsWatcher/internal/api/tracking"
-	trackingImpl "torrentsWatcher/internal/api/tracking/impl"
 	"torrentsWatcher/internal/handlers"
-	"torrentsWatcher/internal/storage"
-	storageImpl "torrentsWatcher/internal/storage/impl"
 
 	"go.uber.org/zap"
 )
 
 // TODO:
-//  no ignored errors
-// 	log instead of fmt.Print
 // 	unit tests
-//  auto replace being monitored torrents
+//  kinozal timestamps & topics
 
 //go:embed dist/*
 var distContent embed.FS
@@ -80,16 +79,15 @@ func main() {
 		}
 	}
 
-	transmissionClient, err := impl.NewTransmission(cfg.Transmission.RpcUrl, cfg.Transmission.Login, cfg.Transmission.Password)
+	transmissionClient, err := torrentClientImpl.NewTransmission(cfg.AutoDownloadDir, cfg.Transmission.RpcUrl, cfg.Transmission.Login, cfg.Transmission.Password)
 	if err != nil {
 		log.Fatal(err)
 	}
-	torrentClient := torrentclient.New(cfg.AutoDownloadDir, transmissionClient)
 
 	wg.Add(1)
-	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, notificator, torrentClient, torrentsStorage).Run()
+	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, notificator, transmissionClient, torrentsStorage).Run()
 
-	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, torrentClient, cfg.Transmission.Folders)
+	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, transmissionClient, cfg.Transmission.Folders)
 
 	logger.Info("Service started")
 	select {
@@ -112,7 +110,7 @@ func serve(
 	port string,
 	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
-	torrentClient *torrentclient.TorrentClient,
+	torrentClient torrentclient.Client,
 	downloadFolders map[string]string,
 ) {
 	router := chi.NewRouter()
@@ -151,14 +149,14 @@ func serve(
 	}()
 }
 
-func getNotificator(cfg *config.AppConfig) notification.Notificator {
+func getNotificator(cfg *config.AppConfig) notifications.Notificator {
 	switch runtime.GOOS {
 	case "windows":
-		return &notification.Windows{Config: notification.Config(cfg.Notifications)}
+		return &notification.Windows{Config: notifications.Config(cfg.Notifications)}
 	case "linux":
 		fallthrough
 	default:
-		return &notification.Linux{Config: notification.Config(cfg.Notifications)}
+		return &notification.Linux{Config: notifications.Config(cfg.Notifications)}
 	}
 }
 

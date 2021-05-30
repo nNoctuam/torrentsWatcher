@@ -1,9 +1,9 @@
-package impl
+package storage
 
 import (
-	"github.com/jinzhu/gorm"
+	"torrentsWatcher/internal/core/models"
 
-	"torrentsWatcher/internal/api/models"
+	"github.com/jinzhu/gorm"
 )
 
 type torrentsSqliteStorage struct {

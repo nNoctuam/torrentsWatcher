@@ -1,4 +1,4 @@
-package impl
+package tracking
 
 import (
 	"math"
@@ -6,16 +6,15 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/core/storage"
+	"torrentsWatcher/internal/core/tracking"
 
 	"go.uber.org/zap"
 
 	"golang.org/x/text/encoding/charmap"
 
 	"github.com/PuerkitoBio/goquery"
-
-	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/tracking"
-	"torrentsWatcher/internal/storage"
 )
 
 type Kinozal struct {

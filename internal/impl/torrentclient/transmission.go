@@ -1,4 +1,4 @@
-package impl
+package torrentclient
 
 import (
 	"bytes"
@@ -9,28 +9,35 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
-	"torrentsWatcher/internal/api/torrentclient"
+	"torrentsWatcher/internal/core/torrentclient"
 )
 
 type Transmission struct {
-	login     string
-	password  string
-	rpcUrl    *url.URL
-	csrfToken string
+	autoDownloadDir string
+	login           string
+	password        string
+	rpcUrl          *url.URL
+	csrfToken       string
 }
 
-func NewTransmission(rpcUrl string, login string, password string) (*Transmission, error) {
+func NewTransmission(autoDownloadDir string, rpcUrl string, login string, password string) (*Transmission, error) {
 	urlParsed, err := url.Parse(rpcUrl)
 	if err != nil {
 		return nil, err
 	}
 	return &Transmission{
-		login:    login,
-		password: password,
-		rpcUrl:   urlParsed,
+		autoDownloadDir: autoDownloadDir,
+		login:           login,
+		password:        password,
+		rpcUrl:          urlParsed,
 	}, nil
+}
+
+func (t *Transmission) SaveToAutoDownloadFolder(name string, content []byte) error {
+	return os.WriteFile(t.autoDownloadDir+"/"+name, content, 0660)
 }
 
 func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torrent torrentclient.Torrent, err error) {
@@ -97,8 +104,8 @@ func (t *Transmission) RemoveTorrents(ids []int, deleteLocalData bool) error {
 	return err
 }
 
-func (c *Transmission) UpdateTorrent(url string, content []byte) error {
-	torrents, err := c.GetTorrents()
+func (t *Transmission) UpdateTorrent(url string, content []byte) error {
+	torrents, err := t.GetTorrents()
 	if err != nil {
 		return err
 	}
@@ -107,22 +114,22 @@ func (c *Transmission) UpdateTorrent(url string, content []byte) error {
 		if oldTorrent.Comment == url ||
 			oldTorrent.Comment == strings.Replace(url, "http:", "https:", 1) ||
 			oldTorrent.Comment == strings.Replace(url, "https:", "http:", 1) {
-			newTorrent, err := c.AddTorrent(content, oldTorrent.DownloadDir, true)
+			newTorrent, err := t.AddTorrent(content, oldTorrent.DownloadDir, true)
 			if err != nil {
 				return fmt.Errorf("replace torrent: %w", err)
 			}
-			err = c.Rename(newTorrent.Id, newTorrent.Name, oldTorrent.Name)
+			err = t.Rename(newTorrent.Id, newTorrent.Name, oldTorrent.Name)
 			if err != nil {
 				return fmt.Errorf("rename torrent: %w", err)
 			}
-			err = c.Start([]int{newTorrent.Id})
+			err = t.Start([]int{newTorrent.Id})
 			if err != nil {
 				return fmt.Errorf("start torrent: %w", err)
 			}
 
-			_ = c.Verify([]int{newTorrent.Id})
+			_ = t.Verify([]int{newTorrent.Id})
 
-			err = c.RemoveTorrents([]int{oldTorrent.Id}, false)
+			err = t.RemoveTorrents([]int{oldTorrent.Id}, false)
 			if err != nil {
 				return fmt.Errorf("delete old torrent: %w", err)
 			}
@@ -210,18 +217,18 @@ func (t *Transmission) call(method string, arguments interface{}, responseModel 
 	return json.Unmarshal(responseBytes, responseModel)
 }
 
-func (c *Transmission) rpcRequest(body []byte) ([]byte, error) {
-	request, err := http.NewRequest("POST", c.rpcUrl.String(), bytes.NewReader(body))
+func (t *Transmission) rpcRequest(body []byte) ([]byte, error) {
+	request, err := http.NewRequest("POST", t.rpcUrl.String(), bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
 
-	auth := make([]byte, base64.StdEncoding.EncodedLen(len([]byte(c.login+":"+c.password))))
-	base64.StdEncoding.Encode(auth, []byte(c.login+":"+c.password))
+	auth := make([]byte, base64.StdEncoding.EncodedLen(len([]byte(t.login+":"+t.password))))
+	base64.StdEncoding.Encode(auth, []byte(t.login+":"+t.password))
 	request.Header.Add("Authorization", "Basic "+string(auth))
 	request.Header.Add("Content-Type", "application/json")
-	if c.csrfToken != "" {
-		request.Header.Add("X-Transmission-Session-Id", c.csrfToken)
+	if t.csrfToken != "" {
+		request.Header.Add("X-Transmission-Session-Id", t.csrfToken)
 	}
 
 	client := http.Client{
@@ -232,8 +239,8 @@ func (c *Transmission) rpcRequest(body []byte) ([]byte, error) {
 		return nil, err
 	}
 	if response.StatusCode == http.StatusConflict {
-		c.csrfToken = response.Header.Get("X-Transmission-Session-Id")
-		request.Header.Add("X-Transmission-Session-Id", c.csrfToken)
+		t.csrfToken = response.Header.Get("X-Transmission-Session-Id")
+		request.Header.Add("X-Transmission-Session-Id", t.csrfToken)
 		request.Body = io.NopCloser(bytes.NewReader(body))
 		response, err = client.Do(request)
 		if err != nil {

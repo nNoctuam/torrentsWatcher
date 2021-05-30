@@ -4,20 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	models2 "torrentsWatcher/internal/core/models"
+	storage2 "torrentsWatcher/internal/core/storage"
+	tracking2 "torrentsWatcher/internal/core/tracking"
 
 	"go.uber.org/zap"
 
 	"google.golang.org/protobuf/proto"
-
-	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/tracking"
-	"torrentsWatcher/internal/storage"
 )
 
-func AddTorrent(logger *zap.Logger, trackers tracking.Trackers, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func AddTorrent(logger *zap.Logger, trackers tracking2.Trackers, torrentsStorage storage2.Torrents) func(w http.ResponseWriter, r *http.Request) {
 	logger = logger.With(zap.String("method", "AddTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
-		var torrent *models.Torrent
+		var torrent *models2.Torrent
 		var requestBody struct {
 			Url string
 		}

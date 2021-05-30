@@ -4,22 +4,31 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"torrentsWatcher/internal/api/utils/shell"
+	"torrentsWatcher/internal/core/notifications"
+	"torrentsWatcher/internal/utils/shell"
 )
 
 type Linux struct {
-	Config Config
+	Config notifications.Config
 }
 
-func (n *Linux) getConfig() Config {
+func (n *Linux) GetConfig() notifications.Config {
 	return n.Config
 }
 
-func (n *Linux) openInBrowser(url string) {
+func (n *Linux) OpenInBrowser(url string) {
 	output, err := shell.TryExec("xdg-open", url)
 	if err != nil {
 		fmt.Print(err, output)
+	}
+}
+
+func (n *Linux) SendMessage(messageType notifications.MessageType, text string) {
+	switch messageType {
+	case notifications.MessageTypeTray:
+		n.sendTrayMessage(text)
+	case notifications.MessageTypeKDE:
+		n.sendKDEMessage(text)
 	}
 }
 
@@ -37,7 +46,7 @@ func (n *Linux) sendKDEMessage(text string) {
 	}
 }
 
-func (n *Linux) openFile(content []byte, name string) {
+func (n *Linux) OpenFile(content []byte, name string) {
 	filename := os.TempDir() + string(filepath.Separator) + name
 	f, err := os.Create(filename)
 	if err != nil {

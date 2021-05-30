@@ -11,24 +11,18 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/core/storage"
+	network2 "torrentsWatcher/internal/utils/network"
 
 	"go.uber.org/zap"
 
 	"golang.org/x/net/html/charset"
 
 	"github.com/PuerkitoBio/goquery"
-
-	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/utils/network"
-	"torrentsWatcher/internal/storage"
 )
 
 var UnauthorizedError = errors.New("unauthorized")
-
-type Credentials struct {
-	Login    string
-	Password string
-}
 
 type Tracker struct {
 	Logger          *zap.Logger
@@ -70,7 +64,7 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 		return "", nil, err
 	}
 
-	headers, body, err := network.LoadBytes(url, cookies)
+	headers, body, err := network2.LoadBytes(url, cookies)
 	if err != nil {
 		return "", nil, err
 	}
@@ -177,7 +171,7 @@ func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	_, body, err := network.LoadHTML(url, cookies)
+	_, body, err := network2.LoadHTML(url, cookies)
 	if err != nil {
 		return nil, err
 	}

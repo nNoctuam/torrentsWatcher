@@ -4,19 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"torrentsWatcher/internal/api/models"
-	"torrentsWatcher/internal/api/torrentclient"
-	"torrentsWatcher/internal/storage"
-
-	"torrentsWatcher/internal/api/tracking"
+	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/core/storage"
+	"torrentsWatcher/internal/core/torrentclient"
+	tracking2 "torrentsWatcher/internal/core/tracking"
 
 	"go.uber.org/zap"
 )
 
 func DownloadWithClient(
 	logger *zap.Logger,
-	trackers tracking.Trackers,
-	torrentClient *torrentclient.TorrentClient,
+	trackers tracking2.Trackers,
+	torrentClient torrentclient.Client,
 	torrentsStorage storage.Torrents,
 	folders map[string]string,
 ) func(w http.ResponseWriter, r *http.Request) {

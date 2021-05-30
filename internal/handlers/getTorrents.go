@@ -3,22 +3,21 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	models2 "torrentsWatcher/internal/core/models"
+	storage2 "torrentsWatcher/internal/core/storage"
 
 	"go.uber.org/zap"
 
 	"torrentsWatcher/internal/pb"
-	"torrentsWatcher/internal/storage"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/protobuf/proto"
-
-	"torrentsWatcher/internal/api/models"
 )
 
-func GetTorrents(logger *zap.Logger, torrentsStorage storage.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func GetTorrents(logger *zap.Logger, torrentsStorage storage2.Torrents) func(w http.ResponseWriter, r *http.Request) {
 	logger = logger.With(zap.String("method", "GetTorrents"))
 	return func(w http.ResponseWriter, r *http.Request) {
-		var torrents []models.Torrent
+		var torrents []models2.Torrent
 		err := torrentsStorage.Find(&torrents, "")
 		if err != nil {
 			logger.Error("failed to get torrents", zap.Error(err))

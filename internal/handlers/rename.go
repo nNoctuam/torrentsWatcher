@@ -3,14 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"torrentsWatcher/internal/api/torrentclient"
+	"torrentsWatcher/internal/core/torrentclient"
 
 	"go.uber.org/zap"
 )
 
 func Rename(
 	logger *zap.Logger,
-	torrentClient *torrentclient.TorrentClient,
+	torrentClient torrentclient.Client,
 ) func(w http.ResponseWriter, r *http.Request) {
 	logger = logger.With(zap.String("method", "Rename"))
 	return func(w http.ResponseWriter, r *http.Request) {
