@@ -18,10 +18,10 @@ import (
 	"torrentsWatcher/internal/core/torrentclient"
 	"torrentsWatcher/internal/core/tracking"
 	"torrentsWatcher/internal/core/watcher"
-	"torrentsWatcher/internal/impl/notification"
+	"torrentsWatcher/internal/impl/notificator"
 	storageImpl "torrentsWatcher/internal/impl/storage"
 	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
-	trackingImpl "torrentsWatcher/internal/impl/tracking"
+	trackingImpl "torrentsWatcher/internal/impl/tracker"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 
@@ -152,11 +152,11 @@ func serve(
 func getNotificator(cfg *config.AppConfig) notifications.Notificator {
 	switch runtime.GOOS {
 	case "windows":
-		return &notification.Windows{Config: notifications.Config(cfg.Notifications)}
+		return &notificator.Windows{Config: notifications.Config(cfg.Notifications)}
 	case "linux":
 		fallthrough
 	default:
-		return &notification.Linux{Config: notifications.Config(cfg.Notifications)}
+		return &notificator.Linux{Config: notifications.Config(cfg.Notifications)}
 	}
 }
 

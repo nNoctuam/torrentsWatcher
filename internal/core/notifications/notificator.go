@@ -1,22 +1,19 @@
 package notifications
 
 type Config struct {
-	TrayMessage   bool
-	KDEMessage    bool
 	OpenInBrowser bool
 	OpenFile      bool
+	Message       map[string]bool
 }
 
-type MessageType int
-
 const (
-	MessageTypeTray MessageType = iota
-	MessageTypeKDE
+	MessageTypeTray string = "Tray"
+	MessageTypeKDE  string = "KDE"
 )
 
 type Notificator interface {
 	OpenInBrowser(url string)
-	SendMessage(messageType MessageType, text string)
+	SendMessage(messageTypes map[string]bool, text string)
 	OpenFile(content []byte, name string)
 	GetConfig() Config
 }

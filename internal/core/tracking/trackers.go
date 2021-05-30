@@ -74,5 +74,5 @@ func (f Trackers) getTracker(torrentUrl string) (*Tracker, error) {
 			return parser, nil
 		}
 	}
-	return nil, fmt.Errorf("tracking not found for %s", torrentUrl)
+	return nil, fmt.Errorf("tracker not found for %s", torrentUrl)
 }

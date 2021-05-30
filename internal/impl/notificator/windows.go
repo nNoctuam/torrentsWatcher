@@ -1,4 +1,4 @@
-package notification
+package notificator
 
 import (
 	"fmt"
@@ -24,10 +24,6 @@ func (n *Windows) OpenInBrowser(url string) {
 	}
 }
 
-func (n *Windows) SendMessage(messageType notifications.MessageType, text string) {
-	log.Fatal("notification.Windows.SendMessage() is not implemented yet.")
-}
-
 func (n *Windows) OpenFile(content []byte, name string) {
 	filename := os.TempDir() + string(filepath.Separator) + name
 	f, err := os.Create(filename)
@@ -46,4 +42,8 @@ func (n *Windows) OpenFile(content []byte, name string) {
 	if err != nil {
 		fmt.Print(err, output)
 	}
+}
+
+func (n *Windows) SendMessage(messageTypes map[string]bool, text string) {
+	log.Fatal("notificator.Windows.SendMessage() is not implemented yet.")
 }

@@ -8,6 +8,12 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type NotificationsConfig struct {
+	OpenInBrowser bool `yaml:"openInBrowser"`
+	OpenFile      bool `yaml:"openFile"`
+	Message       map[string]bool
+}
+
 type AppConfig struct {
 	LogLevel    string `yaml:"logLevel" yaml_default:"info"`
 	Host        string
@@ -17,12 +23,7 @@ type AppConfig struct {
 		Login    string
 		Password string
 	}
-	Notifications struct {
-		TrayMessage   bool `yaml:"trayMessage"`
-		KDEMessage    bool `yaml:"KDEMessage"`
-		OpenInBrowser bool `yaml:"openInBrowser"`
-		OpenFile      bool `yaml:"openFile"`
-	}
+	Notifications   NotificationsConfig
 	AutoDownloadDir string `yaml:"autoDownloadDir"`
 	Transmission    struct {
 		RpcUrl   string `yaml:"rpcUrl"`

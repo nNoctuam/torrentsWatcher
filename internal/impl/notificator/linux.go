@@ -1,4 +1,4 @@
-package notification
+package notificator
 
 import (
 	"fmt"
@@ -23,29 +23,6 @@ func (n *Linux) OpenInBrowser(url string) {
 	}
 }
 
-func (n *Linux) SendMessage(messageType notifications.MessageType, text string) {
-	switch messageType {
-	case notifications.MessageTypeTray:
-		n.sendTrayMessage(text)
-	case notifications.MessageTypeKDE:
-		n.sendKDEMessage(text)
-	}
-}
-
-func (n *Linux) sendTrayMessage(text string) {
-	output, err := shell.TryExec("notify-send", "-a", "torrentsWatcher", text)
-	if err != nil {
-		fmt.Print(err, output)
-	}
-}
-
-func (n *Linux) sendKDEMessage(text string) {
-	output, err := shell.TryExec("kdialog", "--passivepopup", text, "--title", "Torrent was updated", "300")
-	if err != nil {
-		fmt.Print(err, output)
-	}
-}
-
 func (n *Linux) OpenFile(content []byte, name string) {
 	filename := os.TempDir() + string(filepath.Separator) + name
 	f, err := os.Create(filename)
@@ -61,6 +38,29 @@ func (n *Linux) OpenFile(content []byte, name string) {
 	defer f.Close()
 
 	output, err := shell.TryExec("xdg-open", filename)
+	if err != nil {
+		fmt.Print(err, output)
+	}
+}
+
+func (n *Linux) SendMessage(messageTypes map[string]bool, text string) {
+	if messageTypes[notifications.MessageTypeTray] {
+		n.sendTrayMessage(text)
+	}
+	if messageTypes[notifications.MessageTypeKDE] {
+		n.sendKDEMessage(text)
+	}
+}
+
+func (n *Linux) sendTrayMessage(text string) {
+	output, err := shell.TryExec("notify-send", "-a", "torrentsWatcher", text)
+	if err != nil {
+		fmt.Print(err, output)
+	}
+}
+
+func (n *Linux) sendKDEMessage(text string) {
+	output, err := shell.TryExec("kdialog", "--passivepopup", text, "--title", "Torrent was updated", "300")
 	if err != nil {
 		fmt.Print(err, output)
 	}

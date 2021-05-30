@@ -7,10 +7,11 @@ credentials:
     login:
     password:
 notifications:
-  trayMessage: true
-  KDEMessage: true
   openInBrowser: true
   openFile: true
+  message:
+    KDE: true
+    tray: true
 autoDownloadDir: /var/torrents
 transmission:
   login:
