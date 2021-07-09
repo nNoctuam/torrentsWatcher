@@ -38,6 +38,8 @@ import (
 // TODO:
 // 	unit tests
 //  kinozal timestamps & topics
+//  search filters
+//  pagination || more long the only page
 
 //go:embed dist/*
 var distContent embed.FS

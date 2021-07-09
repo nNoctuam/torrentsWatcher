@@ -16,7 +16,7 @@ Vue.use(VueRouter)
 
 const router = new VueRouter({
   routes: [
-    { path: '/', component: Search },
+    { path: '/', redirect: '/search' },
     { path: '/search', component: Search },
     { path: '/watch', component: Watch }
   ]

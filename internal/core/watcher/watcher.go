@@ -89,11 +89,6 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 	}
 
 	torrent.UpdateFrom(updatedTorrent)
-	err = w.torrentsStorage.Save(torrent)
-	if err != nil {
-		w.logger.Error("Failed to save torrent to storage", zap.Error(err), zap.Any("torrent", updatedTorrent))
-		return
-	}
 
 	if isUpdated {
 		w.logger.Info("torrent was updated", zap.String("title", torrent.Title), zap.String("url", torrent.PageUrl))
@@ -101,5 +96,11 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 		if err != nil {
 			w.logger.Error("torrent replace", zap.String("title", torrent.Title), zap.String("url", torrent.PageUrl), zap.Error(err))
 		}
+	}
+
+	err = w.torrentsStorage.Save(torrent)
+	if err != nil {
+		w.logger.Error("Failed to save torrent to storage", zap.Error(err), zap.Any("torrent", updatedTorrent))
+		return
 	}
 }
