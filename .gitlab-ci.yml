@@ -24,6 +24,7 @@ lint:
   variables:
     GOFLAGS: -mod=vendor
   script:
+    - mkdir cmd/torrentsWatcher/dist && touch cmd/torrentsWatcher/dist/dummy.txt
     - golangci-lint run -v
 
 test:
