@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"torrentsWatcher/internal/core/torrentclient"
 
-	"go.uber.org/zap"
+	zap "go.uber.org/zap"
 )
 
 func Rename(
@@ -35,9 +35,14 @@ func Rename(
 
 		for _, t := range torrents {
 			if t.Hash == requestBody.Hash {
-				err = torrentClient.Rename(t.Id, t.Name, requestBody.NewName)
+				err = torrentClient.Rename(t.ID, t.Name, requestBody.NewName)
 				if err != nil {
-					logger.Error("failed to rename torrent", zap.Error(err), zap.String("oldName", t.Name), zap.String("newName", requestBody.NewName))
+					logger.Error(
+						"failed to rename torrent",
+						zap.Error(err),
+						zap.String("oldName", t.Name),
+						zap.String("newName", requestBody.NewName),
+					)
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -45,7 +50,11 @@ func Rename(
 			}
 		}
 
-		logger.Error("torrent not found", zap.String("hash", requestBody.Hash), zap.String("name", requestBody.NewName))
+		logger.Error(
+			"torrent not found",
+			zap.String("hash", requestBody.Hash),
+			zap.String("name", requestBody.NewName),
+		)
 		http.Error(w, "Torrent not found", http.StatusInternalServerError)
 	}
 }

@@ -12,7 +12,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func DownloadTorrent(logger *zap.Logger, torrentsStorage storage2.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func DownloadTorrent(
+	logger *zap.Logger,
+	torrentsStorage storage2.Torrents,
+) func(w http.ResponseWriter, r *http.Request) {
 	logger = logger.With(zap.String("method", "DownloadTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var torrent models2.Torrent
@@ -23,14 +26,15 @@ func DownloadTorrent(logger *zap.Logger, torrentsStorage storage2.Torrents) func
 			return
 		}
 
-		if err = torrentsStorage.First(&torrent, models2.Torrent{Id: uint(id)}); err != nil {
+		if err = torrentsStorage.First(&torrent, models2.Torrent{ID: uint(id)}); err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
 		w.Header().Add("Content-Type", "application/x-bittorrent")
 		w.Header().Add("Content-Length", fmt.Sprintf("%d", len(torrent.File)))
-		w.Header().Add("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": torrent.Title + ".torrent"}))
+		w.Header().Add("Content-Disposition",
+			mime.FormatMediaType("attachment", map[string]string{"filename": torrent.Title + ".torrent"}))
 
 		_, err = w.Write(torrent.File)
 		if err != nil {

@@ -21,7 +21,11 @@ func LoadBytes(url string, cookies []*http.Cookie) (http.Header, io.Reader, erro
 	return Load(url, cookies, nil)
 }
 
-func Load(url string, cookies []*http.Cookie, wrap func(response *http.Response) (io.Reader, error)) (http.Header, io.Reader, error) {
+func Load(
+	url string,
+	cookies []*http.Cookie,
+	wrap func(response *http.Response) (io.Reader, error),
+) (http.Header, io.Reader, error) {
 	r, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, nil, err

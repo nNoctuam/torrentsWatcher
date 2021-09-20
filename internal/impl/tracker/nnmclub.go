@@ -25,11 +25,16 @@ type NnmClub struct {
 
 const NnmClubDomain = "nnmclub.to"
 
-func NewNnmClub(logger *zap.Logger, credentials tracking.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *tracking.Tracker {
+func NewNnmClub(
+	logger *zap.Logger,
+	credentials tracking.Credentials,
+	torrentsStorage storage.Torrents,
+	cookiesStorage storage.Cookies,
+) *tracking.Tracker {
 	return &tracking.Tracker{
 		Logger:          logger,
 		Domain:          NnmClubDomain,
-		ForceHttps:      true,
+		ForceHTTPS:      true,
 		Credentials:     credentials,
 		TorrentsStorage: torrentsStorage,
 		CookiesStorage:  cookiesStorage,
@@ -44,14 +49,14 @@ func (t *NnmClub) Parse(document *goquery.Document) (*models.Torrent, error) {
 	var err error
 
 	if document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Text() != "Скачать" {
-		return &info, tracking.UnauthorizedError
+		return &info, tracking.ErrUnauthorized
 	}
 
 	info.Title = document.Find(".maintitle").First().Text()
 	info.UploadedAt, err = parseNnmClubUploadedAt(document)
-	info.FileUrl, _ = document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Attr("href")
-	if info.FileUrl[:8] == "download" {
-		info.FileUrl = "https://" + NnmClubDomain + "/forum/" + info.FileUrl
+	info.FileURL, _ = document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Attr("href")
+	if info.FileURL[:8] == "download" {
+		info.FileURL = "https://" + NnmClubDomain + "/forum/" + info.FileURL
 	}
 
 	return &info, err
@@ -80,7 +85,7 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 
 		for _, attr := range titleTD.FirstChild.Attr {
 			if attr.Key == "href" {
-				torrent.PageUrl = "https://" + NnmClubDomain + "/forum/" + attr.Val
+				torrent.PageURL = "https://" + NnmClubDomain + "/forum/" + attr.Val
 				break
 			}
 		}
@@ -100,7 +105,6 @@ func (t *NnmClub) ParseSearch(document *goquery.Document) (torrents []*models.To
 }
 
 func (t *NnmClub) MakeSearchRequest(text string) (r *http.Request, err error) {
-
 	encoder := charmap.Windows1251.NewEncoder()
 	text, _ = encoder.String(text)
 
@@ -148,6 +152,7 @@ func (t *NnmClub) Login(credentials tracking.Credentials) ([]*http.Cookie, error
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	return res.Cookies(), nil
 }
@@ -192,16 +197,16 @@ func getLoginCode() (string, error) {
 
 func parseNnmClubUploadedAt(document *goquery.Document) (time.Time, error) {
 	previous := " Зарегистрирован: "
-	var updatedAtNodeId int
+	var updatedAtNodeID int
 	var uploadedAt string
 
 	document.Find("table.btTbl tr.row1 td.genmed").Each(func(i int, s *goquery.Selection) {
 		text := s.Text()
-		if i == updatedAtNodeId {
+		if i == updatedAtNodeID {
 			uploadedAt = s.Text()
 		}
 		if text == previous {
-			updatedAtNodeId = i + 1
+			updatedAtNodeID = i + 1
 		}
 	})
 

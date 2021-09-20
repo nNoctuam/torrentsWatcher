@@ -25,7 +25,7 @@ func DeleteTorrent(logger *zap.Logger, torrentsStorage storage2.Torrents) func(w
 
 		var torrents []models2.Torrent
 		err = torrentsStorage.Find(&torrents, models2.Torrent{
-			Id: uint(id),
+			ID: uint(id),
 		})
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)

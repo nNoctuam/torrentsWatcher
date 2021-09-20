@@ -26,7 +26,7 @@ type AppConfig struct {
 	Notifications   NotificationsConfig
 	AutoDownloadDir string `yaml:"autoDownloadDir"`
 	Transmission    struct {
-		RpcUrl   string `yaml:"rpcUrl"`
+		RPCURL   string `yaml:"rpcUrl"`
 		Login    string
 		Password string
 		Folders  map[string]string

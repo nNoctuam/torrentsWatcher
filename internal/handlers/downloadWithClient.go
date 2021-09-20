@@ -9,7 +9,7 @@ import (
 	"torrentsWatcher/internal/core/torrentclient"
 	tracking2 "torrentsWatcher/internal/core/tracking"
 
-	"go.uber.org/zap"
+	zap "go.uber.org/zap"
 )
 
 func DownloadWithClient(
@@ -22,7 +22,7 @@ func DownloadWithClient(
 	logger = logger.With(zap.String("method", "DownloadWithClient"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var requestBody struct {
-			Url    string
+			URL    string
 			Folder string
 		}
 
@@ -33,10 +33,15 @@ func DownloadWithClient(
 		}
 
 		folder, ok := folders[requestBody.Folder]
-		logger.Debug("folders matching", zap.String("folderName", requestBody.Folder), zap.String("path", folder), zap.Bool("found", ok))
+		logger.Debug(
+			"folders matching",
+			zap.String("folderName", requestBody.Folder),
+			zap.String("path", folder),
+			zap.Bool("found", ok),
+		)
 
-		torrent, err := trackers.GetTorrentInfo(requestBody.Url)
-		if err != nil || torrent.FileUrl == "" {
+		torrent, err := trackers.GetTorrentInfo(requestBody.URL)
+		if err != nil || torrent.FileURL == "" {
 			logger.Error("failed to get link to .torrent file", zap.Error(err))
 			http.Error(w, "cannot get link to .torrent file", http.StatusUnprocessableEntity)
 			return

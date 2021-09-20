@@ -10,22 +10,22 @@ import (
 
 type Trackers []*Tracker
 
-func (f Trackers) GetTorrentInfo(torrentUrl string) (*models.Torrent, error) {
-	parser, err := f.getTracker(torrentUrl)
+func (f Trackers) GetTorrentInfo(torrentURL string) (*models.Torrent, error) {
+	parser, err := f.getTracker(torrentURL)
 	if err != nil {
 		return nil, err
 	}
 
-	torrent, err := parser.GetInfo(torrentUrl)
+	torrent, err := parser.GetInfo(torrentURL)
 	return torrent, err
 }
 
 func (f Trackers) DownloadTorrentFile(torrent *models.Torrent) (string, []byte, error) {
-	parser, err := f.getTracker(torrent.FileUrl)
+	parser, err := f.getTracker(torrent.FileURL)
 	if err != nil {
 		return "", nil, err
 	}
-	return parser.Download(torrent.FileUrl)
+	return parser.Download(torrent.FileURL)
 }
 
 func (f Trackers) SearchEverywhere(text string) (torrents []*models.Torrent) {
@@ -58,21 +58,21 @@ func (f Trackers) SearchEverywhere(text string) (torrents []*models.Torrent) {
 	return torrents
 }
 
-func (f Trackers) getTracker(torrentUrl string) (*Tracker, error) {
-	parsedUrl, err := url.Parse(torrentUrl)
+func (f Trackers) getTracker(torrentURL string) (*Tracker, error) {
+	parsedURL, err := url.Parse(torrentURL)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't parse url %s", torrentUrl)
+		return nil, fmt.Errorf("couldn't parse url %s", torrentURL)
 	}
 
 	for _, parser := range f {
-		if parser.Domain == parsedUrl.Host {
+		if parser.Domain == parsedURL.Host {
 			return parser, nil
 		}
 	}
 	for _, parser := range f {
-		if strings.Contains(parsedUrl.Host, parser.Domain) {
+		if strings.Contains(parsedURL.Host, parser.Domain) {
 			return parser, nil
 		}
 	}
-	return nil, fmt.Errorf("tracker not found for %s", torrentUrl)
+	return nil, fmt.Errorf("tracker not found for %s", torrentURL)
 }

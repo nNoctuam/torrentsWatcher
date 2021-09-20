@@ -17,17 +17,24 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const href string = "href"
+
 type Kinozal struct {
 	logger *zap.Logger
 }
 
 const KinozalDomain = "kinozal.tv"
 
-func NewKinozal(logger *zap.Logger, credentials tracking.Credentials, torrentsStorage storage.Torrents, cookiesStorage storage.Cookies) *tracking.Tracker {
+func NewKinozal(
+	logger *zap.Logger,
+	credentials tracking.Credentials,
+	torrentsStorage storage.Torrents,
+	cookiesStorage storage.Cookies,
+) *tracking.Tracker {
 	return &tracking.Tracker{
 		Logger:          logger,
 		Domain:          KinozalDomain,
-		ForceHttps:      false,
+		ForceHTTPS:      false,
 		Credentials:     credentials,
 		TorrentsStorage: torrentsStorage,
 		CookiesStorage:  cookiesStorage,
@@ -42,16 +49,18 @@ func (t *Kinozal) Parse(document *goquery.Document) (*models.Torrent, error) {
 	var err error
 
 	authLink := document.Find(".menu form ul.men a")
-	if authLink.Size() > 0 && authLink.Get(0).FirstChild != nil && authLink.Get(0).FirstChild.Data == "Гость! ( Зарегистрируйтесь )" {
+	if authLink.Size() > 0 &&
+		authLink.Get(0).FirstChild != nil &&
+		authLink.Get(0).FirstChild.Data == "Гость! ( Зарегистрируйтесь )" {
 		t.logger.Warn(KinozalDomain+" unauthorized:", zap.Any("authLinkTitle", authLink.Get(0).FirstChild.Data))
-		return &info, tracking.UnauthorizedError
+		return &info, tracking.ErrUnauthorized
 	}
 
 	info.Title = document.Find("h1 a.r0").First().Text()
-	//info.UploadedAt, err = parseKinozalUploadedAt(document) todo
-	info.FileUrl, _ = document.Find(".mn1_content td.nw a").First().Attr("href")
-	info.FileUrl = "http:" + info.FileUrl
-	info.FileUrl = strings.Replace(info.FileUrl, "dl."+KinozalDomain, KinozalDomain, 1)
+	// info.UploadedAt, err = parseKinozalUploadedAt(document) todo
+	info.FileURL, _ = document.Find(".mn1_content td.nw a").First().Attr(href)
+	info.FileURL = "http:" + info.FileURL
+	info.FileURL = strings.Replace(info.FileURL, "dl."+KinozalDomain, KinozalDomain, 1)
 
 	return &info, err
 }
@@ -75,11 +84,11 @@ func (t *Kinozal) ParseSearch(document *goquery.Document) (torrents []*models.To
 		authorTD := tds.Get(columns["Раздает"])
 		sizeTD := tds.Get(columns["Размер"])
 		seedersTD := tds.Get(columns["Сидов"])
-		//addedTD := tds.Get(columns["Залит"])
+		// addedTD := tds.Get(columns["Залит"])
 
 		for _, attr := range titleTD.FirstChild.Attr {
-			if attr.Key == "href" {
-				torrent.PageUrl = "http://" + KinozalDomain + "/" + attr.Val
+			if attr.Key == href {
+				torrent.PageURL = "http://" + KinozalDomain + "/" + attr.Val
 				break
 			}
 		}
@@ -96,8 +105,8 @@ func (t *Kinozal) ParseSearch(document *goquery.Document) (torrents []*models.To
 		torrent.Size = uint64(math.Round(sizeBytes * math.Pow(1024, sizes[size[1]])))
 		torrent.Author = authorTD.FirstChild.FirstChild.Data
 		// todo
-		//date := addedTD.FirstChild.NextSibling.Data + " " + addedTD.FirstChild.NextSibling.NextSibling.NextSibling.Data
-		//torrent.UpdatedAt, _ = time.Parse("02-01-2006 15:04", strings.Trim(date, " "))
+		// date := addedTD.FirstChild.NextSibling.Data + " " + addedTD.FirstChild.NextSibling.NextSibling.NextSibling.Data
+		// torrent.UpdatedAt, _ = time.Parse("02-01-2006 15:04", strings.Trim(date, " "))
 
 		torrents = append(torrents, torrent)
 	})
@@ -106,7 +115,6 @@ func (t *Kinozal) ParseSearch(document *goquery.Document) (torrents []*models.To
 }
 
 func (t *Kinozal) MakeSearchRequest(text string) (r *http.Request, err error) {
-
 	encoder := charmap.Windows1251.NewEncoder()
 	//nolint:ineffassign
 	text, err = encoder.String(text)
@@ -154,6 +162,7 @@ func (t *Kinozal) Login(credentials tracking.Credentials) ([]*http.Cookie, error
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	return res.Cookies(), nil
 }

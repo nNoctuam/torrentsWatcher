@@ -28,10 +28,10 @@ func GetTorrents(logger *zap.Logger, torrentsStorage storage2.Torrents) func(w h
 		transformed := &pb.Torrents{}
 		for _, torrent := range torrents {
 			transformed.Torrents = append(transformed.Torrents, &pb.Torrent{
-				Id:         uint32(torrent.Id),
+				ID:         uint32(torrent.ID),
 				Title:      torrent.Title,
-				PageUrl:    torrent.PageUrl,
-				FileUrl:    torrent.FileUrl,
+				PageUrl:    torrent.PageURL,
+				FileUrl:    torrent.FileURL,
 				CreatedAt:  &timestamp.Timestamp{Seconds: torrent.CreatedAt.Unix()},
 				UpdatedAt:  &timestamp.Timestamp{Seconds: torrent.UpdatedAt.Unix()},
 				UploadedAt: &timestamp.Timestamp{Seconds: torrent.UploadedAt.Unix()},

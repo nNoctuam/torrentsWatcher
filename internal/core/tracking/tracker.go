@@ -22,12 +22,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var UnauthorizedError = errors.New("unauthorized")
+var ErrUnauthorized = errors.New("unauthorized")
 
 type Tracker struct {
 	Logger          *zap.Logger
 	Domain          string
-	ForceHttps      bool
+	ForceHTTPS      bool
 	Credentials     Credentials
 	TorrentsStorage storage.Torrents
 	CookiesStorage  storage.Cookies
@@ -35,13 +35,13 @@ type Tracker struct {
 }
 
 func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
-	if t.ForceHttps {
+	if t.ForceHTTPS {
 		url = strings.Replace(url, "http://", "https://", 1)
 	}
 
 	torrent, err := t.loadAndParse(url)
 
-	if err != nil && (err == UnauthorizedError || err.Error() == "record not found") {
+	if err != nil && (err == ErrUnauthorized || err.Error() == "record not found") {
 		err = t.login()
 		if err != nil {
 			return nil, fmt.Errorf("login: %w", err)
@@ -51,7 +51,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 	}
 
 	if torrent != nil {
-		torrent.PageUrl = url
+		torrent.PageURL = url
 	}
 
 	return torrent, err
@@ -113,6 +113,7 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 	client := http.Client{
 		Timeout: time.Duration(10) * time.Second,
 		Transport: &http.Transport{
+			// nolint: gosec
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
@@ -125,6 +126,7 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 		t.Logger.Info("Search failed", zap.Error(err), zap.String("text", text), zap.String("tracker", t.Domain))
 		return
 	}
+	defer res.Body.Close()
 	if res.StatusCode == 302 && strings.Contains(res.Header.Get("Location"), "login") {
 		err = t.login()
 		if err != nil {
@@ -143,11 +145,18 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 			t.Logger.Info("Search failed after login", zap.Error(err), zap.String("text", text), zap.String("tracker", t.Domain))
 			return
 		}
+		defer res.Body.Close()
 	}
 
 	body, err := charset.NewReader(res.Body, res.Header.Get("Content-Type"))
 	if err != nil {
-		t.Logger.Warn(fmt.Sprintf("failed to search in %s code=%d len=%d\n%+v", t.Domain, res.StatusCode, res.ContentLength, res.Header))
+		t.Logger.Warn(fmt.Sprintf(
+			"failed to search in %s code=%d len=%d\n%+v",
+			t.Domain,
+			res.StatusCode,
+			res.ContentLength,
+			res.Header,
+		))
 		return
 	}
 	if body == nil {

@@ -26,11 +26,16 @@ type Rutracker struct {
 
 const RutrackerDomain = "rutracker.org"
 
-func NewRutracker(logger *zap.Logger, credentials tracking.Credentials, torrents storage.Torrents, cookies storage.Cookies) *tracking.Tracker {
+func NewRutracker(
+	logger *zap.Logger,
+	credentials tracking.Credentials,
+	torrents storage.Torrents,
+	cookies storage.Cookies,
+) *tracking.Tracker {
 	return &tracking.Tracker{
 		Logger:          logger,
 		Domain:          RutrackerDomain,
-		ForceHttps:      true,
+		ForceHTTPS:      true,
 		Credentials:     credentials,
 		TorrentsStorage: torrents,
 		CookiesStorage:  cookies,
@@ -44,15 +49,15 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 
 	info.Title = document.Find(".maintitle").First().Text()
 	info.Title = strings.Trim(info.Title, " \t\n")
-	info.FileUrl, _ = document.Find(".dl-stub.dl-link.dl-topic").First().Attr("href")
+	info.FileURL, _ = document.Find(".dl-stub.dl-link.dl-topic").First().Attr("href")
 
-	if len(info.FileUrl) > 6 && info.FileUrl[:6] == "dl.php" {
-		info.FileUrl = "https://rutracker.org/forum/" + info.FileUrl
+	if len(info.FileURL) > 6 && info.FileURL[:6] == "dl.php" {
+		info.FileURL = "https://rutracker.org/forum/" + info.FileURL
 	}
 
 	if info.Title != "" && document.Find("#logged-in-username").Size() == 0 {
 		fmt.Println("Unauthorized")
-		return nil, tracking.UnauthorizedError
+		return nil, tracking.ErrUnauthorized
 	}
 
 	r := strings.NewReplacer(
@@ -99,10 +104,10 @@ func (t *Rutracker) Login(credentials tracking.Credentials) ([]*http.Cookie, err
 		return http.ErrUseLastResponse
 	}
 	response, err := client.Do(request)
-
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	return response.Cookies(), nil
 }
@@ -133,7 +138,7 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 
 		for _, attr := range titleTD.Find("a").Get(0).Attr {
 			if attr.Key == "href" {
-				torrent.PageUrl = "https://" + RutrackerDomain + "/forum/" + attr.Val
+				torrent.PageURL = "https://" + RutrackerDomain + "/forum/" + attr.Val
 				break
 			}
 		}
@@ -144,9 +149,9 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 		torrent.Seeders, _ = strconv.ParseUint(strings.Trim(seedersTD.Text(), "\n \t"), 10, 32)
 
 		var sizeData []string
-		reg, _ := regexp.Compile(`^\s*([\d.]+).+([KMG])B.*`)
+		reg := regexp.MustCompile(`^\s*([\d.]+).+([KMG])B.*`)
 		sizeData = reg.FindStringSubmatch(strings.Trim(sizeTD.Text(), "\n \t"))
-		size, _ := strconv.ParseFloat(sizeData[1], 10)
+		size, _ := strconv.ParseFloat(sizeData[1], 64)
 		switch sizeData[2] {
 		case "K":
 			size *= 1000
@@ -181,7 +186,6 @@ func (t *Rutracker) ParseSearch(document *goquery.Document) (torrents []*models.
 }
 
 func (t *Rutracker) MakeSearchRequest(text string) (r *http.Request, err error) {
-
 	encoder := charmap.Windows1251.NewEncoder()
 	text, _ = encoder.String(text)
 

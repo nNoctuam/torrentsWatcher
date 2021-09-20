@@ -2,6 +2,7 @@ package storage
 
 import (
 	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/core/storage"
 
 	"github.com/jinzhu/gorm"
 )
@@ -30,6 +31,6 @@ func (t cookiesSqliteStorage) DeleteByDomain(domain string) error {
 	return t.db.Where("domain = ?", domain).Delete(&models.AuthCookie{}).Error
 }
 
-func NewCookiesSqliteStorage(db *gorm.DB) *cookiesSqliteStorage {
+func NewCookiesSqliteStorage(db *gorm.DB) storage.Cookies {
 	return &cookiesSqliteStorage{db: db}
 }

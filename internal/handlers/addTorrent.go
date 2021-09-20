@@ -13,12 +13,16 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func AddTorrent(logger *zap.Logger, trackers tracking2.Trackers, torrentsStorage storage2.Torrents) func(w http.ResponseWriter, r *http.Request) {
+func AddTorrent(
+	logger *zap.Logger,
+	trackers tracking2.Trackers,
+	torrentsStorage storage2.Torrents,
+) func(w http.ResponseWriter, r *http.Request) {
 	logger = logger.With(zap.String("method", "AddTorrent"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		var torrent *models2.Torrent
 		var requestBody struct {
-			Url string
+			URL string
 		}
 
 		err := json.NewDecoder(r.Body).Decode(&requestBody)
@@ -27,9 +31,9 @@ func AddTorrent(logger *zap.Logger, trackers tracking2.Trackers, torrentsStorage
 			return
 		}
 
-		logger.Info("parsing ", zap.String("url", requestBody.Url))
+		logger.Info("parsing ", zap.String("url", requestBody.URL))
 
-		torrent, err = trackers.GetTorrentInfo(requestBody.Url)
+		torrent, err = trackers.GetTorrentInfo(requestBody.URL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -37,7 +41,7 @@ func AddTorrent(logger *zap.Logger, trackers tracking2.Trackers, torrentsStorage
 
 		_, file, err := trackers.DownloadTorrentFile(torrent)
 		if err != nil {
-			logger.Error("Failed to load torrent file", zap.Error(err), zap.String("url", torrent.FileUrl))
+			logger.Error("Failed to load torrent file", zap.Error(err), zap.String("url", torrent.FileURL))
 			return
 		}
 		torrent.File = file

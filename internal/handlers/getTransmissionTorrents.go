@@ -9,7 +9,10 @@ import (
 	"torrentsWatcher/internal/core/torrentclient"
 )
 
-func GetTransmissionTorrents(torrentsStorage storage.Torrents, torrentClient torrentclient.Client) func(w http.ResponseWriter, r *http.Request) {
+func GetTransmissionTorrents(
+	torrentsStorage storage.Torrents,
+	torrentClient torrentclient.Client,
+) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var torrents []models.TransmissionTorrent
 		err := torrentsStorage.GetAllTransmission(&torrents)

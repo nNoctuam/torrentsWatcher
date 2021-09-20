@@ -41,6 +41,7 @@ import (
 //  search filters
 //  pagination || more long the only page
 
+// nolint: typecheck
 //go:embed dist/*
 var distContent embed.FS
 
@@ -81,7 +82,7 @@ func main() {
 		}
 	}
 
-	transmissionClient, err := torrentClientImpl.NewTransmission(cfg.AutoDownloadDir, cfg.Transmission.RpcUrl, cfg.Transmission.Login, cfg.Transmission.Password)
+	transmissionClient, err := torrentClientImpl.NewTransmission(cfg.AutoDownloadDir, cfg.Transmission.RPCURL, cfg.Transmission.Login, cfg.Transmission.Password)
 	if err != nil {
 		log.Fatal(err)
 	}

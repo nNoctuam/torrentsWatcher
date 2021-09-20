@@ -1,5 +1,5 @@
 stages:
-#  - test
+  - test
   - build
   - deploy
 
@@ -14,6 +14,33 @@ variables:
 #  before_script: [] # prevent run `docker login`
 #  script:
 #    - test -z "$(gofmt -s -l -e -d $(find . -name '*.go' -type f -print | grep -v vendor | tr '\n' ' ') | tee /dev/stderr)"
+
+lint:
+  stage: test
+  image: golangci/golangci-lint:v1.39.0
+  tags:
+    - docker-exec
+  before_script: [] # prevent run docker login
+  variables:
+    GOFLAGS: -mod=vendor
+  script:
+    - golangci-lint run -v
+
+test:
+  stage: test
+  tags:
+    - docker-exec
+  image: golang:1.17
+  before_script: [] # prevent run docker login
+  variables:
+    GOFLAGS: -mod=vendor
+  script:
+    - go test ./... -v -coverprofile coverage.out
+    - go tool cover -func=coverage.out
+  only:
+    - branches
+  except:
+    - tags
 
 build:
   stage: build

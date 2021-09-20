@@ -7,12 +7,13 @@
 package pb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	proto "github.com/golang/protobuf/proto"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -31,7 +32,7 @@ type Torrent struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id         uint32               `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	ID         uint32               `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title      string               `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	PageUrl    string               `protobuf:"bytes,3,opt,name=page_url,json=pageUrl,proto3" json:"page_url,omitempty"`
 	FileUrl    string               `protobuf:"bytes,4,opt,name=file_url,json=fileUrl,proto3" json:"file_url,omitempty"`
@@ -78,7 +79,7 @@ func (*Torrent) Descriptor() ([]byte, []int) {
 
 func (x *Torrent) GetId() uint32 {
 	if x != nil {
-		return x.Id
+		return x.ID
 	}
 	return 0
 }

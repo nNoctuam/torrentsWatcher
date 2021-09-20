@@ -15,16 +15,18 @@ import (
 	"torrentsWatcher/internal/core/torrentclient"
 )
 
+const successResult string = "success"
+
 type Transmission struct {
 	autoDownloadDir string
 	login           string
 	password        string
-	rpcUrl          *url.URL
+	rpcURL          *url.URL
 	csrfToken       string
 }
 
-func NewTransmission(autoDownloadDir string, rpcUrl string, login string, password string) (*Transmission, error) {
-	urlParsed, err := url.Parse(rpcUrl)
+func NewTransmission(autoDownloadDir string, rpcURL string, login string, password string) (*Transmission, error) {
+	urlParsed, err := url.Parse(rpcURL)
 	if err != nil {
 		return nil, err
 	}
@@ -32,11 +34,12 @@ func NewTransmission(autoDownloadDir string, rpcUrl string, login string, passwo
 		autoDownloadDir: autoDownloadDir,
 		login:           login,
 		password:        password,
-		rpcUrl:          urlParsed,
+		rpcURL:          urlParsed,
 	}, nil
 }
 
 func (t *Transmission) SaveToAutoDownloadFolder(name string, content []byte) error {
+	// nolint: gosec
 	return os.WriteFile(t.autoDownloadDir+"/"+name, content, 0660)
 }
 
@@ -57,7 +60,7 @@ func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torr
 		return torrentclient.Torrent{}, err
 	}
 
-	if responseModel.Result != "success" {
+	if responseModel.Result != successResult {
 		return torrentclient.Torrent{}, errors.New("torrent-add result: " + responseModel.Result)
 	}
 
@@ -98,7 +101,7 @@ func (t *Transmission) RemoveTorrents(ids []int, deleteLocalData bool) error {
 		return err
 	}
 
-	if responseModel.Result != "success" {
+	if responseModel.Result != successResult {
 		return errors.New("torrent-remove result: " + responseModel.Result)
 	}
 	return err
@@ -118,18 +121,18 @@ func (t *Transmission) UpdateTorrent(url string, content []byte) error {
 			if err != nil {
 				return fmt.Errorf("replace torrent: %w", err)
 			}
-			err = t.Rename(newTorrent.Id, newTorrent.Name, oldTorrent.Name)
+			err = t.Rename(newTorrent.ID, newTorrent.Name, oldTorrent.Name)
 			if err != nil {
 				return fmt.Errorf("rename torrent: %w", err)
 			}
-			err = t.Start([]int{newTorrent.Id})
+			err = t.Start([]int{newTorrent.ID})
 			if err != nil {
 				return fmt.Errorf("start torrent: %w", err)
 			}
 
-			_ = t.Verify([]int{newTorrent.Id})
+			_ = t.Verify([]int{newTorrent.ID})
 
-			err = t.RemoveTorrents([]int{oldTorrent.Id}, false)
+			err = t.RemoveTorrents([]int{oldTorrent.ID}, false)
 			if err != nil {
 				return fmt.Errorf("delete old torrent: %w", err)
 			}
@@ -159,7 +162,7 @@ func (t *Transmission) Rename(id int, oldPath string, newPath string) error {
 		return err
 	}
 
-	if responseModel.Result != "success" {
+	if responseModel.Result != successResult {
 		return errors.New("torrent-rename result: " + responseModel.Result)
 	}
 	return nil
@@ -177,7 +180,7 @@ func (t *Transmission) Start(ids []int) error {
 		return err
 	}
 
-	if responseModel.Result != "success" {
+	if responseModel.Result != successResult {
 		return errors.New("torrent-start result: " + responseModel.Result)
 	}
 	return nil
@@ -195,7 +198,7 @@ func (t *Transmission) Verify(ids []int) error {
 		return err
 	}
 
-	if responseModel.Result != "success" {
+	if responseModel.Result != successResult {
 		return errors.New("torrent-verify result: " + responseModel.Result)
 	}
 	return nil
@@ -218,7 +221,7 @@ func (t *Transmission) call(method string, arguments interface{}, responseModel 
 }
 
 func (t *Transmission) rpcRequest(body []byte) ([]byte, error) {
-	request, err := http.NewRequest("POST", t.rpcUrl.String(), bytes.NewReader(body))
+	request, err := http.NewRequest("POST", t.rpcURL.String(), bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +231,7 @@ func (t *Transmission) rpcRequest(body []byte) ([]byte, error) {
 	request.Header.Add("Authorization", "Basic "+string(auth))
 	request.Header.Add("Content-Type", "application/json")
 	if t.csrfToken != "" {
-		request.Header.Add("X-Transmission-Session-Id", t.csrfToken)
+		request.Header.Add("X-Transmission-Session-ID", t.csrfToken)
 	}
 
 	client := http.Client{
@@ -238,14 +241,16 @@ func (t *Transmission) rpcRequest(body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 	if response.StatusCode == http.StatusConflict {
-		t.csrfToken = response.Header.Get("X-Transmission-Session-Id")
-		request.Header.Add("X-Transmission-Session-Id", t.csrfToken)
+		t.csrfToken = response.Header.Get("X-Transmission-Session-ID")
+		request.Header.Add("X-Transmission-Session-ID", t.csrfToken)
 		request.Body = io.NopCloser(bytes.NewReader(body))
 		response, err = client.Do(request)
 		if err != nil {
 			return nil, err
 		}
+		defer response.Body.Close()
 	}
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {

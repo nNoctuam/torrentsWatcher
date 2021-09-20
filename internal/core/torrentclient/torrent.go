@@ -6,7 +6,7 @@ import (
 )
 
 type Torrent struct {
-	Id          int
+	ID          int
 	Name        string
 	Hash        string
 	Comment     string    `json:"comment"`
@@ -17,7 +17,7 @@ type Torrent struct {
 
 func (t *Torrent) UnmarshalJSON(data []byte) error {
 	type Alias struct {
-		Id          int
+		ID          int `json:"id"`
 		Name        string
 		Comment     string `json:"comment"`
 		DownloadDir string `json:"downloadDir"`
@@ -29,7 +29,7 @@ func (t *Torrent) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	t.Id = torrent.Id
+	t.ID = torrent.ID
 	t.Name = torrent.Name
 	t.Hash = torrent.Hash
 	t.Comment = torrent.Comment

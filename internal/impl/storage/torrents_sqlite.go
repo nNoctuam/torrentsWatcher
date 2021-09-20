@@ -2,6 +2,7 @@ package storage
 
 import (
 	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/core/storage"
 
 	"github.com/jinzhu/gorm"
 )
@@ -25,8 +26,8 @@ func (t *torrentsSqliteStorage) First(torrent *models.Torrent, query ...interfac
 func (t *torrentsSqliteStorage) SaveTransmission(torrent *models.TransmissionTorrent) error {
 	existing := &models.TransmissionTorrent{}
 	_ = t.FirstTransmission(existing, "hash = ?", torrent.Hash)
-	if existing.Id != 0 {
-		torrent.Id = existing.Id
+	if existing.ID != 0 {
+		torrent.ID = existing.ID
 	}
 
 	return t.db.Save(&torrent).Error
@@ -40,6 +41,6 @@ func (t *torrentsSqliteStorage) FirstTransmission(torrent *models.TransmissionTo
 	return t.db.Where(query).First(torrent).Error
 }
 
-func NewTorrentsSqliteStorage(db *gorm.DB) *torrentsSqliteStorage {
+func NewTorrentsSqliteStorage(db *gorm.DB) storage.Torrents {
 	return &torrentsSqliteStorage{db: db}
 }

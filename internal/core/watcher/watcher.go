@@ -61,8 +61,8 @@ func (w *Watcher) Run() {
 			if err != nil {
 				w.logger.Error("Couldn't get torrents for check", zap.Error(err))
 			}
-			for _, torrent := range torrents {
-				w.checkTorrent(&torrent)
+			for i := range torrents {
+				w.checkTorrent(&torrents[i])
 			}
 			ticker = time.After(w.interval)
 		}
@@ -70,7 +70,7 @@ func (w *Watcher) Run() {
 }
 
 func (w *Watcher) checkTorrent(torrent *models.Torrent) {
-	updatedTorrent, err := w.trackers.GetTorrentInfo(torrent.PageUrl)
+	updatedTorrent, err := w.trackers.GetTorrentInfo(torrent.PageURL)
 
 	if err != nil {
 		w.logger.Error("Failed to parse torrent", zap.Error(err))
@@ -79,10 +79,10 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 
 	isUpdated := torrent.UploadedAt.Unix() != updatedTorrent.UploadedAt.Unix()
 
-	if isUpdated || torrent.FileUrl != "" && torrent.File == nil {
+	if isUpdated || torrent.FileURL != "" && torrent.File == nil {
 		_, file, err := w.trackers.DownloadTorrentFile(torrent)
 		if err != nil {
-			w.logger.Error("Failed to load torrent file", zap.Error(err), zap.String("url", torrent.FileUrl))
+			w.logger.Error("Failed to load torrent file", zap.Error(err), zap.String("url", torrent.FileURL))
 			return
 		}
 		torrent.File = file
@@ -91,10 +91,15 @@ func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 	torrent.UpdateFrom(updatedTorrent)
 
 	if isUpdated {
-		w.logger.Info("torrent was updated", zap.String("title", torrent.Title), zap.String("url", torrent.PageUrl))
-		err = w.torrentClient.UpdateTorrent(torrent.PageUrl, torrent.File)
+		w.logger.Info("torrent was updated", zap.String("title", torrent.Title), zap.String("url", torrent.PageURL))
+		err = w.torrentClient.UpdateTorrent(torrent.PageURL, torrent.File)
 		if err != nil {
-			w.logger.Error("torrent replace", zap.String("title", torrent.Title), zap.String("url", torrent.PageUrl), zap.Error(err))
+			w.logger.Error(
+				"torrent replace",
+				zap.String("title", torrent.Title),
+				zap.String("url", torrent.PageURL),
+				zap.Error(err),
+			)
 		}
 	}
 

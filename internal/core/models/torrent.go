@@ -9,10 +9,10 @@ import (
 )
 
 type Torrent struct {
-	Id         uint       `json:"id" gorm:"primary_key"`
+	ID         uint       `json:"id" gorm:"primary_key"`
 	Title      string     `json:"title"`
-	PageUrl    string     `json:"page_url" gorm:"unique"`
-	FileUrl    string     `json:"file_url"`
+	PageURL    string     `json:"page_url" gorm:"unique"`
+	FileURL    string     `json:"file_url"`
 	File       []byte     `json:"-"`
 	Forum      string     `gorm:"-"`
 	Author     string     `gorm:"-"`
@@ -51,15 +51,15 @@ func (t *Torrent) GetDeletedAt() int64 {
 func (t *Torrent) UpdateFrom(updatedTorrent *Torrent) {
 	t.Title = updatedTorrent.Title
 	t.UploadedAt = updatedTorrent.UploadedAt
-	t.FileUrl = updatedTorrent.FileUrl
+	t.FileURL = updatedTorrent.FileURL
 }
 
 func (t *Torrent) ToPB() *pb.Torrent {
 	return &pb.Torrent{
-		Id:         uint32(t.Id),
+		ID:         uint32(t.ID),
 		Title:      t.Title,
-		PageUrl:    t.PageUrl,
-		FileUrl:    t.FileUrl,
+		PageUrl:    t.PageURL,
+		FileUrl:    t.FileURL,
 		Forum:      t.Forum,
 		Author:     t.Author,
 		Size:       t.Size,
