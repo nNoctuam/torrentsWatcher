@@ -58,15 +58,13 @@ func Load(
 	if wrap != nil {
 		reader, err = wrap(res)
 		if err != nil {
-			fmt.Println("Encoding error:", err)
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("encoding error: %w", err)
 		}
 	}
 
 	body, err := ioutil.ReadAll(reader)
 	if err != nil {
-		fmt.Println("IO error:", err)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("IO error: %w", err)
 	}
 	return res.Header, bytes.NewReader(body), nil
 }

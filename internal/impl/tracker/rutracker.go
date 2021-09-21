@@ -56,7 +56,7 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 	}
 
 	if info.Title != "" && document.Find("#logged-in-username").Size() == 0 {
-		fmt.Println("Unauthorized")
+		t.logger.Info("Unauthorized")
 		return nil, tracking.ErrUnauthorized
 	}
 

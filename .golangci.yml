@@ -8,9 +8,9 @@ linters:
     - goconst
     - gocritic
     - goimports
-    - golint
+    - revive
     - gosec
-    - lll
+#    - lll
     - nakedret
     - nestif
     - prealloc

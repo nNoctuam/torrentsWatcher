@@ -58,11 +58,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	notificator := getNotificator(cfg)
+	platformNotificator := getNotificator(cfg)
 
 	db, err := gorm.Open("sqlite3", "./torrents.db")
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("open db", zap.Error(err))
+		os.Exit(1)
 	}
 
 	defer db.Close()
@@ -82,13 +83,21 @@ func main() {
 		}
 	}
 
-	transmissionClient, err := torrentClientImpl.NewTransmission(cfg.AutoDownloadDir, cfg.Transmission.RPCURL, cfg.Transmission.Login, cfg.Transmission.Password)
+	transmissionClient, err := torrentClientImpl.NewTransmission(
+		cfg.AutoDownloadDir,
+		cfg.Transmission.RPCURL,
+		cfg.Transmission.Login,
+		cfg.Transmission.Password,
+	)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("make transmission client", zap.Error(err))
+		_ = db.Close()
+		// nolint: gocritic
+		os.Exit(1)
 	}
 
 	wg.Add(1)
-	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, notificator, transmissionClient, torrentsStorage).Run()
+	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
 
 	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, transmissionClient, cfg.Transmission.Folders)
 
@@ -97,9 +106,9 @@ func main() {
 	case err := <-errorChan:
 		logger.Panic("Service crashed", zap.Error(err))
 	case <-ctx.Done():
-		fmt.Println("Service context stopped")
+		logger.Info("Service context stopped")
 	case <-waitExitSignal():
-		fmt.Println("Service stopped by signal")
+		logger.Info("Service stopped by signal")
 	}
 
 	ctxCancel()

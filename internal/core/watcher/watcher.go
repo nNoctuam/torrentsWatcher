@@ -48,7 +48,7 @@ func New(
 }
 
 func (w *Watcher) Run() {
-	fmt.Printf("Start checking every %s\n", w.interval)
+	w.logger.Info(fmt.Sprintf("Start checking every %s\n", w.interval))
 	ticker := time.After(0)
 	for {
 		select {
