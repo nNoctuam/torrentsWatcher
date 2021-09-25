@@ -37,7 +37,7 @@ test:
     - docker-exec
   artifacts:
     paths:
-      - test_succeedeed
+      - test_succeeded
   image: golang:1.17
   before_script: [] # prevent run docker login
   variables:
