@@ -36,13 +36,13 @@ lint:
     - golangci-lint run -v
     - touch lint_succeeded
 
-test:
+test-go:
   stage: test
   tags:
     - docker-exec
   artifacts:
     paths:
-      - test_succeeded
+      - test_go_succeeded
   image: golang:1.17
   before_script: [] # prevent run docker login
   variables:
@@ -51,26 +51,41 @@ test:
     - mkdir cmd/torrentsWatcher/dist && touch cmd/torrentsWatcher/dist/dummy.txt
     - go test ./... -v -coverprofile coverage.out
     - go tool cover -func=coverage.out
-    - touch test_succeeded
+    - touch test_go_succeeded
   only:
     - branches
   except:
     - tags
 
-# TODO jest unit tests
+test-js:
+  stage: test
+  tags:
+    - docker-exec
+  artifacts:
+    paths:
+      - test_js_succeeded
+  cache:
+    key: ${CI_PROJECT_PATH_SLUG}-test-js
+  image: node:13
+  before_script: [] # prevent run docker login
+  script:
+    - cd frontend && npm ci --dev && npm run test
+    - touch test_js_succeeded
 
 build:
   stage: build
   needs:
     - lint
-    - test
+    - test-go
+    - test-js
   artifacts:
     paths:
       - build_succeeded
   image: docker
   script:
     - if [ ! -f lint_succeeded ]; then exit 1; fi
-    - if [ ! -f test_succeeded ]; then exit 1; fi
+    - if [ ! -f test_go_succeeded ]; then exit 1; fi
+    - if [ ! -f test_js_succeeded ]; then exit 1; fi
     - docker build -t ${CI_PROJECT_PATH_SLUG}:latest .
 #    - docker tag ${CI_PROJECT_PATH_SLUG}:latest ${REGISTRY_PATH}:latest
 #    - docker push ${REGISTRY_PATH}:latest
