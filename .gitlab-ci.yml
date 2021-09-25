@@ -69,7 +69,7 @@ test-js:
   image: node:13
   before_script: [] # prevent run docker login
   script:
-    - cd frontend && npm ci --dev && npm run test
+    - cd frontend && npm ci --dev && npm run test && cd ..
     - touch test_js_succeeded
 
 build:
