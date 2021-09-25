@@ -4,7 +4,7 @@
     <div id="downloads" v-if="!selected">
       <ul class="downloads">
         <li v-for="torrent in downloads" :key="torrent.ID" @click="selected=torrent">
-          <span class="id">{{ torrent.ID }}</span>
+          <span class="chip">{{ torrent.ID }}</span>
           <span class="path">{{ torrent.downloadDir.replace(/\/$/, '') }}/</span>
           <span class="name">{{ torrent.name }}</span>
         </li>
@@ -96,11 +96,7 @@ export default {
         background-color: #eee;
       }
     }
-    .id {
-      color: white;
-      background-color: gray;
-      display: inline-block;
-      border-radius: 5px;
+    .chip {
       margin-right: 10px;
       padding-top: 4px;
       width: 50px;

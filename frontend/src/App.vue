@@ -39,6 +39,7 @@ $primary-color: #16a085 !default;
 @import "../node_modules/spectre.css/src/tables";
 @import "../node_modules/spectre.css/src/animations";
 @import "../node_modules/spectre.css/src/icons";
+@import "../node_modules/spectre.css/src/chips";
 </style>
 
 <style lang="stylus">
