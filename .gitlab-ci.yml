@@ -71,7 +71,7 @@ build:
   script:
     - if [ ! -f lint_succeeded ]; then exit 1; fi
     - if [ ! -f test_succeeded ]; then exit 1; fi
-    - docker build --cache-from ${CI_PROJECT_PATH_SLUG}:latest -t ${CI_PROJECT_PATH_SLUG}:latest .
+    - docker build -t ${CI_PROJECT_PATH_SLUG}:latest .
 #    - docker tag ${CI_PROJECT_PATH_SLUG}:latest ${REGISTRY_PATH}:latest
 #    - docker push ${REGISTRY_PATH}:latest
     - touch build_succeeded
