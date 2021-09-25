@@ -24,6 +24,7 @@ lint:
     paths:
       - lint_succeeded
   cache:
+    key: torrents-watcher-golangci-lint
     paths:
       - /var/golangci-lint-cache
   before_script: [] # prevent run docker login
