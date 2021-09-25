@@ -1,6 +1,6 @@
 FROM node:13 AS frontendBuilder
 WORKDIR /var/torrentsWatcherFrontend
-RUN npm i -g @vue/cli
+#RUN npm i -g @vue/cli
 ADD frontend/package.json .
 ADD frontend/package-lock.json .
 RUN npm ci

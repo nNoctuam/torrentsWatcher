@@ -23,9 +23,13 @@ lint:
   artifacts:
     paths:
       - lint_succeeded
+  cache:
+    paths:
+      - /var/golangci-lint-cache
   before_script: [] # prevent run docker login
   variables:
     GOFLAGS: -mod=vendor
+    GOLANGCI_LINT_CACHE: /var/golangci-lint-cache
   script:
     - mkdir cmd/torrentsWatcher/dist && touch cmd/torrentsWatcher/dist/dummy.txt
     - golangci-lint run -v
