@@ -49,6 +49,7 @@ test:
 build:
   stage: build
   needs:
+    - lint
     - test
   image: docker
   script:
