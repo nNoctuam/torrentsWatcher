@@ -2,26 +2,28 @@
   <div>
 
     <div id="downloads" v-if="!selected">
-      <ul>
-        <li v-for="torrent in downloads" :key="torrent.ID" @click="selected=torrent">#{{ torrent.ID }} -
-          {{ (torrent.downloadDir + '/' + torrent.name).replace('//', '/') }}
+      <ul class="downloads">
+        <li v-for="torrent in downloads" :key="torrent.ID" @click="selected=torrent">
+          <span class="id">{{ torrent.ID }}</span>
+          <span class="path">{{ torrent.downloadDir.replace(/\/$/, '') }}/</span>
+          <span class="name">{{ torrent.name }}</span>
         </li>
       </ul>
 
     </div>
 
-    <div id="rename" v-if="files">
+    <div id="rename" v-if="files && files.length">
 
-      <button @click="selected=null; files=[]">&larr; назад</button>
+      <button class="btn" @click="selected=null; files=[]">&larr; назад</button>
 
-      <div>
+      <div id="mapping" class="input-group">
         <textarea :rows="files.length+1" style="width: 50%; overflow-x: auto" :value="getFilesList()"
                   readonly="true"></textarea>
 
         <textarea :rows="files.length+1" style="width: 50%; overflow-x: auto" v-model="newNamesList"></textarea>
       </div>
 
-      <button @click="rename" :disabled="!valid">Переименовать</button>
+      <button class="btn" @click="rename" :disabled="!valid">Переименовать</button>
 
     </div>
 
@@ -67,10 +69,10 @@ export default {
       return this.files.map(f => f.name).join('\n')
     },
     rename () {
-      const basicNamesList = {}
+      const basicNamesList = []
       this.newNamesList.split('\n').forEach((name, i) => {
         if (this.files[i].name !== name) {
-          basicNamesList[this.files[i].name] = name
+          basicNamesList.push([this.files[i].name, name])
         }
       })
       api.renameTorrentParts(this.selected.ID, convertNamesList(basicNamesList))
@@ -84,6 +86,33 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+  ul.downloads {
+    list-style: none;
+    li {
+      cursor: pointer;
+      transition: 0.2s all;
+      &:hover {
+        background-color: #eee;
+      }
+    }
+    .id {
+      color: white;
+      background-color: gray;
+      display: inline-block;
+      border-radius: 5px;
+      margin-right: 10px;
+      padding-top: 4px;
+      width: 50px;
+      text-align: center;
+    }
+    .path {
+      color: #bbb;
+      margin-right: 15px;
+    }
+  }
 
+  #mapping {
+    margin: 20px 0;
+  }
 </style>

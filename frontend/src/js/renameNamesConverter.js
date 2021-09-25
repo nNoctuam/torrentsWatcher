@@ -1,40 +1,58 @@
 
 export default function convertNamesList (basicNamesList) {
-  const replaceMap = {}
-  const replaceTasks = []
-  Object.keys(basicNamesList).forEach(k => {
-    Object.keys(replaceMap).forEach(key => {
-      if (k.indexOf(key) === 0) {
-        k = replaceMap[key] + k.substr(0, key.length)
-        // console.log('replace oldPath at start: ' + key + ' => ' + k.split('/'))
+  const tasks = []
+  let finished = false
+  while (!finished) {
+    finished = true
+    basicNamesList.forEach(([oldPath, newPath]) => {
+      if (!finished) {
+        return false
+      }
+      // console.log(`iterate basicNamesList: old=${oldPath} | new=${newPath} | tasks=`, tasks)
+      if (oldPath !== newPath) {
+        tasks.push(getReplacement(oldPath, newPath))
+        replacePaths(basicNamesList, tasks)
+        finished = false
+        return false
       }
     })
-    let oldPath = k.split('/')
-    const newPath = basicNamesList[k].split('/')
+  }
+  // console.log('final tasks=', tasks)
+  return tasks
+}
 
-    oldPath.forEach((segment, i) => {
-      if (i < oldPath.length && segment !== newPath[i]) {
-        const key = oldPath.filter((v, j) => j <= i).join('/')
-        if (replaceMap[key] && replaceMap[key] !== newPath[i]) {
-          throw new Error('path renamed differently: ' +
-            'old=' + key +
-            'renamed=' + replaceMap[key] +
-            'renamed=' + newPath[i]
-          )
-        }
-        replaceMap[key] = newPath.filter((v, j) => j <= i).join('/')
-        replaceTasks.push([key, newPath[i]])
+function getReplacement (oldPath, newPath) {
+  const oldPathSegments = oldPath.split('/')
+  const newPathSegments = newPath.split('/')
+  for (let i = 0; i < oldPathSegments.length; i++) {
+    if (oldPathSegments[i] !== newPathSegments[i]) {
+      return [
+        oldPathSegments.filter((v, j) => j <= i).join('/'),
+        newPathSegments[i]
+      ]
+    }
+  }
 
-        Object.keys(replaceMap).forEach(key => {
-          if (k.indexOf(key) === 0) {
-            // console.log('replace oldPath in iteration: ' + k + ' => ' + (replaceMap[key] + k.substr(key.length)) + ' || key=' + key)
-            k = replaceMap[key] + k.substr(key.length)
-            oldPath = k.split('/')
-          }
-        })
+  throw new Error('couldn\'t make replacement: ' + oldPath + ' => ' + newPath)
+}
+
+function replacePaths (basicNamesList, tasks) {
+  // console.log('replacePaths', basicNamesList, tasks)
+  tasks.forEach(([oldPath, newPath]) => {
+    // console.log(`check ${oldPath} to replace with ${newPath}`)
+    const oldPathSegments = oldPath.split('/')
+    oldPathSegments.pop()
+    newPath = (oldPathSegments.length === 0 ? '' : oldPathSegments.join('/') + '/') + newPath
+    basicNamesList.forEach((v, i) => {
+      // console.log(`check ${basicNamesList[i][0]} for ${oldPath} to replace with ${newPath}`)
+      if (basicNamesList[i][0].indexOf(oldPath) === 0) {
+        basicNamesList[i][0] = newPath + basicNamesList[i][0].substr(oldPath.length)
+        // console.log('replaced to ' + basicNamesList[i][0])
+      } else {
+        // console.log('not replaced')
       }
     })
   })
 
-  return replaceTasks
+  return basicNamesList
 }
