@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import App from './App.vue'
 import Search from './components/search'
 import Watch from './components/torrents'
+import MassRename from './components/mass-rename'
 import moment from 'moment'
 // import 'spectre.css/dist/spectre.min.css'
 // import 'spectre.css/dist/spectre-exp.min.css'
@@ -18,7 +19,8 @@ const router = new VueRouter({
   routes: [
     { path: '/', redirect: '/search' },
     { path: '/search', component: Search },
-    { path: '/watch', component: Watch }
+    { path: '/watch', component: Watch },
+    { path: '/mass-rename', component: MassRename }
   ]
 })
 

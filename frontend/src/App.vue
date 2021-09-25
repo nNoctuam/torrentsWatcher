@@ -7,6 +7,9 @@
       <router-link to="/watch">
         <img alt="Watch" src="./assets/transmission-logo.png" :class="{active:$route.path==='/watch'}">
       </router-link>
+      <router-link to="/mass-rename">
+        <img alt="Watch" src="./assets/transmission-logo.png" :class="{active:$route.path==='/mass-rename'}">
+      </router-link>
     </div>
     <router-view/>
   </div>

@@ -8,7 +8,8 @@
     "build-prod": "vue-cli-service build --mode production --fix",
     "lint": "vue-cli-service lint --fix",
     "copy-dist": "cp -r dist ../cmd/torrentsWatcher/",
-    "all": "npm run lint; npm run build && npm run copy-dist"
+    "all": "npm run lint; npm run build && npm run copy-dist",
+    "test": "jest"
   },
   "dependencies": {
     "core-js": "^3.6.4",
@@ -30,6 +31,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^6.2.2",
+    "jest": "^27.2.1",
     "sass": "^1.32.8",
     "sass-loader": "^10.1.1",
     "stylus": "^0.54.7",

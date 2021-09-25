@@ -141,11 +141,13 @@ func serve(
 	router.MethodFunc("GET", "/download-folders", handlers.GetDownloadFolders(downloadFolders))
 	router.MethodFunc("GET", "/torrents", handlers.GetTorrents(logger, torrentsStorage))
 	router.MethodFunc("GET", "/transmission-torrents", handlers.GetTransmissionTorrents(torrentsStorage, torrentClient))
+	router.MethodFunc("GET", "/transmission-torrent-files", handlers.GetTransmissionTorrentFiles(torrentClient))
 	router.MethodFunc("POST", "/torrent", handlers.AddTorrent(logger, trackers, torrentsStorage))
 	router.MethodFunc("POST", "/search", handlers.Search(logger, trackers))
 	router.MethodFunc("POST", "/download", handlers.DownloadWithClient(logger, trackers, torrentClient, torrentsStorage, downloadFolders))
 	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent(logger, torrentsStorage))
 	router.MethodFunc("POST", `/rename`, handlers.Rename(logger, torrentClient))
+	router.MethodFunc("POST", `/rename-parts`, handlers.RenameParts(logger, torrentClient))
 
 	content, _ := fs.Sub(distContent, "dist")
 	router.Handle("/*", http.FileServer(http.FS(content)))

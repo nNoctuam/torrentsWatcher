@@ -14,6 +14,13 @@ func GetTransmissionTorrents(
 	torrentClient torrentclient.Client,
 ) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		params := struct {
+			OnlyRegistered bool
+		}{OnlyRegistered: true}
+		if r.URL.Query().Get("only-registered") != "false" {
+			params.OnlyRegistered = false
+		}
+
 		var torrents []models.TransmissionTorrent
 		err := torrentsStorage.GetAllTransmission(&torrents)
 		if err != nil {
@@ -30,13 +37,15 @@ func GetTransmissionTorrents(
 		var result []torrentclient.Torrent
 		for _, t := range activeTorrents {
 			found := false
-			for _, registeredTorrent := range torrents {
-				if registeredTorrent.Hash == t.Hash {
-					found = true
-					break
+			if params.OnlyRegistered {
+				for _, registeredTorrent := range torrents {
+					if registeredTorrent.Hash == t.Hash {
+						found = true
+						break
+					}
 				}
 			}
-			if found {
+			if found || !params.OnlyRegistered {
 				result = append(result, t)
 			}
 		}

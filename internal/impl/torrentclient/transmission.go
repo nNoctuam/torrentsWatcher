@@ -88,6 +88,20 @@ func (t *Transmission) GetTorrents() ([]torrentclient.Torrent, error) {
 	return responseModel.Arguments.Torrents, err
 }
 
+func (t *Transmission) GetTorrentFiles(ids []int) ([]torrentclient.Torrent, error) {
+	var responseModel struct {
+		Arguments struct {
+			Torrents []torrentclient.Torrent `json:"torrents"`
+		} `json:"arguments"`
+	}
+	err := t.call("torrent-get", map[string]interface{}{
+		"ids":    ids,
+		"fields": []string{"id", "name", "downloadDir", "files"},
+	}, &responseModel)
+
+	return responseModel.Arguments.Torrents, err
+}
+
 func (t *Transmission) RemoveTorrents(ids []int, deleteLocalData bool) error {
 	var responseModel struct {
 		Arguments struct{} `json:"arguments"`
@@ -229,7 +243,7 @@ func (t *Transmission) rpcRequest(body []byte) ([]byte, error) {
 	auth := make([]byte, base64.StdEncoding.EncodedLen(len([]byte(t.login+":"+t.password))))
 	base64.StdEncoding.Encode(auth, []byte(t.login+":"+t.password))
 	request.Header.Add("Authorization", "Basic "+string(auth))
-	request.Header.Add("Content-Type", "application/json")
+	request.Header.Add("Content-Type", "application/json; charset=UTF-8")
 	if t.csrfToken != "" {
 		request.Header.Add("X-Transmission-Session-ID", t.csrfToken)
 	}

@@ -44,8 +44,12 @@ test:
   except:
     - tags
 
+# TODO jest unit tests
+
 build:
   stage: build
+  needs:
+    - test
   image: docker
   script:
     - docker build -t ${CI_PROJECT_PATH_SLUG}:latest .
@@ -57,6 +61,8 @@ build:
 
 deploy:
   stage: deploy
+  needs:
+    - build
   image: docker
   script:
     - docker stop ${CI_PROJECT_PATH_SLUG} && docker rm ${CI_PROJECT_PATH_SLUG} || true

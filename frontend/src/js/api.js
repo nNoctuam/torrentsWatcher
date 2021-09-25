@@ -15,6 +15,29 @@ const api = {
         return Torrents.deserializeBinary(result).toObject().torrentsList
       })
   },
+  getTransmissionTorrents () {
+    return fetch(this.domain + '/transmission-torrents')
+      .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+        return r.json()
+      })
+  },
+
+  getTransmissionTorrentFiles (id) {
+    return fetch(this.domain + '/transmission-torrent-files?' + new URLSearchParams({
+      id
+    }))
+      .then(async (r) => {
+        if (r.status !== 200) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+        return r.json()
+      })
+  },
 
   getDownloadFolders () {
     return fetch(this.domain + '/download-folders')
@@ -111,7 +134,28 @@ const api = {
         }
         return r
       })
+  },
+
+  renameTorrentParts (id, names) {
+    return fetch(this.domain + '/rename-parts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+      },
+      body: JSON.stringify({
+        id,
+        names
+      })
+    })
+      .then(async (r) => {
+        if (r.status !== 200 && r.status !== 204) {
+          const text = await r.text()
+          throw new Error(text)
+        }
+        return r
+      })
   }
+
 }
 
 export default api
