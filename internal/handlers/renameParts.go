@@ -42,6 +42,5 @@ func RenameParts(
 			}
 		}
 		w.WriteHeader(http.StatusNoContent)
-		return
 	}
 }
