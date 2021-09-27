@@ -39,6 +39,6 @@ const sets = [
 
 describe.each(sets)('convertNamesList', (set) => {
   it(`Should be ${JSON.stringify(set.expected)} for basic ${JSON.stringify(set.list)}`, () => {
-      expect(convertNamesList(set.list)).toStrictEqual(set.expected)
+    expect(convertNamesList(set.list)).toStrictEqual(set.expected)
   })
 })

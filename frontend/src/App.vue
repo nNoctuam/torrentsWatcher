@@ -16,10 +16,11 @@
 </template>
 
 <script lang="ts">
-export default {
-  name: 'App',
-  data: () => ({})
-}
+import { Options, Vue } from 'vue-class-component'
+// import HelloWorld from './components/HelloWorld.vue'
+
+@Options({})
+export default class App extends Vue {}
 </script>
 
 <style lang="scss">

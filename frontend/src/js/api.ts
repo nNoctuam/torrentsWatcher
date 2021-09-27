@@ -2,7 +2,7 @@ import { Torrent } from '../pb/torrent_pb'
 import { Torrents } from '../pb/torrentsList_pb'
 
 const api = {
-  domain: '',
+  domain: 'http://localhost:8803',
 
   getTorrents () {
     return fetch(this.domain + '/torrents')
@@ -12,7 +12,7 @@ const api = {
           throw new Error(text)
         }
         const result = await r.arrayBuffer()
-        return Torrents.deserializeBinary(result).toObject().torrentsList
+        return Torrents.deserializeBinary(new Uint8Array(result)).toObject().torrentsList
       })
   },
   getTransmissionTorrents () {
@@ -26,9 +26,9 @@ const api = {
       })
   },
 
-  getTransmissionTorrentFiles (id) {
+  getTransmissionTorrentFiles (id: bigint) {
     return fetch(this.domain + '/transmission-torrent-files?' + new URLSearchParams({
-      id
+      id: id.toString()
     }))
       .then(async (r) => {
         if (r.status !== 200) {
@@ -50,7 +50,7 @@ const api = {
       })
   },
 
-  addTorrent (url) {
+  addTorrent (url: string) {
     return fetch(this.domain + '/torrent', {
       method: 'POST',
       headers: {
@@ -66,17 +66,17 @@ const api = {
           throw new Error(text)
         }
         const result = await r.arrayBuffer()
-        return Torrent.deserializeBinary(result).toObject()
+        return Torrent.deserializeBinary(new Uint8Array(result)).toObject()
       })
   },
 
-  deleteTorrent (id) {
+  deleteTorrent (id: bigint) {
     return fetch(this.domain + '/torrent/' + id, {
       method: 'DELETE'
     })
   },
 
-  search (text) {
+  search (text: string) {
     return fetch(this.domain + '/search', {
       method: 'POST',
       headers: {
@@ -92,11 +92,11 @@ const api = {
           throw new Error(text)
         }
         const result = await r.arrayBuffer()
-        return Torrents.deserializeBinary(result).toObject().torrentsList
+        return Torrents.deserializeBinary(new Uint8Array(result)).toObject().torrentsList
       })
   },
 
-  downloadTorrent (pageUrl, folder) {
+  downloadTorrent (pageUrl: string, folder: string) {
     return fetch(this.domain + '/download', {
       method: 'POST',
       headers: {
@@ -116,7 +116,7 @@ const api = {
       })
   },
 
-  renameTorrent (hash, newName) {
+  renameTorrent (hash: string, newName: string) {
     return fetch(this.domain + '/rename', {
       method: 'POST',
       headers: {
@@ -136,7 +136,7 @@ const api = {
       })
   },
 
-  renameTorrentParts (id, names) {
+  renameTorrentParts (id: bigint, names: string[][]) {
     return fetch(this.domain + '/rename-parts', {
       method: 'POST',
       headers: {
