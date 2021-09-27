@@ -244,15 +244,16 @@ export default defineComponent({
       this.searching = true;
       api
         .search(this.searchText)
-        .then((r) => {
-          console.log(r);
-          this.torrents = r.map((torrent): TorrentLocal => {
-            const t: TorrentLocal = torrent as TorrentLocal;
+        .then((r: any) => {
+          console.log('got search result:', r);
+          this.torrents = r.map((torrent: Torrent.AsObject): TorrentLocal => {
+            const t: TorrentLocal = torrent as unknown as TorrentLocal;
             t.isBeingDownloaded = false;
             return t;
           });
+          console.log('final torrents: ', this.torrents)
         })
-        .catch((e) => {
+        .catch((e: any) => {
           this.error = e;
         })
         .then(() => {

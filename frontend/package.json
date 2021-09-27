@@ -14,6 +14,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "google-protobuf": "^3.12.0-rc.1",
+    "grpc-web": "^1.2.1",
     "moment": "^2.24.0",
     "spectre.css": "^0.5.9",
     "vue": "^3.0.0",

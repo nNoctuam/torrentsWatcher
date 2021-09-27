@@ -9,7 +9,10 @@ protoc \
     -I=./protobuf \
     --go_out=internal/pb \
     --go_opt=paths=source_relative \
+    --go-grpc_out=internal/pb \
+    --go-grpc_opt=paths=source_relative \
     --plugin="protoc-gen-ts=${PROTOC_GEN_TS_PATH}" \
-    --js_out="import_style=commonjs,binary:frontend/src/pb" \
-    --ts_out="frontend/src/pb" \
-    ./protobuf/*.proto
+    --grpc-web_out=import_style=typescript,mode=grpcwebtext:"frontend/src/pb" \
+    ./protobuf/baseService.proto
+#    --js_out="import_style=commonjs,binary:frontend/src/pb" \
+#    --ts_out="frontend/src/pb" \
