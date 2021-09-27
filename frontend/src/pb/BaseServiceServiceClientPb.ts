@@ -75,5 +75,45 @@ export class BaseServiceClient {
     this.methodInfoSearch);
   }
 
+  methodInfoGetMonitoredTorrents = new grpcWeb.AbstractClientBase.MethodInfo(
+    baseService_pb.TorrentsResponse,
+    (request: baseService_pb.Empty) => {
+      return request.serializeBinary();
+    },
+    baseService_pb.TorrentsResponse.deserializeBinary
+  );
+
+  getMonitoredTorrents(
+    request: baseService_pb.Empty,
+    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.TorrentsResponse>;
+
+  getMonitoredTorrents(
+    request: baseService_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: baseService_pb.TorrentsResponse) => void): grpcWeb.ClientReadableStream<baseService_pb.TorrentsResponse>;
+
+  getMonitoredTorrents(
+    request: baseService_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: baseService_pb.TorrentsResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/protobuf.BaseService/GetMonitoredTorrents',
+        request,
+        metadata || {},
+        this.methodInfoGetMonitoredTorrents,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/protobuf.BaseService/GetMonitoredTorrents',
+    request,
+    metadata || {},
+    this.methodInfoGetMonitoredTorrents);
+  }
+
 }
 

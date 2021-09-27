@@ -104,7 +104,7 @@ func main() {
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
 
 	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, transmissionClient, cfg.Transmission.Folders)
-	go serveRpc(logger.Named("RPC"), trackers)
+	go serveRpc(logger.Named("RPC"), trackers, torrentsStorage)
 
 	logger.Info("Service started")
 	select {
@@ -120,10 +120,10 @@ func main() {
 	wg.Wait()
 }
 
-func serveRpc(logger *zap.Logger, trackers tracking.Trackers) {
+func serveRpc(logger *zap.Logger, trackers tracking.Trackers, torrentsStorage storage.Torrents) {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	grpcServer.RegisterService(&_grpc.BaseServiceDesc, _grpc.NewRpcServer(logger, trackers))
+	grpcServer.RegisterService(&_grpc.BaseServiceDesc, _grpc.NewRpcServer(logger, trackers, torrentsStorage))
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8804))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

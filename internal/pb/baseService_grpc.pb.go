@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BaseServiceClient interface {
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*TorrentsResponse, error)
+	GetMonitoredTorrents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*TorrentsResponse, error)
 }
 
 type baseServiceClient struct {
@@ -38,11 +39,21 @@ func (c *baseServiceClient) Search(ctx context.Context, in *SearchRequest, opts 
 	return out, nil
 }
 
+func (c *baseServiceClient) GetMonitoredTorrents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*TorrentsResponse, error) {
+	out := new(TorrentsResponse)
+	err := c.cc.Invoke(ctx, "/protobuf.BaseService/GetMonitoredTorrents", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BaseServiceServer is the server API for BaseService service.
 // All implementations must embed UnimplementedBaseServiceServer
 // for forward compatibility
 type BaseServiceServer interface {
 	Search(context.Context, *SearchRequest) (*TorrentsResponse, error)
+	GetMonitoredTorrents(context.Context, *Empty) (*TorrentsResponse, error)
 	mustEmbedUnimplementedBaseServiceServer()
 }
 
@@ -52,6 +63,9 @@ type UnimplementedBaseServiceServer struct {
 
 func (UnimplementedBaseServiceServer) Search(context.Context, *SearchRequest) (*TorrentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+}
+func (UnimplementedBaseServiceServer) GetMonitoredTorrents(context.Context, *Empty) (*TorrentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMonitoredTorrents not implemented")
 }
 func (UnimplementedBaseServiceServer) mustEmbedUnimplementedBaseServiceServer() {}
 
@@ -84,6 +98,24 @@ func _BaseService_Search_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BaseService_GetMonitoredTorrents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BaseServiceServer).GetMonitoredTorrents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.BaseService/GetMonitoredTorrents",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BaseServiceServer).GetMonitoredTorrents(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BaseService_ServiceDesc is the grpc.ServiceDesc for BaseService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +126,10 @@ var BaseService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Search",
 			Handler:    _BaseService_Search_Handler,
+		},
+		{
+			MethodName: "GetMonitoredTorrents",
+			Handler:    _BaseService_GetMonitoredTorrents_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

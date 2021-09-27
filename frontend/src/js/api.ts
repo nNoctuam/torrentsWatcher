@@ -1,4 +1,4 @@
-import { SearchRequest, TorrentsResponse, Torrent } from "@/pb/baseService_pb";
+import { SearchRequest, Torrent, Empty } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
 const domainRPC = "http://localhost:8805";
@@ -9,15 +9,8 @@ const api = {
   rpcClient: new BaseServiceClient(domainRPC),
 
   getTorrents(): Promise<Torrent.AsObject[]> {
-    return fetch(this.domain + "/torrents").then(async (r) => {
-      if (r.status !== 200) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      const result = await r.arrayBuffer();
-      return TorrentsResponse.deserializeBinary(
-        new Uint8Array(result)
-      ).toObject().torrentsList;
+    return this.rpcClient.getMonitoredTorrents(new Empty(), null).then((r) => {
+      return r.getTorrentsList().map((torrent) => torrent.toObject());
     });
   },
 

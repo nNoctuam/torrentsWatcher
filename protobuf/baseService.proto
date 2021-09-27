@@ -7,8 +7,10 @@ import "google/protobuf/timestamp.proto";
 
 service BaseService {
   rpc Search(SearchRequest) returns (TorrentsResponse) {}
+  rpc GetMonitoredTorrents(Empty) returns (TorrentsResponse) {}
 }
 
+message Empty {}
 message SearchRequest {
   string Text = 1;
 }
@@ -16,8 +18,6 @@ message SearchRequest {
 message TorrentsResponse {
   repeated Torrent torrents = 1;
 }
-
-
 message Torrent {
   uint32 id = 1;
   string title = 2;
