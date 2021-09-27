@@ -55,7 +55,7 @@
             {{ timeFromNow(torrent.updatedAt.seconds * 1000) }}
           </td>
           <td>
-            <a class="download" v-on:click="download(torrent)">
+            <a class="download" v-on:click.prevent="download(torrent)">
               <i class="icon icon-2x icon-download"></i>
             </a>
           </td>
@@ -68,7 +68,6 @@
       <div class="modal-container">
         <div class="modal-header">
           <button
-            href="#close"
             class="btn btn-clear float-right"
             v-on:click="folderSelectCancel()"
           ></button>
@@ -157,21 +156,49 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import api from "../js/api";
 import moment from "moment";
-// import { Torrents } from '../pb/torrentsList_pb'
+import { Torrent } from "@/pb/torrent_pb";
+import { defineComponent } from "vue";
 
-export default {
+interface TorrentLocal extends Torrent.AsObject {
+  isBeingDownloaded: boolean;
+}
+
+class Data {
+  searchText = "";
+  searching = false;
+
+  selectedRow: number | null = null;
+
+  folders: Map<string, string> = new Map();
+  showSelectFolder = false;
+  folderSelect: null | ((folder: string) => void) = null;
+  folderSelectCancel: null | (() => void) = null;
+
+  downloading = false;
+  downloadedName: string | null = null;
+  downloadedHash: string | null = null;
+
+  newName: string | null = null;
+  renaming = false;
+
+  error: string | null = null;
+
+  torrents: TorrentLocal[] = [];
+}
+
+export default defineComponent({
   name: "search",
 
-  data: () => ({
+  data: (): Data => ({
     searchText: "",
     searching: false,
 
     selectedRow: null,
 
-    folders: [],
+    folders: new Map(),
     showSelectFolder: false,
     folderSelect: null,
     folderSelectCancel: null,
@@ -189,33 +216,41 @@ export default {
   }),
 
   methods: {
-    timeFromNow(time) {
+    timeFromNow(time: string | number): string {
       return moment(time).fromNow();
     },
-    byteSize(bytes) {
-      var posfixes = ["", "K", "M", "G", "T", "P", "Y", "Z"];
-      var i = 0;
+
+    byteSize(bytes: number): string {
+      const postfixes = ["", "K", "M", "G", "T", "P", "Y", "Z"];
+      let i = 0;
       while (bytes > 1024) {
         bytes = Math.round((bytes / 1024) * 100) / 100;
         i++;
       }
-      return bytes + " " + posfixes[i] + "B";
+      return bytes + " " + postfixes[i] + "B";
     },
-    timeFormat(time, format = "llll") {
+
+    timeFormat(time: string | number, format = "llll"): string {
       return moment(time).format(format);
     },
-    getFavicon(url) {
-      var a = document.createElement("a");
+
+    getFavicon(url: string): string {
+      const a = document.createElement("a");
       a.href = url;
       return a.protocol + "//" + a.hostname + "/favicon.ico";
     },
-    search() {
+
+    search(): void {
       this.searching = true;
       api
         .search(this.searchText)
         .then((r) => {
           console.log(r);
-          this.torrents = r;
+          this.torrents = r.map((torrent): TorrentLocal => {
+            const t: TorrentLocal = torrent as TorrentLocal;
+            t.isBeingDownloaded = false;
+            return t;
+          });
         })
         .catch((e) => {
           this.error = e;
@@ -224,7 +259,8 @@ export default {
           this.searching = false;
         });
     },
-    download(torrent) {
+
+    download(torrent: TorrentLocal): void {
       if (this.downloading || this.showSelectFolder) {
         return;
       }
@@ -258,9 +294,10 @@ export default {
 
       this.showSelectFolder = true;
 
-      return false;
+      return;
     },
-    renameTorrent(downloadedHash, newName) {
+
+    renameTorrent(downloadedHash: string, newName: string): void {
       console.log("renaming " + downloadedHash + " to " + newName);
       this.renaming = true;
       // setTimeout(() => {
@@ -278,16 +315,16 @@ export default {
     },
   },
 
-  mounted() {
+  mounted(): void {
     if (this.$route.query.s) {
-      this.searchText = this.$route.query.s;
+      this.searchText = this.$route.query.s as string;
       this.search();
     }
     api.getDownloadFolders().then((folders) => {
       this.folders = folders.sort();
     });
   },
-};
+});
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

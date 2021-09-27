@@ -1,5 +1,5 @@
 class Torrent {
-  id: bigint;
+  id: number;
   page_url: string;
   file_url: string;
   created_at: string;
@@ -8,4 +8,14 @@ class Torrent {
   deleted_at: string | null;
 }
 
-module.exports.Torrent = Torrent;
+class TransmissionTorrent {
+  ID: number;
+  page_url: string;
+  file_url: string;
+  created_at: string;
+  updated_at: string;
+  uploaded_at: string | null;
+  deleted_at: string | null;
+}
+
+export { Torrent, TransmissionTorrent };

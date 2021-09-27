@@ -61,15 +61,23 @@
   </div>
 </template>
 
-<script>
-import api from "../js/api";
+<script lang="ts">
+import { defineComponent } from "vue";
 import moment from "moment";
-// import { Torrents } from '../pb/torrentsList_pb'
+import api from "@/js/api";
+import { Torrent } from "@/pb/torrent_pb";
 
-export default {
+class Data {
+  newTorrentUrl = "";
+  newTorrentAdding = false;
+
+  torrents: Torrent.AsObject[] = [];
+}
+
+export default defineComponent({
   name: "torrents",
 
-  data: () => ({
+  data: (): Data => ({
     newTorrentUrl: "",
     newTorrentAdding: false,
 
@@ -77,13 +85,15 @@ export default {
   }),
 
   methods: {
-    timeFromNow(time) {
+    timeFromNow(time: string | number): string {
       return moment(time).fromNow();
     },
-    timeFormat(time, format = "llll") {
+
+    timeFormat(time: string | number, format = "llll"): string {
       return moment(time).format(format);
     },
-    addTorrent() {
+
+    addTorrent(): void {
       this.newTorrentAdding = true;
       api
         .addTorrent(this.newTorrentUrl)
@@ -98,7 +108,8 @@ export default {
           this.newTorrentAdding = false;
         });
     },
-    deleteTorrent(torrent) {
+
+    deleteTorrent(torrent: Torrent.AsObject): void {
       api
         .deleteTorrent(torrent.id)
         .then(async (r) => {
@@ -106,7 +117,7 @@ export default {
             const text = await r.text();
             throw new Error(text);
           }
-          this.torrents.splice(torrent, 1);
+          this.torrents.splice(this.torrents.indexOf(torrent), 1);
         })
         .catch((e) => {
           alert("failed to delete torrent:" + e);
@@ -114,12 +125,12 @@ export default {
     },
   },
 
-  mounted() {
+  mounted(): void {
     api.getTorrents().then((r) => {
       this.torrents = r;
     });
   },
-};
+});
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -49,26 +49,45 @@
   </div>
 </template>
 
-<script>
-import api from "../js/api";
-import convertNamesList from "../js/renameNamesConverter";
+<script lang="ts">
+import { defineComponent } from "vue";
+import api from "@/js/api";
+import convertNamesList from "@/js/renameNamesConverter";
+import { TransmissionTorrent } from "@/js/models";
 
-export default {
+class Torrent {
+  ID = 0;
+}
+class File {
+  name = "";
+}
+
+class Data {
+  downloads: Torrent[] = [];
+  selected: Torrent | null = null;
+  newNamesList = "";
+  files: File[] = [];
+}
+
+export default defineComponent({
   name: "mass-rename",
-  data: () => ({
+
+  data: (): Data => ({
     downloads: [],
     selected: null,
     newNamesList: "",
     files: [],
   }),
-  mounted() {
+
+  mounted(): void {
     api.getTransmissionTorrents().then((r) => {
-      this.downloads = r.sort((a, b) => b.ID - a.ID);
+      this.downloads = r.sort((a: Torrent, b: Torrent) => b.ID - a.ID);
     });
   },
+
   watch: {
-    selected(value) {
-      if (value !== null && value !== undefined) {
+    selected(value: TransmissionTorrent | null): void {
+      if (value !== null) {
         api.getTransmissionTorrentFiles(value.ID).then((r2) => {
           this.files = r2;
           this.newNamesList = this.getFilesList();
@@ -76,17 +95,23 @@ export default {
       }
     },
   },
+
   computed: {
-    valid() {
+    valid(): boolean {
       return this.newNamesList.trim().split("\n").length === this.files.length;
     },
   },
+
   methods: {
-    getFilesList() {
+    getFilesList(): string {
       return this.files.map((f) => f.name).join("\n");
     },
-    rename() {
-      const basicNamesList = [];
+
+    rename(): void {
+      if (this.selected === null) {
+        throw new Error('selected cannot be null on rename')
+      }
+      const basicNamesList: [string, string][] = [];
       this.newNamesList.split("\n").forEach((name, i) => {
         if (this.files[i].name !== name) {
           basicNamesList.push([this.files[i].name, name]);
@@ -101,7 +126,7 @@ export default {
         });
     },
   },
-};
+});
 </script>
 
 <style scoped lang="scss">

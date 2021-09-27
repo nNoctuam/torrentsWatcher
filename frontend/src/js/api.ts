@@ -71,7 +71,7 @@ const api = {
     });
   },
 
-  deleteTorrent(id: bigint) {
+  deleteTorrent(id: number) {
     return fetch(this.domain + "/torrent/" + id, {
       method: "DELETE",
     });
@@ -135,7 +135,7 @@ const api = {
     });
   },
 
-  renameTorrentParts(id: bigint, names: string[][]) {
+  renameTorrentParts(id: number, names: string[][]) {
     return fetch(this.domain + "/rename-parts", {
       method: "POST",
       headers: {
