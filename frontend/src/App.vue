@@ -2,21 +2,21 @@
   <div id="app">
     <div class="main-menu">
       <router-link to="/search">
-        <img alt="Search" src="./assets/search.png">
+        <img alt="Search" src="./assets/search.png" />
       </router-link>
       <router-link to="/watch">
-        <img alt="Watch" src="./assets/transmission-logo.png">
+        <img alt="Watch" src="./assets/transmission-logo.png" />
       </router-link>
       <router-link to="/mass-rename">
-        <img alt="Mass rename" src="" style="color: transparent">
+        <img alt="Mass rename" src="" style="color: transparent" />
       </router-link>
     </div>
-    <router-view/>
+    <router-view />
   </div>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component'
+import { Options, Vue } from "vue-class-component";
 // import HelloWorld from './components/HelloWorld.vue'
 
 @Options({})
@@ -24,7 +24,6 @@ export default class App extends Vue {}
 </script>
 
 <style lang="scss">
-
 $primary-color: #16a085 !default;
 @import "../node_modules/spectre.css/src/variables";
 @import "../node_modules/spectre.css/src/mixins";
