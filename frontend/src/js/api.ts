@@ -1,11 +1,12 @@
-import { Torrent } from "@/pb/torrent_pb";
-import { Torrents } from "@/pb/torrentsList_pb";
-import {SearchRequest} from "@/pb/baseService_pb";
-import {BaseServiceClient} from "@/pb/BaseServiceServiceClientPb";
+import { SearchRequest, TorrentsResponse, Torrent } from "@/pb/baseService_pb";
+import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
+
+const domainRPC = "http://localhost:8805";
 
 const api = {
   domain: "http://localhost:8803",
-  domainRPC: "http://localhost:8805",
+  domainRPC: domainRPC,
+  rpcClient: new BaseServiceClient(domainRPC),
 
   getTorrents(): Promise<Torrent.AsObject[]> {
     return fetch(this.domain + "/torrents").then(async (r) => {
@@ -14,8 +15,9 @@ const api = {
         throw new Error(text);
       }
       const result = await r.arrayBuffer();
-      return Torrents.deserializeBinary(new Uint8Array(result)).toObject()
-        .torrentsList;
+      return TorrentsResponse.deserializeBinary(
+        new Uint8Array(result)
+      ).toObject().torrentsList;
     });
   },
 
@@ -80,56 +82,13 @@ const api = {
     });
   },
 
-  // search(text: string) {
-  //   return fetch(this.domain + "/search", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json;charset=utf-8",
-  //     },
-  //     body: JSON.stringify({
-  //       text,
-  //     }),
-  //   }).then(async (r) => {
-  //     if (r.status !== 200) {
-  //       const text = await r.text();
-  //       throw new Error(text);
-  //     }
-  //     const result = await r.arrayBuffer();
-  //     return Torrents.deserializeBinary(new Uint8Array(result)).toObject()
-  //       .torrentsList;
-  //   });
-  // },
-
-  search(text: string): any {
+  search(text: string): Promise<Torrent.AsObject[]> {
     const request = new SearchRequest();
     request.setText(text);
 
-    const client = new BaseServiceClient(this.domainRPC);
-
-    return client.search(request, null).then((r) => {
-      console.log(r);
+    return this.rpcClient.search(request, null).then((r) => {
       return r.getTorrentsList().map((torrent) => torrent.toObject());
     });
-
-    //
-    //
-    // return fetch(this.domainRPC, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/protobuf",
-    //   },
-    //   mode: 'no-cors',
-    //   body: request.serializeBinary(),
-    // }).then(async (r) => {
-    //   console.info(r)
-    //   if (r.status !== 200) {
-    //     const text = await r.text();
-    //     throw new Error(text);
-    //   }
-    //   const result = await r.arrayBuffer();
-    //   return Torrents.deserializeBinary(new Uint8Array(result)).toObject()
-    //     .torrentsList;
-    // });
   },
 
   downloadTorrent(pageUrl: string, folder: string) {

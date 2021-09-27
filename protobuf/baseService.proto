@@ -6,14 +6,14 @@ import "google/protobuf/timestamp.proto";
 //import "torrent.proto";
 
 service BaseService {
-  rpc Search(SearchRequest) returns (Torrents) {}
+  rpc Search(SearchRequest) returns (TorrentsResponse) {}
 }
 
 message SearchRequest {
   string Text = 1;
 }
 
-message Torrents {
+message TorrentsResponse {
   repeated Torrent torrents = 1;
 }
 

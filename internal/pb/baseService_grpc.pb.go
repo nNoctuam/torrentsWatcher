@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BaseServiceClient interface {
-	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*Torrents, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*TorrentsResponse, error)
 }
 
 type baseServiceClient struct {
@@ -29,8 +29,8 @@ func NewBaseServiceClient(cc grpc.ClientConnInterface) BaseServiceClient {
 	return &baseServiceClient{cc}
 }
 
-func (c *baseServiceClient) Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*Torrents, error) {
-	out := new(Torrents)
+func (c *baseServiceClient) Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*TorrentsResponse, error) {
+	out := new(TorrentsResponse)
 	err := c.cc.Invoke(ctx, "/protobuf.BaseService/Search", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (c *baseServiceClient) Search(ctx context.Context, in *SearchRequest, opts 
 // All implementations must embed UnimplementedBaseServiceServer
 // for forward compatibility
 type BaseServiceServer interface {
-	Search(context.Context, *SearchRequest) (*Torrents, error)
+	Search(context.Context, *SearchRequest) (*TorrentsResponse, error)
 	mustEmbedUnimplementedBaseServiceServer()
 }
 
@@ -50,7 +50,7 @@ type BaseServiceServer interface {
 type UnimplementedBaseServiceServer struct {
 }
 
-func (UnimplementedBaseServiceServer) Search(context.Context, *SearchRequest) (*Torrents, error) {
+func (UnimplementedBaseServiceServer) Search(context.Context, *SearchRequest) (*TorrentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
 func (UnimplementedBaseServiceServer) mustEmbedUnimplementedBaseServiceServer() {}

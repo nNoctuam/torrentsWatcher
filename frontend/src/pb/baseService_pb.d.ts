@@ -21,21 +21,21 @@ export namespace SearchRequest {
   }
 }
 
-export class Torrents extends jspb.Message {
+export class TorrentsResponse extends jspb.Message {
   getTorrentsList(): Array<Torrent>;
-  setTorrentsList(value: Array<Torrent>): Torrents;
-  clearTorrentsList(): Torrents;
+  setTorrentsList(value: Array<Torrent>): TorrentsResponse;
+  clearTorrentsList(): TorrentsResponse;
   addTorrents(value?: Torrent, index?: number): Torrent;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): Torrents.AsObject;
-  static toObject(includeInstance: boolean, msg: Torrents): Torrents.AsObject;
-  static serializeBinaryToWriter(message: Torrents, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): Torrents;
-  static deserializeBinaryFromReader(message: Torrents, reader: jspb.BinaryReader): Torrents;
+  toObject(includeInstance?: boolean): TorrentsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: TorrentsResponse): TorrentsResponse.AsObject;
+  static serializeBinaryToWriter(message: TorrentsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TorrentsResponse;
+  static deserializeBinaryFromReader(message: TorrentsResponse, reader: jspb.BinaryReader): TorrentsResponse;
 }
 
-export namespace Torrents {
+export namespace TorrentsResponse {
   export type AsObject = {
     torrentsList: Array<Torrent.AsObject>,
   }

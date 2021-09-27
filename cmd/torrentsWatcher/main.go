@@ -13,7 +13,6 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
-	"time"
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/notifications"
 	"torrentsWatcher/internal/core/storage"
@@ -24,9 +23,6 @@ import (
 	storageImpl "torrentsWatcher/internal/impl/storage"
 	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
 	trackingImpl "torrentsWatcher/internal/impl/tracker"
-	"torrentsWatcher/internal/pb"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"google.golang.org/grpc"
@@ -39,6 +35,8 @@ import (
 	"torrentsWatcher/internal/handlers"
 
 	"go.uber.org/zap"
+
+	_grpc "torrentsWatcher/internal/grpc"
 )
 
 // TODO:
@@ -106,7 +104,7 @@ func main() {
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
 
 	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, transmissionClient, cfg.Transmission.Folders)
-	go serveRpc()
+	go serveRpc(logger.Named("RPC"), trackers)
 
 	logger.Info("Service started")
 	select {
@@ -122,63 +120,10 @@ func main() {
 	wg.Wait()
 }
 
-type RpcServer struct {
-	pb.BaseServiceServer
-}
-
-func (s *RpcServer) Search(context.Context, *pb.SearchRequest) (*pb.Torrents, error) {
-	var torrents pb.Torrents
-	torrents.Torrents = append(torrents.Torrents, &pb.Torrent{
-		Id:         0,
-		Title:      "it works?",
-		PageUrl:    "",
-		FileUrl:    "",
-		Forum:      "",
-		Author:     "",
-		Size:       0,
-		Seeders:    0,
-		CreatedAt:  nil,
-		UpdatedAt:  timestamppb.New(time.Unix(0, 0)),
-		UploadedAt: nil,
-	})
-	return &torrents, nil
-}
-
-func _SearchTorrents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	fmt.Println("got request")
-	in := new(pb.SearchRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(pb.BaseServiceServer).Search(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/routeguide.RouteGuide/GetFeature",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(pb.BaseServiceServer).Search(ctx, req.(*pb.SearchRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-var RouteGuide_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "protobuf.BaseService",
-	HandlerType: (*pb.BaseServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Search",
-			Handler:    _SearchTorrents_Handler,
-		},
-	},
-	Metadata: "examples/route_guide/routeguide/route_guide.proto",
-}
-
-func serveRpc() {
+func serveRpc(logger *zap.Logger, trackers tracking.Trackers) {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	grpcServer.RegisterService(&RouteGuide_ServiceDesc, &RpcServer{})
+	grpcServer.RegisterService(&_grpc.BaseServiceDesc, _grpc.NewRpcServer(logger, trackers))
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8804))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

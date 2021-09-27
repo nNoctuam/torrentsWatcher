@@ -36,28 +36,28 @@ export class BaseServiceClient {
   }
 
   methodInfoSearch = new grpcWeb.AbstractClientBase.MethodInfo(
-    baseService_pb.Torrents,
+    baseService_pb.TorrentsResponse,
     (request: baseService_pb.SearchRequest) => {
       return request.serializeBinary();
     },
-    baseService_pb.Torrents.deserializeBinary
+    baseService_pb.TorrentsResponse.deserializeBinary
   );
 
   search(
     request: baseService_pb.SearchRequest,
-    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.Torrents>;
+    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.TorrentsResponse>;
 
   search(
     request: baseService_pb.SearchRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.Error,
-               response: baseService_pb.Torrents) => void): grpcWeb.ClientReadableStream<baseService_pb.Torrents>;
+               response: baseService_pb.TorrentsResponse) => void): grpcWeb.ClientReadableStream<baseService_pb.TorrentsResponse>;
 
   search(
     request: baseService_pb.SearchRequest,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.Error,
-               response: baseService_pb.Torrents) => void) {
+               response: baseService_pb.TorrentsResponse) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +

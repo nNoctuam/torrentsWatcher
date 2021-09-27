@@ -65,7 +65,7 @@
 import { defineComponent } from "vue";
 import moment from "moment";
 import api from "@/js/api";
-import { Torrent } from "@/pb/torrent_pb";
+import { Torrent } from "@/pb/baseService_pb";
 
 class Data {
   newTorrentUrl = "";

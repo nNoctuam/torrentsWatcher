@@ -25,7 +25,7 @@ func GetTorrents(logger *zap.Logger, torrentsStorage storage2.Torrents) func(w h
 			return
 		}
 
-		transformed := &pb.Torrents{}
+		transformed := &pb.TorrentsResponse{}
 		for _, torrent := range torrents {
 			transformed.Torrents = append(transformed.Torrents, &pb.Torrent{
 				Id:         uint32(torrent.ID),

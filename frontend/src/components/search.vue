@@ -159,7 +159,7 @@
 <script lang="ts">
 import api from "../js/api";
 import moment from "moment";
-import { Torrent } from "@/pb/torrent_pb";
+import { Torrent } from "@/pb/baseService_pb";
 import { defineComponent } from "vue";
 
 interface TorrentLocal extends Torrent.AsObject {

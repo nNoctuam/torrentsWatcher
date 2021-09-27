@@ -33,7 +33,7 @@ func Search(logger *zap.Logger, trackers tracking2.Trackers) func(w http.Respons
 			return torrents[i].Seeders > torrents[j].Seeders
 		})
 
-		response, err := proto.Marshal(&pb.Torrents{
+		response, err := proto.Marshal(&pb.TorrentsResponse{
 			Torrents: models2.TorrentsToPB(torrents),
 		})
 		if err != nil {
