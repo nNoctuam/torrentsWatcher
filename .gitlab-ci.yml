@@ -107,8 +107,8 @@ deploy:
       --volume /var/${CI_PROJECT_PATH_SLUG}/torrents.db:/torrents.db
       --volume /var/${CI_PROJECT_PATH_SLUG}/config.yml:/config.yml
       --volume ${DOWNLOADS_DIR}:/downloads
-      -p ${PORT_HTTP}:1000
-      -p ${PORT_GRPC}:1001
+      -p ${PORT_HTTP}:10000
+      -p ${PORT_GRPC}:10001
       -e PORT_GRPC=${PORT_GRPC}
       --restart=always
       ${CI_PROJECT_PATH_SLUG}:latest
