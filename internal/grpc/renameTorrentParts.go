@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) RenameTorrentParts(ctx context.Context, r *pb.RenameTorrentPartsRequest) (*pb.Empty, error) {
+func (s *RPCServer) RenameTorrentParts(ctx context.Context, r *pb.RenameTorrentPartsRequest) (*pb.Empty, error) {
 	var err error
 	for _, pair := range r.Names {
 		err = s.torrentClient.Rename(int(r.Id), pair.OldName, pair.NewName)
@@ -28,6 +28,7 @@ func (s *RpcServer) RenameTorrentParts(ctx context.Context, r *pb.RenameTorrentP
 	return &pb.Empty{}, nil
 }
 
+// nolint: revive
 func RenameTorrentPartsHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.RenameTorrentPartsRequest)
 	if err := dec(in); err != nil {

@@ -138,18 +138,18 @@ func (t *Transmission) UpdateTorrent(url string, content []byte) error {
 			if err != nil {
 				return fmt.Errorf("replace torrent: %w", err)
 			}
-			err = t.Rename(int(newTorrent.ID), newTorrent.Name, oldTorrent.Name)
+			err = t.Rename(newTorrent.ID, newTorrent.Name, oldTorrent.Name)
 			if err != nil {
 				return fmt.Errorf("rename torrent: %w", err)
 			}
-			err = t.Start([]int{int(newTorrent.ID)})
+			err = t.Start([]int{newTorrent.ID})
 			if err != nil {
 				return fmt.Errorf("start torrent: %w", err)
 			}
 
-			_ = t.Verify([]int{int(newTorrent.ID)})
+			_ = t.Verify([]int{newTorrent.ID})
 
-			err = t.RemoveTorrents([]int{int(oldTorrent.ID)}, false)
+			err = t.RemoveTorrents([]int{oldTorrent.ID}, false)
 			if err != nil {
 				return fmt.Errorf("delete old torrent: %w", err)
 			}

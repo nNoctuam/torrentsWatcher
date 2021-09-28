@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) DownloadTorrent(ctx context.Context, r *pb.DownloadTorrentRequest) (*pb.DownloadTorrentResponse, error) {
+func (s *RPCServer) DownloadTorrent(ctx context.Context, r *pb.DownloadTorrentRequest) (*pb.DownloadTorrentResponse, error) {
 	folder, ok := s.downloadFolders[r.Folder]
 	s.logger.Debug(
 		"folders matching",
@@ -53,6 +53,7 @@ func (s *RpcServer) DownloadTorrent(ctx context.Context, r *pb.DownloadTorrentRe
 	}, nil
 }
 
+// nolint: revive
 func DownloadTorrentHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.DownloadTorrentRequest)
 	if err := dec(in); err != nil {

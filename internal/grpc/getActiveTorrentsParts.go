@@ -8,13 +8,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) GetActiveTorrentParts(ctx context.Context, r *pb.GetActiveTorrentPartsRequest) (*pb.ActiveTorrentPartsResponse, error) {
+func (s *RPCServer) GetActiveTorrentParts(ctx context.Context, r *pb.GetActiveTorrentPartsRequest) (*pb.ActiveTorrentPartsResponse, error) {
 	files, err := s.torrentClient.GetTorrentFiles([]int{int(r.Id)})
 	if err != nil {
 		return nil, fmt.Errorf("get files: %w", err)
 	}
 
-	var result []*pb.ActiveTorrentPart
+	result := make([]*pb.ActiveTorrentPart, len(files))
 	for _, file := range files {
 		result = append(result, &pb.ActiveTorrentPart{
 			Name: file.Name,
@@ -24,6 +24,7 @@ func (s *RpcServer) GetActiveTorrentParts(ctx context.Context, r *pb.GetActiveTo
 	return &pb.ActiveTorrentPartsResponse{Parts: result}, nil
 }
 
+// nolint: revive
 func GetActiveTorrentPartsHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.GetActiveTorrentPartsRequest)
 	if err := dec(in); err != nil {

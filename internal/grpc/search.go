@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) Search(ctx context.Context, r *pb.SearchRequest) (*pb.TorrentsResponse, error) {
+func (s *RPCServer) Search(ctx context.Context, r *pb.SearchRequest) (*pb.TorrentsResponse, error) {
 	torrents := s.trackers.SearchEverywhere(r.Text)
 
 	sort.Slice(torrents, func(i, j int) bool {
@@ -22,6 +22,7 @@ func (s *RpcServer) Search(ctx context.Context, r *pb.SearchRequest) (*pb.Torren
 	}, nil
 }
 
+// nolint: revive
 func SearchHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.SearchRequest)
 	fmt.Println("got search request")

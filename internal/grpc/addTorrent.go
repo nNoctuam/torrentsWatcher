@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) AddTorrent(ctx context.Context, r *pb.AddTorrentRequest) (*pb.TorrentResponse, error) {
+func (s *RPCServer) AddTorrent(ctx context.Context, r *pb.AddTorrentRequest) (*pb.TorrentResponse, error) {
 	var torrent *models.Torrent
 	s.logger.Info("parsing ", zap.String("url", r.Url))
 
@@ -35,6 +35,7 @@ func (s *RpcServer) AddTorrent(ctx context.Context, r *pb.AddTorrentRequest) (*p
 	return &pb.TorrentResponse{Torrent: torrent.ToPB()}, nil
 }
 
+// nolint: revive
 func AddTorrentHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.AddTorrentRequest)
 	if err := dec(in); err != nil {

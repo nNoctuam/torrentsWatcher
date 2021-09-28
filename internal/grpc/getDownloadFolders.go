@@ -7,8 +7,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) GetDownloadFolders(ctx context.Context, in *pb.Empty) (*pb.DownloadFoldersResponse, error) {
-	var folders []string
+func (s *RPCServer) GetDownloadFolders(ctx context.Context, in *pb.Empty) (*pb.DownloadFoldersResponse, error) {
+	folders := make([]string, len(s.downloadFolders))
 	for folder := range s.downloadFolders {
 		folders = append(folders, folder)
 	}
@@ -16,6 +16,7 @@ func (s *RpcServer) GetDownloadFolders(ctx context.Context, in *pb.Empty) (*pb.D
 	return &pb.DownloadFoldersResponse{Folders: folders}, nil
 }
 
+// nolint: revive
 func GetDownloadFoldersHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.Empty)
 	if err := dec(in); err != nil {

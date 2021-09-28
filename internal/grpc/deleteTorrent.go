@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) DeleteTorrent(ctx context.Context, r *pb.DeleteTorrentRequest) (*pb.Empty, error) {
+func (s *RPCServer) DeleteTorrent(ctx context.Context, r *pb.DeleteTorrentRequest) (*pb.Empty, error) {
 	var torrents []models.Torrent
 	err := s.torrentsStorage.Find(&torrents, models.Torrent{
 		ID: uint(r.Id),
@@ -37,6 +37,7 @@ func (s *RpcServer) DeleteTorrent(ctx context.Context, r *pb.DeleteTorrentReques
 	return &pb.Empty{}, nil
 }
 
+// nolint: revive
 func DeleteTorrentHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.DeleteTorrentRequest)
 	if err := dec(in); err != nil {

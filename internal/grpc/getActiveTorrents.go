@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) GetActiveTorrents(ctx context.Context, r *pb.GetActiveTorrentsRequest) (*pb.ActiveTorrentsResponse, error) {
+func (s *RPCServer) GetActiveTorrents(ctx context.Context, r *pb.GetActiveTorrentsRequest) (*pb.ActiveTorrentsResponse, error) {
 	var torrents []models.TransmissionTorrent
 	err := s.torrentsStorage.GetAllTransmission(&torrents)
 	if err != nil {
@@ -49,6 +49,7 @@ func (s *RpcServer) GetActiveTorrents(ctx context.Context, r *pb.GetActiveTorren
 	return &pb.ActiveTorrentsResponse{Torrents: result}, nil
 }
 
+// nolint: revive
 func GetActiveTorrentsHandler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(pb.GetActiveTorrentsRequest)
 	if err := dec(in); err != nil {

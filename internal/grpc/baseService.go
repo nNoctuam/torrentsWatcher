@@ -3,7 +3,7 @@ package grpc
 import (
 	"torrentsWatcher/internal/core/storage"
 	"torrentsWatcher/internal/core/torrentclient"
-	tracking2 "torrentsWatcher/internal/core/tracking"
+	"torrentsWatcher/internal/core/tracking"
 	"torrentsWatcher/internal/pb"
 
 	"go.uber.org/zap"
@@ -11,23 +11,23 @@ import (
 	"google.golang.org/grpc"
 )
 
-type RpcServer struct {
+type RPCServer struct {
 	pb.BaseServiceServer
 	logger          *zap.Logger
-	trackers        tracking2.Trackers
+	trackers        tracking.Trackers
 	torrentsStorage storage.Torrents
 	downloadFolders map[string]string
 	torrentClient   torrentclient.Client
 }
 
-func NewRpcServer(
+func NewRPCServer(
 	logger *zap.Logger,
-	trackers tracking2.Trackers,
+	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
 	torrentClient torrentclient.Client,
-) *RpcServer {
-	return &RpcServer{
+) *RPCServer {
+	return &RPCServer{
 		logger:          logger,
 		trackers:        trackers,
 		torrentsStorage: torrentsStorage,
