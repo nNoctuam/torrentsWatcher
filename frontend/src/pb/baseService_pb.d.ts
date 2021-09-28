@@ -67,6 +67,28 @@ export namespace Torrent {
   }
 }
 
+export class PartToRename extends jspb.Message {
+  getOldname(): string;
+  setOldname(value: string): PartToRename;
+
+  getNewname(): string;
+  setNewname(value: string): PartToRename;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PartToRename.AsObject;
+  static toObject(includeInstance: boolean, msg: PartToRename): PartToRename.AsObject;
+  static serializeBinaryToWriter(message: PartToRename, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PartToRename;
+  static deserializeBinaryFromReader(message: PartToRename, reader: jspb.BinaryReader): PartToRename;
+}
+
+export namespace PartToRename {
+  export type AsObject = {
+    oldname: string,
+    newname: string,
+  }
+}
+
 export class Empty extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Empty.AsObject;
@@ -154,6 +176,30 @@ export namespace DownloadTorrentRequest {
   export type AsObject = {
     url: string,
     folder: string,
+  }
+}
+
+export class RenameTorrentPartsRequest extends jspb.Message {
+  getId(): number;
+  setId(value: number): RenameTorrentPartsRequest;
+
+  getNamesList(): Array<PartToRename>;
+  setNamesList(value: Array<PartToRename>): RenameTorrentPartsRequest;
+  clearNamesList(): RenameTorrentPartsRequest;
+  addNames(value?: PartToRename, index?: number): PartToRename;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RenameTorrentPartsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RenameTorrentPartsRequest): RenameTorrentPartsRequest.AsObject;
+  static serializeBinaryToWriter(message: RenameTorrentPartsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RenameTorrentPartsRequest;
+  static deserializeBinaryFromReader(message: RenameTorrentPartsRequest, reader: jspb.BinaryReader): RenameTorrentPartsRequest;
+}
+
+export namespace RenameTorrentPartsRequest {
+  export type AsObject = {
+    id: number,
+    namesList: Array<PartToRename.AsObject>,
   }
 }
 

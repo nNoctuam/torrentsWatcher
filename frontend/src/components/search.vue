@@ -160,7 +160,7 @@
 <script lang="ts">
 import api from "../js/api";
 import moment from "moment";
-import { Torrent } from "@/pb/baseService_pb";
+import {PartToRename, Torrent} from "@/pb/baseService_pb";
 import { defineComponent } from "vue";
 
 interface TorrentLocal extends Torrent.AsObject {
@@ -316,8 +316,11 @@ export default defineComponent({
       // setTimeout(() => {
       //   this.downloadedName = null
       // }, 1000)
+      const part = new PartToRename();
+      part.setOldname(oldName);
+      part.setNewname(newName);
       api
-        .renameTorrentParts(id, [[oldName, newName]])
+        .renameTorrentParts(id, [part])
         .catch((e) => {
           this.error = "Не удалось переименовать: " + e;
         })

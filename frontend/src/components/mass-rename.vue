@@ -54,9 +54,12 @@ import { defineComponent } from "vue";
 import api from "@/js/api";
 import convertNamesList from "@/js/renameNamesConverter";
 import { TransmissionTorrent } from "@/js/models";
+import { PartToRename } from "@/pb/baseService_pb";
 
 class Torrent {
   ID = 0;
+  name = "";
+  downloadDir = "";
 }
 class File {
   name = "";
@@ -109,12 +112,15 @@ export default defineComponent({
 
     rename(): void {
       if (this.selected === null) {
-        throw new Error('selected cannot be null on rename')
+        throw new Error("selected cannot be null on rename");
       }
-      const basicNamesList: [string, string][] = [];
+      const basicNamesList: PartToRename[] = [];
       this.newNamesList.split("\n").forEach((name, i) => {
         if (this.files[i].name !== name) {
-          basicNamesList.push([this.files[i].name, name]);
+          const part = new PartToRename();
+          part.setOldname(this.files[i].name);
+          part.setNewname(name);
+          basicNamesList.push(part);
         }
       });
       api

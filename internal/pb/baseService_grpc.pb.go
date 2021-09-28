@@ -24,6 +24,7 @@ type BaseServiceClient interface {
 	AddTorrent(ctx context.Context, in *AddTorrentRequest, opts ...grpc.CallOption) (*TorrentResponse, error)
 	DeleteTorrent(ctx context.Context, in *DeleteTorrentRequest, opts ...grpc.CallOption) (*Empty, error)
 	DownloadTorrent(ctx context.Context, in *DownloadTorrentRequest, opts ...grpc.CallOption) (*DownloadTorrentResponse, error)
+	RenameTorrentParts(ctx context.Context, in *RenameTorrentPartsRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type baseServiceClient struct {
@@ -88,6 +89,15 @@ func (c *baseServiceClient) DownloadTorrent(ctx context.Context, in *DownloadTor
 	return out, nil
 }
 
+func (c *baseServiceClient) RenameTorrentParts(ctx context.Context, in *RenameTorrentPartsRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/protobuf.BaseService/RenameTorrentParts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BaseServiceServer is the server API for BaseService service.
 // All implementations must embed UnimplementedBaseServiceServer
 // for forward compatibility
@@ -98,6 +108,7 @@ type BaseServiceServer interface {
 	AddTorrent(context.Context, *AddTorrentRequest) (*TorrentResponse, error)
 	DeleteTorrent(context.Context, *DeleteTorrentRequest) (*Empty, error)
 	DownloadTorrent(context.Context, *DownloadTorrentRequest) (*DownloadTorrentResponse, error)
+	RenameTorrentParts(context.Context, *RenameTorrentPartsRequest) (*Empty, error)
 	mustEmbedUnimplementedBaseServiceServer()
 }
 
@@ -122,6 +133,9 @@ func (UnimplementedBaseServiceServer) DeleteTorrent(context.Context, *DeleteTorr
 }
 func (UnimplementedBaseServiceServer) DownloadTorrent(context.Context, *DownloadTorrentRequest) (*DownloadTorrentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DownloadTorrent not implemented")
+}
+func (UnimplementedBaseServiceServer) RenameTorrentParts(context.Context, *RenameTorrentPartsRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenameTorrentParts not implemented")
 }
 func (UnimplementedBaseServiceServer) mustEmbedUnimplementedBaseServiceServer() {}
 
@@ -244,6 +258,24 @@ func _BaseService_DownloadTorrent_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BaseService_RenameTorrentParts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenameTorrentPartsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BaseServiceServer).RenameTorrentParts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.BaseService/RenameTorrentParts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BaseServiceServer).RenameTorrentParts(ctx, req.(*RenameTorrentPartsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BaseService_ServiceDesc is the grpc.ServiceDesc for BaseService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -274,6 +306,10 @@ var BaseService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DownloadTorrent",
 			Handler:    _BaseService_DownloadTorrent_Handler,
+		},
+		{
+			MethodName: "RenameTorrentParts",
+			Handler:    _BaseService_RenameTorrentParts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

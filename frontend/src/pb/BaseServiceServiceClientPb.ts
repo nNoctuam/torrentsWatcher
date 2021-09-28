@@ -275,5 +275,45 @@ export class BaseServiceClient {
     this.methodInfoDownloadTorrent);
   }
 
+  methodInfoRenameTorrentParts = new grpcWeb.AbstractClientBase.MethodInfo(
+    baseService_pb.Empty,
+    (request: baseService_pb.RenameTorrentPartsRequest) => {
+      return request.serializeBinary();
+    },
+    baseService_pb.Empty.deserializeBinary
+  );
+
+  renameTorrentParts(
+    request: baseService_pb.RenameTorrentPartsRequest,
+    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.Empty>;
+
+  renameTorrentParts(
+    request: baseService_pb.RenameTorrentPartsRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: baseService_pb.Empty) => void): grpcWeb.ClientReadableStream<baseService_pb.Empty>;
+
+  renameTorrentParts(
+    request: baseService_pb.RenameTorrentPartsRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: baseService_pb.Empty) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/protobuf.BaseService/RenameTorrentParts',
+        request,
+        metadata || {},
+        this.methodInfoRenameTorrentParts,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/protobuf.BaseService/RenameTorrentParts',
+    request,
+    metadata || {},
+    this.methodInfoRenameTorrentParts);
+  }
+
 }
 

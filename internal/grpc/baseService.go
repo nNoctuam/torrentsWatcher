@@ -64,6 +64,10 @@ var BaseServiceDesc = grpc.ServiceDesc{
 			MethodName: "DownloadTorrent",
 			Handler:    DownloadTorrentHandler,
 		},
+		{
+			MethodName: "RenameTorrentParts",
+			Handler:    RenameTorrentPartsHandler,
+		},
 	},
 	Metadata: "protobuf/baseService.proto",
 }

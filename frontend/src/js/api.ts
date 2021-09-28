@@ -5,7 +5,7 @@ import {
   AddTorrentRequest,
   DeleteTorrentRequest,
   DownloadTorrentRequest,
-  DownloadTorrentResponse,
+  DownloadTorrentResponse, RenameTorrentPartsRequest, PartToRename,
 } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
@@ -91,23 +91,11 @@ const api = {
     });
   },
 
-  renameTorrentParts(id: number, names: string[][]) {
-    return fetch(this.domain + "/rename-parts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify({
-        id,
-        names,
-      }),
-    }).then(async (r) => {
-      if (r.status !== 200 && r.status !== 204) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      return r;
-    });
+  renameTorrentParts(id: number, names: Array<PartToRename>): Promise<Empty> {
+    const request = new RenameTorrentPartsRequest();
+    request.setId(id);
+    request.setNamesList(names);
+    return this.rpcClient.renameTorrentParts(request, null);
   },
 };
 

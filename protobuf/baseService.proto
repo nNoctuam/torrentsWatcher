@@ -12,6 +12,7 @@ service BaseService {
   rpc AddTorrent(AddTorrentRequest) returns (TorrentResponse) {}
   rpc DeleteTorrent(DeleteTorrentRequest) returns (Empty) {}
   rpc DownloadTorrent(DownloadTorrentRequest) returns (DownloadTorrentResponse) {}
+  rpc RenameTorrentParts(RenameTorrentPartsRequest) returns (Empty) {}
 }
 
 /////////////////////////////////////////////////////
@@ -30,6 +31,11 @@ message Torrent {
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
   google.protobuf.Timestamp uploaded_at = 11;
+}
+
+message PartToRename {
+  string oldName = 1;
+  string newName = 2;
 }
 
 /////////////////////////////////////////////////////
@@ -53,6 +59,11 @@ message DeleteTorrentRequest {
 message DownloadTorrentRequest {
   string Url = 1;
   string Folder = 2;
+}
+
+message RenameTorrentPartsRequest {
+  int32 id = 1;
+  repeated PartToRename names = 2;
 }
 
 /////////////////////////////////////////////////////

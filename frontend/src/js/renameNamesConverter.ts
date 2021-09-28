@@ -1,19 +1,19 @@
-type replacement = [string, string];
+import { PartToRename } from "@/pb/baseService_pb";
 
 export default function convertNamesList(
-  basicNamesList: replacement[]
-): replacement[] {
-  const tasks: replacement[] = [];
+  basicNamesList: PartToRename[]
+): PartToRename[] {
+  const tasks: PartToRename[] = [];
   let finished = false;
   while (!finished) {
     finished = true;
-    basicNamesList.forEach(([oldPath, newPath]) => {
+    basicNamesList.forEach((part) => {
       if (!finished) {
         return false;
       }
       // console.log(`iterate basicNamesList: old=${oldPath} | new=${newPath} | tasks=`, tasks)
-      if (oldPath !== newPath) {
-        tasks.push(getReplacement(oldPath, newPath));
+      if (part.getOldname() !== part.getNewname()) {
+        tasks.push(getReplacement(part.getOldname(), part.getNewname()));
         replacePaths(basicNamesList, tasks);
         finished = false;
         return false;
@@ -24,15 +24,15 @@ export default function convertNamesList(
   return tasks;
 }
 
-function getReplacement(oldPath: string, newPath: string): replacement {
+function getReplacement(oldPath: string, newPath: string): PartToRename {
   const oldPathSegments = oldPath.split("/");
   const newPathSegments = newPath.split("/");
   for (let i = 0; i < oldPathSegments.length; i++) {
     if (oldPathSegments[i] !== newPathSegments[i]) {
-      return [
-        oldPathSegments.filter((v, j) => j <= i).join("/"),
-        newPathSegments[i],
-      ];
+      const part = new PartToRename();
+      part.setOldname(oldPathSegments.filter((v, j) => j <= i).join("/"));
+      part.setNewname(newPathSegments[i]);
+      return part;
     }
   }
 
@@ -40,22 +40,25 @@ function getReplacement(oldPath: string, newPath: string): replacement {
 }
 
 function replacePaths(
-  basicNamesList: replacement[],
-  tasks: replacement[]
+  basicNamesList: PartToRename[],
+  tasks: PartToRename[]
 ): void {
   // console.log('replacePaths', basicNamesList, tasks)
-  tasks.forEach(([oldPath, newPath]) => {
+  tasks.forEach((part) => {
+    const oldname = part.getOldname();
+    let newname = part.getNewname();
     // console.log(`check ${oldPath} to replace with ${newPath}`)
-    const oldPathSegments = oldPath.split("/");
+    const oldPathSegments = oldname.split("/");
     oldPathSegments.pop();
-    newPath =
+    newname =
       (oldPathSegments.length === 0 ? "" : oldPathSegments.join("/") + "/") +
-      newPath;
+      newname;
     basicNamesList.forEach((v, i) => {
       // console.log(`check ${basicNamesList[i][0]} for ${oldPath} to replace with ${newPath}`)
-      if (basicNamesList[i][0].indexOf(oldPath) === 0) {
-        basicNamesList[i][0] =
-          newPath + basicNamesList[i][0].substr(oldPath.length);
+      if (basicNamesList[i].getOldname().indexOf(oldname) === 0) {
+        basicNamesList[i].setOldname(
+          newname + basicNamesList[i].getOldname().substr(oldname.length)
+        );
         // console.log('replaced to ' + basicNamesList[i][0])
       } else {
         // console.log('not replaced')
