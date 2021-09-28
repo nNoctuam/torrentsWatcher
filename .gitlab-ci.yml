@@ -109,7 +109,7 @@ deploy:
       --volume ${DOWNLOADS_DIR}:/downloads
       -p ${PORT_HTTP}:1000
       -p ${PORT_GRPC}:1001
-      -e PORT_GRPC:${PORT_GRPC}
+      -e PORT_GRPC=${PORT_GRPC}
       --restart=always
       ${CI_PROJECT_PATH_SLUG}:latest
   rules:
