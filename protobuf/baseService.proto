@@ -9,16 +9,13 @@ service BaseService {
   rpc Search(SearchRequest) returns (TorrentsResponse) {}
   rpc GetMonitoredTorrents(Empty) returns (TorrentsResponse) {}
   rpc GetDownloadFolders(Empty) returns (DownloadFoldersResponse) {}
+  rpc AddTorrent(AddTorrentRequest) returns (TorrentResponse) {}
 }
 
-message Empty {}
-message SearchRequest {
-  string Text = 1;
-}
+/////////////////////////////////////////////////////
+/////      MODELS
+/////////////////////////////////////////////////////
 
-message TorrentsResponse {
-  repeated Torrent torrents = 1;
-}
 message Torrent {
   uint32 id = 1;
   string title = 2;
@@ -31,6 +28,32 @@ message Torrent {
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
   google.protobuf.Timestamp uploaded_at = 11;
+}
+
+/////////////////////////////////////////////////////
+/////      REQUESTS
+/////////////////////////////////////////////////////
+
+message Empty {}
+
+message SearchRequest {
+  string Text = 1;
+}
+
+message AddTorrentRequest {
+  string Url = 1;
+}
+
+/////////////////////////////////////////////////////
+/////      RESPONSES
+/////////////////////////////////////////////////////
+
+message TorrentResponse {
+  Torrent torrent = 1;
+}
+
+message TorrentsResponse {
+  repeated Torrent torrents = 1;
 }
 
 message DownloadFoldersResponse {

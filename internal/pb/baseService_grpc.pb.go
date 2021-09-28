@@ -21,6 +21,7 @@ type BaseServiceClient interface {
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*TorrentsResponse, error)
 	GetMonitoredTorrents(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*TorrentsResponse, error)
 	GetDownloadFolders(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*DownloadFoldersResponse, error)
+	AddTorrent(ctx context.Context, in *AddTorrentRequest, opts ...grpc.CallOption) (*TorrentResponse, error)
 }
 
 type baseServiceClient struct {
@@ -58,6 +59,15 @@ func (c *baseServiceClient) GetDownloadFolders(ctx context.Context, in *Empty, o
 	return out, nil
 }
 
+func (c *baseServiceClient) AddTorrent(ctx context.Context, in *AddTorrentRequest, opts ...grpc.CallOption) (*TorrentResponse, error) {
+	out := new(TorrentResponse)
+	err := c.cc.Invoke(ctx, "/protobuf.BaseService/AddTorrent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BaseServiceServer is the server API for BaseService service.
 // All implementations must embed UnimplementedBaseServiceServer
 // for forward compatibility
@@ -65,6 +75,7 @@ type BaseServiceServer interface {
 	Search(context.Context, *SearchRequest) (*TorrentsResponse, error)
 	GetMonitoredTorrents(context.Context, *Empty) (*TorrentsResponse, error)
 	GetDownloadFolders(context.Context, *Empty) (*DownloadFoldersResponse, error)
+	AddTorrent(context.Context, *AddTorrentRequest) (*TorrentResponse, error)
 	mustEmbedUnimplementedBaseServiceServer()
 }
 
@@ -80,6 +91,9 @@ func (UnimplementedBaseServiceServer) GetMonitoredTorrents(context.Context, *Emp
 }
 func (UnimplementedBaseServiceServer) GetDownloadFolders(context.Context, *Empty) (*DownloadFoldersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDownloadFolders not implemented")
+}
+func (UnimplementedBaseServiceServer) AddTorrent(context.Context, *AddTorrentRequest) (*TorrentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTorrent not implemented")
 }
 func (UnimplementedBaseServiceServer) mustEmbedUnimplementedBaseServiceServer() {}
 
@@ -148,6 +162,24 @@ func _BaseService_GetDownloadFolders_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BaseService_AddTorrent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTorrentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BaseServiceServer).AddTorrent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.BaseService/AddTorrent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BaseServiceServer).AddTorrent(ctx, req.(*AddTorrentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BaseService_ServiceDesc is the grpc.ServiceDesc for BaseService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -166,6 +198,10 @@ var BaseService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDownloadFolders",
 			Handler:    _BaseService_GetDownloadFolders_Handler,
+		},
+		{
+			MethodName: "AddTorrent",
+			Handler:    _BaseService_AddTorrent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

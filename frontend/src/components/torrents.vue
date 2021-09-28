@@ -98,6 +98,9 @@ export default defineComponent({
       api
         .addTorrent(this.newTorrentUrl)
         .then((r) => {
+          if (!r) {
+            throw new Error("no torrent in response");
+          }
           this.torrents.push(r);
         })
         .catch((e) => {

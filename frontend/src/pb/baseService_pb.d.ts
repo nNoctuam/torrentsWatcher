@@ -3,58 +3,6 @@ import * as jspb from 'google-protobuf'
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 
 
-export class Empty extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): Empty.AsObject;
-  static toObject(includeInstance: boolean, msg: Empty): Empty.AsObject;
-  static serializeBinaryToWriter(message: Empty, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): Empty;
-  static deserializeBinaryFromReader(message: Empty, reader: jspb.BinaryReader): Empty;
-}
-
-export namespace Empty {
-  export type AsObject = {
-  }
-}
-
-export class SearchRequest extends jspb.Message {
-  getText(): string;
-  setText(value: string): SearchRequest;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): SearchRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: SearchRequest): SearchRequest.AsObject;
-  static serializeBinaryToWriter(message: SearchRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): SearchRequest;
-  static deserializeBinaryFromReader(message: SearchRequest, reader: jspb.BinaryReader): SearchRequest;
-}
-
-export namespace SearchRequest {
-  export type AsObject = {
-    text: string,
-  }
-}
-
-export class TorrentsResponse extends jspb.Message {
-  getTorrentsList(): Array<Torrent>;
-  setTorrentsList(value: Array<Torrent>): TorrentsResponse;
-  clearTorrentsList(): TorrentsResponse;
-  addTorrents(value?: Torrent, index?: number): Torrent;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): TorrentsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: TorrentsResponse): TorrentsResponse.AsObject;
-  static serializeBinaryToWriter(message: TorrentsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): TorrentsResponse;
-  static deserializeBinaryFromReader(message: TorrentsResponse, reader: jspb.BinaryReader): TorrentsResponse;
-}
-
-export namespace TorrentsResponse {
-  export type AsObject = {
-    torrentsList: Array<Torrent.AsObject>,
-  }
-}
-
 export class Torrent extends jspb.Message {
   getId(): number;
   setId(value: number): Torrent;
@@ -116,6 +64,96 @@ export namespace Torrent {
     createdAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     uploadedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+
+export class Empty extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Empty.AsObject;
+  static toObject(includeInstance: boolean, msg: Empty): Empty.AsObject;
+  static serializeBinaryToWriter(message: Empty, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Empty;
+  static deserializeBinaryFromReader(message: Empty, reader: jspb.BinaryReader): Empty;
+}
+
+export namespace Empty {
+  export type AsObject = {
+  }
+}
+
+export class SearchRequest extends jspb.Message {
+  getText(): string;
+  setText(value: string): SearchRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SearchRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: SearchRequest): SearchRequest.AsObject;
+  static serializeBinaryToWriter(message: SearchRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SearchRequest;
+  static deserializeBinaryFromReader(message: SearchRequest, reader: jspb.BinaryReader): SearchRequest;
+}
+
+export namespace SearchRequest {
+  export type AsObject = {
+    text: string,
+  }
+}
+
+export class AddTorrentRequest extends jspb.Message {
+  getUrl(): string;
+  setUrl(value: string): AddTorrentRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AddTorrentRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: AddTorrentRequest): AddTorrentRequest.AsObject;
+  static serializeBinaryToWriter(message: AddTorrentRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AddTorrentRequest;
+  static deserializeBinaryFromReader(message: AddTorrentRequest, reader: jspb.BinaryReader): AddTorrentRequest;
+}
+
+export namespace AddTorrentRequest {
+  export type AsObject = {
+    url: string,
+  }
+}
+
+export class TorrentResponse extends jspb.Message {
+  getTorrent(): Torrent | undefined;
+  setTorrent(value?: Torrent): TorrentResponse;
+  hasTorrent(): boolean;
+  clearTorrent(): TorrentResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TorrentResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: TorrentResponse): TorrentResponse.AsObject;
+  static serializeBinaryToWriter(message: TorrentResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TorrentResponse;
+  static deserializeBinaryFromReader(message: TorrentResponse, reader: jspb.BinaryReader): TorrentResponse;
+}
+
+export namespace TorrentResponse {
+  export type AsObject = {
+    torrent?: Torrent.AsObject,
+  }
+}
+
+export class TorrentsResponse extends jspb.Message {
+  getTorrentsList(): Array<Torrent>;
+  setTorrentsList(value: Array<Torrent>): TorrentsResponse;
+  clearTorrentsList(): TorrentsResponse;
+  addTorrents(value?: Torrent, index?: number): Torrent;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TorrentsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: TorrentsResponse): TorrentsResponse.AsObject;
+  static serializeBinaryToWriter(message: TorrentsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TorrentsResponse;
+  static deserializeBinaryFromReader(message: TorrentsResponse, reader: jspb.BinaryReader): TorrentsResponse;
+}
+
+export namespace TorrentsResponse {
+  export type AsObject = {
+    torrentsList: Array<Torrent.AsObject>,
   }
 }
 

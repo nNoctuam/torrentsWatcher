@@ -1,4 +1,9 @@
-import { SearchRequest, Torrent, Empty } from "@/pb/baseService_pb";
+import {
+  SearchRequest,
+  Torrent,
+  Empty,
+  AddTorrentRequest,
+} from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
 const domainRPC = "http://localhost:8805";
@@ -48,22 +53,11 @@ const api = {
       });
   },
 
-  addTorrent(url: string) {
-    return fetch(this.domain + "/torrent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify({
-        url,
-      }),
-    }).then(async (r) => {
-      if (r.status !== 200) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      const result = await r.arrayBuffer();
-      return Torrent.deserializeBinary(new Uint8Array(result)).toObject();
+  addTorrent(url: string): Promise<Torrent.AsObject | undefined> {
+    const request = new AddTorrentRequest();
+    request.setUrl(url);
+    return this.rpcClient.addTorrent(request, null).then((r) => {
+      return r.getTorrent()?.toObject();
     });
   },
 

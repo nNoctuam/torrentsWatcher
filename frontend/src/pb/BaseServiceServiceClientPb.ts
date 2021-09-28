@@ -155,5 +155,45 @@ export class BaseServiceClient {
     this.methodInfoGetDownloadFolders);
   }
 
+  methodInfoAddTorrent = new grpcWeb.AbstractClientBase.MethodInfo(
+    baseService_pb.TorrentResponse,
+    (request: baseService_pb.AddTorrentRequest) => {
+      return request.serializeBinary();
+    },
+    baseService_pb.TorrentResponse.deserializeBinary
+  );
+
+  addTorrent(
+    request: baseService_pb.AddTorrentRequest,
+    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.TorrentResponse>;
+
+  addTorrent(
+    request: baseService_pb.AddTorrentRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: baseService_pb.TorrentResponse) => void): grpcWeb.ClientReadableStream<baseService_pb.TorrentResponse>;
+
+  addTorrent(
+    request: baseService_pb.AddTorrentRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: baseService_pb.TorrentResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/protobuf.BaseService/AddTorrent',
+        request,
+        metadata || {},
+        this.methodInfoAddTorrent,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/protobuf.BaseService/AddTorrent',
+    request,
+    metadata || {},
+    this.methodInfoAddTorrent);
+  }
+
 }
 
