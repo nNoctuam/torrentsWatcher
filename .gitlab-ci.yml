@@ -33,7 +33,7 @@ lint:
     GOLANGCI_LINT_CACHE: /var/golangci-lint-cache
   script:
     - mkdir cmd/torrentsWatcher/dist && touch cmd/torrentsWatcher/dist/dummy.txt
-    - golangci-lint run -v
+    - golangci-lint run -v --timeout=5m
     - touch lint_succeeded
 
 test-go:
