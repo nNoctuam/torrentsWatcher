@@ -2,28 +2,28 @@
   <div id="app">
     <div class="main-menu">
       <router-link to="/search">
-        <img alt="Search" src="./assets/search.png" :class="{active:$route.path==='/search'}">
+        <img alt="Search" src="./assets/search.png" />
       </router-link>
       <router-link to="/watch">
-        <img alt="Watch" src="./assets/transmission-logo.png" :class="{active:$route.path==='/watch'}">
+        <img alt="Watch" src="./assets/transmission-logo.png" />
       </router-link>
       <router-link to="/mass-rename">
-        <img alt="Mass rename" src="" style="color: transparent" :class="{active:$route.path==='/mass-rename'}">
+        <img alt="Mass rename" src="" style="color: transparent" />
       </router-link>
     </div>
-    <router-view/>
+    <router-view />
   </div>
 </template>
 
-<script>
-export default {
-  name: 'App',
-  data: () => ({})
-}
+<script lang="ts">
+import { Options, Vue } from "vue-class-component";
+// import HelloWorld from './components/HelloWorld.vue'
+
+@Options({})
+export default class App extends Vue {}
 </script>
 
 <style lang="scss">
-
 $primary-color: #16a085 !default;
 @import "../node_modules/spectre.css/src/variables";
 @import "../node_modules/spectre.css/src/mixins";
@@ -54,10 +54,11 @@ $primary-color: #16a085 !default;
     text-align: center
   .main-menu
     text-align center
-    > a > img
+    > a
       transition: 0.3s all
       cursor pointer
-      height 100px
-      &:not(.active):not(:hover)
+      > img
+        height 100px
+      &:not(.router-link-active):not(:hover)
         opacity 0.25
 </style>

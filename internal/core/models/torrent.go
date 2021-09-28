@@ -56,7 +56,7 @@ func (t *Torrent) UpdateFrom(updatedTorrent *Torrent) {
 
 func (t *Torrent) ToPB() *pb.Torrent {
 	return &pb.Torrent{
-		ID:         uint32(t.ID),
+		Id:         uint32(t.ID),
 		Title:      t.Title,
 		PageUrl:    t.PageURL,
 		FileUrl:    t.FileURL,

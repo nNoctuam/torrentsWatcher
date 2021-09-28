@@ -1,0 +1,120 @@
+syntax = "proto3";
+package protobuf;
+
+option go_package = "./pb";
+import "google/protobuf/timestamp.proto";
+//import "torrent.proto";
+
+service BaseService {
+  rpc Search(SearchRequest) returns (TorrentsResponse) {}
+  rpc GetMonitoredTorrents(Empty) returns (TorrentsResponse) {}
+  rpc GetDownloadFolders(Empty) returns (DownloadFoldersResponse) {}
+  rpc AddTorrent(AddTorrentRequest) returns (TorrentResponse) {}
+  rpc DeleteTorrent(DeleteTorrentRequest) returns (Empty) {}
+  rpc DownloadTorrent(DownloadTorrentRequest) returns (DownloadTorrentResponse) {}
+  rpc RenameTorrentParts(RenameTorrentPartsRequest) returns (Empty) {}
+  rpc GetActiveTorrents(GetActiveTorrentsRequest) returns (ActiveTorrentsResponse) {}
+  rpc GetActiveTorrentParts(GetActiveTorrentPartsRequest) returns (ActiveTorrentPartsResponse) {}
+}
+
+/////////////////////////////////////////////////////
+/////      MODELS
+/////////////////////////////////////////////////////
+
+message Torrent {
+  uint32 id = 1;
+  string title = 2;
+  string page_url = 3;
+  string file_url = 4;
+  string forum = 5;
+  string author = 6;
+  uint64 size = 7;
+  uint64 seeders = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+  google.protobuf.Timestamp uploaded_at = 11;
+}
+
+message PartToRename {
+  string oldName = 1;
+  string newName = 2;
+}
+
+message ActiveTorrent {
+  int32 ID = 1;
+  string Name = 2;
+  string Hash = 3;
+  string Comment = 4;
+  string DownloadDir = 5;
+  google.protobuf.Timestamp DateCreated = 6;
+}
+
+message ActiveTorrentPart {
+  string Name = 1;
+}
+
+/////////////////////////////////////////////////////
+/////      REQUESTS
+/////////////////////////////////////////////////////
+
+message Empty {}
+
+message SearchRequest {
+  string Text = 1;
+}
+
+message AddTorrentRequest {
+  string Url = 1;
+}
+
+message DeleteTorrentRequest {
+  int32 id = 1;
+}
+
+message DownloadTorrentRequest {
+  string Url = 1;
+  string Folder = 2;
+}
+
+message RenameTorrentPartsRequest {
+  int32 id = 1;
+  repeated PartToRename names = 2;
+}
+
+message GetActiveTorrentsRequest {
+  bool onlyRegistered = 1;
+}
+
+message GetActiveTorrentPartsRequest {
+  int32 id = 1;
+}
+
+/////////////////////////////////////////////////////
+/////      RESPONSES
+/////////////////////////////////////////////////////
+
+message TorrentResponse {
+  Torrent torrent = 1;
+}
+
+message TorrentsResponse {
+  repeated Torrent torrents = 1;
+}
+
+message DownloadFoldersResponse {
+  repeated string folders = 1;
+}
+
+message DownloadTorrentResponse {
+  int32 ID = 1;
+  string Name = 2;
+  string Hash = 3;
+}
+
+message ActiveTorrentsResponse {
+  repeated ActiveTorrent torrents = 1;
+}
+
+message ActiveTorrentPartsResponse {
+  repeated ActiveTorrentPart parts = 1;
+}

@@ -65,6 +65,9 @@ func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torr
 	}
 
 	torrent = responseModel.Arguments.TorrentAdded
+	if torrent.ID == 0 {
+		torrent.ID = responseModel.Arguments.TorrentDuplicate.ID
+	}
 	if torrent.Hash == "" {
 		torrent.Hash = responseModel.Arguments.TorrentDuplicate.Hash
 	}

@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"embed"
 	"fmt"
-	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,26 +23,27 @@ import (
 	trackingImpl "torrentsWatcher/internal/impl/tracker"
 
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"google.golang.org/grpc"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/jinzhu/gorm"
 
 	"torrentsWatcher/config"
-	"torrentsWatcher/internal/handlers"
 
 	"go.uber.org/zap"
+
+	_grpc "torrentsWatcher/internal/grpc"
 )
+
+const portHTTP = 10000
+const portGRPC = 10001
 
 // TODO:
 // 	unit tests
 //  kinozal timestamps & topics
 //  search filters
 //  pagination || more long the only page
-
-// nolint: typecheck
-//go:embed dist/*
-var distContent embed.FS
 
 func main() {
 	ctx, ctxCancel := context.WithCancel(context.Background())
@@ -99,7 +99,8 @@ func main() {
 	wg.Add(1)
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
 
-	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, transmissionClient, cfg.Transmission.Folders)
+	serveHTTP(errorChan, logger, portHTTP)
+	go serveRPC(logger.Named("RPC"), trackers, torrentsStorage, cfg.Transmission.Folders, transmissionClient)
 
 	logger.Info("Service started")
 	select {
@@ -115,15 +116,34 @@ func main() {
 	wg.Wait()
 }
 
-func serve(
-	errorChan chan error,
+func serveRPC(
 	logger *zap.Logger,
-	host string,
-	port string,
 	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
-	torrentClient torrentclient.Client,
 	downloadFolders map[string]string,
+	torrentClient torrentclient.Client,
+) {
+	var opts []grpc.ServerOption
+	grpcServer := grpc.NewServer(opts...)
+	grpcServer.RegisterService(&_grpc.BaseServiceDesc, _grpc.NewRPCServer(
+		logger,
+		trackers,
+		torrentsStorage,
+		downloadFolders,
+		torrentClient,
+	))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", portGRPC))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	err = grpcServer.Serve(lis)
+	fmt.Println(err)
+}
+
+func serveHTTP(
+	errorChan chan error,
+	logger *zap.Logger,
+	port int,
 ) {
 	router := chi.NewRouter()
 
@@ -138,22 +158,10 @@ func serve(
 	})
 	router.Use(corsMiddleware.Handler)
 
-	router.MethodFunc("GET", "/download-folders", handlers.GetDownloadFolders(downloadFolders))
-	router.MethodFunc("GET", "/torrents", handlers.GetTorrents(logger, torrentsStorage))
-	router.MethodFunc("GET", "/transmission-torrents", handlers.GetTransmissionTorrents(torrentsStorage, torrentClient))
-	router.MethodFunc("GET", "/transmission-torrent-files", handlers.GetTransmissionTorrentFiles(torrentClient))
-	router.MethodFunc("POST", "/torrent", handlers.AddTorrent(logger, trackers, torrentsStorage))
-	router.MethodFunc("POST", "/search", handlers.Search(logger, trackers))
-	router.MethodFunc("POST", "/download", handlers.DownloadWithClient(logger, trackers, torrentClient, torrentsStorage, downloadFolders))
-	router.MethodFunc("DELETE", `/torrent/{id:\d+}`, handlers.DeleteTorrent(logger, torrentsStorage))
-	router.MethodFunc("POST", `/rename`, handlers.Rename(logger, torrentClient))
-	router.MethodFunc("POST", `/rename-parts`, handlers.RenameParts(logger, torrentClient))
-
-	content, _ := fs.Sub(distContent, "dist")
-	router.Handle("/*", http.FileServer(http.FS(content)))
+	router.Handle("/*", http.FileServer(http.Dir("dist")))
 
 	server := http.Server{
-		Addr:    fmt.Sprintf("%s:%s", host, port),
+		Addr:    fmt.Sprintf("0.0.0.0:%d", port),
 		Handler: router,
 	}
 

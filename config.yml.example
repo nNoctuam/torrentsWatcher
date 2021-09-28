@@ -1,5 +1,3 @@
-host: 0.0.0.0
-port: 8803
 interval: 1h
 logLevel: info
 credentials:
@@ -12,7 +10,7 @@ notifications:
   message:
     KDE: true
     tray: true
-autoDownloadDir: /var/torrents
+autoDownloadDir: /var/torrents # outdated
 transmission:
   login:
   password:
