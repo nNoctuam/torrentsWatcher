@@ -17,6 +17,6 @@ const router = createRouter({
   ],
 });
 
-createApp(App).use(router).mount("#app");
-
-// window.api = require('./ts/api').default
+const app = createApp(App);
+app.use(router).mount("#app");
+app.config.performance = true;

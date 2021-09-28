@@ -355,5 +355,45 @@ export class BaseServiceClient {
     this.methodInfoGetActiveTorrents);
   }
 
+  methodInfoGetActiveTorrentParts = new grpcWeb.AbstractClientBase.MethodInfo(
+    baseService_pb.ActiveTorrentPartsResponse,
+    (request: baseService_pb.GetActiveTorrentPartsRequest) => {
+      return request.serializeBinary();
+    },
+    baseService_pb.ActiveTorrentPartsResponse.deserializeBinary
+  );
+
+  getActiveTorrentParts(
+    request: baseService_pb.GetActiveTorrentPartsRequest,
+    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.ActiveTorrentPartsResponse>;
+
+  getActiveTorrentParts(
+    request: baseService_pb.GetActiveTorrentPartsRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: baseService_pb.ActiveTorrentPartsResponse) => void): grpcWeb.ClientReadableStream<baseService_pb.ActiveTorrentPartsResponse>;
+
+  getActiveTorrentParts(
+    request: baseService_pb.GetActiveTorrentPartsRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: baseService_pb.ActiveTorrentPartsResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/protobuf.BaseService/GetActiveTorrentParts',
+        request,
+        metadata || {},
+        this.methodInfoGetActiveTorrentParts,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/protobuf.BaseService/GetActiveTorrentParts',
+    request,
+    metadata || {},
+    this.methodInfoGetActiveTorrentParts);
+  }
+
 }
 

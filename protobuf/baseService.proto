@@ -14,6 +14,7 @@ service BaseService {
   rpc DownloadTorrent(DownloadTorrentRequest) returns (DownloadTorrentResponse) {}
   rpc RenameTorrentParts(RenameTorrentPartsRequest) returns (Empty) {}
   rpc GetActiveTorrents(GetActiveTorrentsRequest) returns (ActiveTorrentsResponse) {}
+  rpc GetActiveTorrentParts(GetActiveTorrentPartsRequest) returns (ActiveTorrentPartsResponse) {}
 }
 
 /////////////////////////////////////////////////////
@@ -48,6 +49,10 @@ message ActiveTorrent {
   google.protobuf.Timestamp DateCreated = 6;
 }
 
+message ActiveTorrentPart {
+  string Name = 1;
+}
+
 /////////////////////////////////////////////////////
 /////      REQUESTS
 /////////////////////////////////////////////////////
@@ -80,6 +85,10 @@ message GetActiveTorrentsRequest {
   bool onlyRegistered = 1;
 }
 
+message GetActiveTorrentPartsRequest {
+  int32 id = 1;
+}
+
 /////////////////////////////////////////////////////
 /////      RESPONSES
 /////////////////////////////////////////////////////
@@ -104,4 +113,8 @@ message DownloadTorrentResponse {
 
 message ActiveTorrentsResponse {
   repeated ActiveTorrent torrents = 1;
+}
+
+message ActiveTorrentPartsResponse {
+  repeated ActiveTorrentPart parts = 1;
 }

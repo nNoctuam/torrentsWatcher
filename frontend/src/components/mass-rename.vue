@@ -53,17 +53,17 @@
 import { defineComponent } from "vue";
 import api from "@/ts/api";
 import convertNamesList from "@/ts/renameNamesConverter";
-import { ActiveTorrent, PartToRename } from "@/pb/baseService_pb";
-
-class File {
-  name = "";
-}
+import {
+  ActiveTorrent,
+  ActiveTorrentPart,
+  PartToRename,
+} from "@/pb/baseService_pb";
 
 class Data {
   downloads: Array<ActiveTorrent.AsObject> = [];
   selected: ActiveTorrent.AsObject | null = null;
   newNamesList = "";
-  files: File[] = [];
+  files: ActiveTorrentPart.AsObject[] = [];
 }
 
 export default defineComponent({
@@ -120,9 +120,13 @@ export default defineComponent({
       api
         .renameTorrentParts(this.selected.id, convertNamesList(basicNamesList))
         .then(() => {
-          const selected = this.selected;
-          this.selected = null;
-          this.selected = selected;
+          if (this.selected === null) {
+            throw new Error("selected cannot be null right after rename");
+          }
+          api.getTransmissionTorrentFiles(this.selected.id).then((r2) => {
+            this.files = r2;
+            this.newNamesList = this.getFilesList();
+          });
         });
     },
   },

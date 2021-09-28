@@ -129,6 +129,24 @@ export namespace ActiveTorrent {
   }
 }
 
+export class ActiveTorrentPart extends jspb.Message {
+  getName(): string;
+  setName(value: string): ActiveTorrentPart;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ActiveTorrentPart.AsObject;
+  static toObject(includeInstance: boolean, msg: ActiveTorrentPart): ActiveTorrentPart.AsObject;
+  static serializeBinaryToWriter(message: ActiveTorrentPart, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ActiveTorrentPart;
+  static deserializeBinaryFromReader(message: ActiveTorrentPart, reader: jspb.BinaryReader): ActiveTorrentPart;
+}
+
+export namespace ActiveTorrentPart {
+  export type AsObject = {
+    name: string,
+  }
+}
+
 export class Empty extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Empty.AsObject;
@@ -261,6 +279,24 @@ export namespace GetActiveTorrentsRequest {
   }
 }
 
+export class GetActiveTorrentPartsRequest extends jspb.Message {
+  getId(): number;
+  setId(value: number): GetActiveTorrentPartsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetActiveTorrentPartsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetActiveTorrentPartsRequest): GetActiveTorrentPartsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetActiveTorrentPartsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetActiveTorrentPartsRequest;
+  static deserializeBinaryFromReader(message: GetActiveTorrentPartsRequest, reader: jspb.BinaryReader): GetActiveTorrentPartsRequest;
+}
+
+export namespace GetActiveTorrentPartsRequest {
+  export type AsObject = {
+    id: number,
+  }
+}
+
 export class TorrentResponse extends jspb.Message {
   getTorrent(): Torrent | undefined;
   setTorrent(value?: Torrent): TorrentResponse;
@@ -364,6 +400,26 @@ export class ActiveTorrentsResponse extends jspb.Message {
 export namespace ActiveTorrentsResponse {
   export type AsObject = {
     torrentsList: Array<ActiveTorrent.AsObject>,
+  }
+}
+
+export class ActiveTorrentPartsResponse extends jspb.Message {
+  getPartsList(): Array<ActiveTorrentPart>;
+  setPartsList(value: Array<ActiveTorrentPart>): ActiveTorrentPartsResponse;
+  clearPartsList(): ActiveTorrentPartsResponse;
+  addParts(value?: ActiveTorrentPart, index?: number): ActiveTorrentPart;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ActiveTorrentPartsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ActiveTorrentPartsResponse): ActiveTorrentPartsResponse.AsObject;
+  static serializeBinaryToWriter(message: ActiveTorrentPartsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ActiveTorrentPartsResponse;
+  static deserializeBinaryFromReader(message: ActiveTorrentPartsResponse, reader: jspb.BinaryReader): ActiveTorrentPartsResponse;
+}
+
+export namespace ActiveTorrentPartsResponse {
+  export type AsObject = {
+    partsList: Array<ActiveTorrentPart.AsObject>,
   }
 }
 

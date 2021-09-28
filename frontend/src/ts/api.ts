@@ -10,6 +10,8 @@ import {
   PartToRename,
   ActiveTorrent,
   GetActiveTorrentsRequest,
+  GetActiveTorrentPartsRequest,
+  ActiveTorrentPart,
 } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
@@ -38,19 +40,15 @@ const api = {
     });
   },
 
-  getTransmissionTorrentFiles(id: number) {
-    return fetch(
-      this.domain +
-        "/transmission-torrent-files?" +
-        new URLSearchParams({
-          id: id.toString(),
-        })
-    ).then(async (r) => {
-      if (r.status !== 200) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      return r.json();
+  getTransmissionTorrentFiles(
+    id: number
+  ): Promise<ActiveTorrentPart.AsObject[]> {
+    const request = new GetActiveTorrentPartsRequest();
+    request.setId(id);
+    return this.rpcClient.getActiveTorrentParts(request, null).then((r) => {
+      return r.getPartsList().map((part) => {
+        return part.toObject();
+      });
     });
   },
 
