@@ -115,11 +115,7 @@ export default defineComponent({
     deleteTorrent(torrent: Torrent.AsObject): void {
       api
         .deleteTorrent(torrent.id)
-        .then(async (r) => {
-          if (r.status !== 200) {
-            const text = await r.text();
-            throw new Error(text);
-          }
+        .then(async () => {
           this.torrents.splice(this.torrents.indexOf(torrent), 1);
         })
         .catch((e) => {

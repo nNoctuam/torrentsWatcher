@@ -10,6 +10,7 @@ service BaseService {
   rpc GetMonitoredTorrents(Empty) returns (TorrentsResponse) {}
   rpc GetDownloadFolders(Empty) returns (DownloadFoldersResponse) {}
   rpc AddTorrent(AddTorrentRequest) returns (TorrentResponse) {}
+  rpc DeleteTorrent(DeleteTorrentRequest) returns (Empty) {}
 }
 
 /////////////////////////////////////////////////////
@@ -42,6 +43,9 @@ message SearchRequest {
 
 message AddTorrentRequest {
   string Url = 1;
+}
+message DeleteTorrentRequest {
+  int32 id = 1;
 }
 
 /////////////////////////////////////////////////////

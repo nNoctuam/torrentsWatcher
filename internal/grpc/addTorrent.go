@@ -10,15 +10,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (s *RpcServer) AddTorrent(context.Context, *pb.AddTorrentRequest) (*pb.TorrentResponse, error) {
+func (s *RpcServer) AddTorrent(ctx context.Context, r *pb.AddTorrentRequest) (*pb.TorrentResponse, error) {
 	var torrent *models.Torrent
-	var requestBody struct {
-		URL string
-	}
+	s.logger.Info("parsing ", zap.String("url", r.Url))
 
-	s.logger.Info("parsing ", zap.String("url", requestBody.URL))
-
-	torrent, err := s.trackers.GetTorrentInfo(requestBody.URL)
+	torrent, err := s.trackers.GetTorrentInfo(r.Url)
 	if err != nil {
 		return nil, err
 	}

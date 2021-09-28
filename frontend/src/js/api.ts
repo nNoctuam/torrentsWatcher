@@ -2,7 +2,7 @@ import {
   SearchRequest,
   Torrent,
   Empty,
-  AddTorrentRequest,
+  AddTorrentRequest, DeleteTorrentRequest,
 } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
@@ -61,10 +61,10 @@ const api = {
     });
   },
 
-  deleteTorrent(id: number) {
-    return fetch(this.domain + "/torrent/" + id, {
-      method: "DELETE",
-    });
+  deleteTorrent(id: number): Promise<Empty> {
+    const request = new DeleteTorrentRequest();
+    request.setId(id);
+    return this.rpcClient.deleteTorrent(request, null);
   },
 
   search(text: string): Promise<Torrent.AsObject[]> {

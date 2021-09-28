@@ -117,6 +117,24 @@ export namespace AddTorrentRequest {
   }
 }
 
+export class DeleteTorrentRequest extends jspb.Message {
+  getId(): number;
+  setId(value: number): DeleteTorrentRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteTorrentRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteTorrentRequest): DeleteTorrentRequest.AsObject;
+  static serializeBinaryToWriter(message: DeleteTorrentRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteTorrentRequest;
+  static deserializeBinaryFromReader(message: DeleteTorrentRequest, reader: jspb.BinaryReader): DeleteTorrentRequest;
+}
+
+export namespace DeleteTorrentRequest {
+  export type AsObject = {
+    id: number,
+  }
+}
+
 export class TorrentResponse extends jspb.Message {
   getTorrent(): Torrent | undefined;
   setTorrent(value?: Torrent): TorrentResponse;
