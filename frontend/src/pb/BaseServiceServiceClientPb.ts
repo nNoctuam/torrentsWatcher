@@ -115,5 +115,45 @@ export class BaseServiceClient {
     this.methodInfoGetMonitoredTorrents);
   }
 
+  methodInfoGetDownloadFolders = new grpcWeb.AbstractClientBase.MethodInfo(
+    baseService_pb.DownloadFoldersResponse,
+    (request: baseService_pb.Empty) => {
+      return request.serializeBinary();
+    },
+    baseService_pb.DownloadFoldersResponse.deserializeBinary
+  );
+
+  getDownloadFolders(
+    request: baseService_pb.Empty,
+    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.DownloadFoldersResponse>;
+
+  getDownloadFolders(
+    request: baseService_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: baseService_pb.DownloadFoldersResponse) => void): grpcWeb.ClientReadableStream<baseService_pb.DownloadFoldersResponse>;
+
+  getDownloadFolders(
+    request: baseService_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: baseService_pb.DownloadFoldersResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/protobuf.BaseService/GetDownloadFolders',
+        request,
+        metadata || {},
+        this.methodInfoGetDownloadFolders,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/protobuf.BaseService/GetDownloadFolders',
+    request,
+    metadata || {},
+    this.methodInfoGetDownloadFolders);
+  }
+
 }
 

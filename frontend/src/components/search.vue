@@ -172,7 +172,7 @@ class Data {
 
   selectedRow: number | null = null;
 
-  folders: Map<string, string> = new Map();
+  folders: string[] = [];
   showSelectFolder = false;
   folderSelect: null | ((folder: string) => void) = null;
   folderSelectCancel: null | (() => void) = null;
@@ -198,7 +198,7 @@ export default defineComponent({
 
     selectedRow: null,
 
-    folders: new Map(),
+    folders: [],
     showSelectFolder: false,
     folderSelect: null,
     folderSelectCancel: null,

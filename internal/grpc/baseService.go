@@ -15,14 +15,21 @@ type RpcServer struct {
 	logger          *zap.Logger
 	trackers        tracking2.Trackers
 	torrentsStorage storage.Torrents
+	downloadFolders map[string]string
 }
 
 func NewRpcServer(
 	logger *zap.Logger,
 	trackers tracking2.Trackers,
 	torrentsStorage storage.Torrents,
+	downloadFolders map[string]string,
 ) *RpcServer {
-	return &RpcServer{logger: logger, trackers: trackers, torrentsStorage: torrentsStorage}
+	return &RpcServer{
+		logger:          logger,
+		trackers:        trackers,
+		torrentsStorage: torrentsStorage,
+		downloadFolders: downloadFolders,
+	}
 }
 
 var BaseServiceDesc = grpc.ServiceDesc{
@@ -36,6 +43,10 @@ var BaseServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMonitoredTorrents",
 			Handler:    GetMonitoredTorrentsHandler,
+		},
+		{
+			MethodName: "GetDownloadFolders",
+			Handler:    GetDownloadFoldersHandler,
 		},
 	},
 	Metadata: "protobuf/baseService.proto",

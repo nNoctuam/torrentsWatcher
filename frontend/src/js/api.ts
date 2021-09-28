@@ -40,14 +40,12 @@ const api = {
     });
   },
 
-  getDownloadFolders() {
-    return fetch(this.domain + "/download-folders").then(async (r) => {
-      if (r.status !== 200) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      return r.json();
-    });
+  getDownloadFolders(): Promise<string[]> {
+    return this.rpcClient
+      .getDownloadFolders(new Empty(), null)
+      .then(async (r) => {
+        return r.getFoldersList();
+      });
   },
 
   addTorrent(url: string) {

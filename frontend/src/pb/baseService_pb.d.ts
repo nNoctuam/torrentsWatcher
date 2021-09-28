@@ -119,3 +119,23 @@ export namespace Torrent {
   }
 }
 
+export class DownloadFoldersResponse extends jspb.Message {
+  getFoldersList(): Array<string>;
+  setFoldersList(value: Array<string>): DownloadFoldersResponse;
+  clearFoldersList(): DownloadFoldersResponse;
+  addFolders(value: string, index?: number): DownloadFoldersResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DownloadFoldersResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: DownloadFoldersResponse): DownloadFoldersResponse.AsObject;
+  static serializeBinaryToWriter(message: DownloadFoldersResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownloadFoldersResponse;
+  static deserializeBinaryFromReader(message: DownloadFoldersResponse, reader: jspb.BinaryReader): DownloadFoldersResponse;
+}
+
+export namespace DownloadFoldersResponse {
+  export type AsObject = {
+    foldersList: Array<string>,
+  }
+}
+

@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 service BaseService {
   rpc Search(SearchRequest) returns (TorrentsResponse) {}
   rpc GetMonitoredTorrents(Empty) returns (TorrentsResponse) {}
+  rpc GetDownloadFolders(Empty) returns (DownloadFoldersResponse) {}
 }
 
 message Empty {}
@@ -30,5 +31,8 @@ message Torrent {
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
   google.protobuf.Timestamp uploaded_at = 11;
+}
 
+message DownloadFoldersResponse {
+  repeated string folders = 1;
 }
