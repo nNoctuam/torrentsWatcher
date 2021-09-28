@@ -1,4 +1,7 @@
 // TODO fix new structs
+test("fake test", () => {
+  expect(true).toBe(true);
+});
 // import convertNamesList from "./renameNamesConverter";
 //
 // class Set {
