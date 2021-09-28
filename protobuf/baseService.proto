@@ -11,6 +11,7 @@ service BaseService {
   rpc GetDownloadFolders(Empty) returns (DownloadFoldersResponse) {}
   rpc AddTorrent(AddTorrentRequest) returns (TorrentResponse) {}
   rpc DeleteTorrent(DeleteTorrentRequest) returns (Empty) {}
+  rpc DownloadTorrent(DownloadTorrentRequest) returns (DownloadTorrentResponse) {}
 }
 
 /////////////////////////////////////////////////////
@@ -44,8 +45,14 @@ message SearchRequest {
 message AddTorrentRequest {
   string Url = 1;
 }
+
 message DeleteTorrentRequest {
   int32 id = 1;
+}
+
+message DownloadTorrentRequest {
+  string Url = 1;
+  string Folder = 2;
 }
 
 /////////////////////////////////////////////////////
@@ -62,4 +69,9 @@ message TorrentsResponse {
 
 message DownloadFoldersResponse {
   repeated string folders = 1;
+}
+
+message DownloadTorrentResponse {
+  string Name = 1;
+  string Hash = 2;
 }

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"torrentsWatcher/internal/core/storage"
+	"torrentsWatcher/internal/core/torrentclient"
 	tracking2 "torrentsWatcher/internal/core/tracking"
 	"torrentsWatcher/internal/pb"
 
@@ -16,6 +17,7 @@ type RpcServer struct {
 	trackers        tracking2.Trackers
 	torrentsStorage storage.Torrents
 	downloadFolders map[string]string
+	torrentClient   torrentclient.Client
 }
 
 func NewRpcServer(
@@ -23,12 +25,14 @@ func NewRpcServer(
 	trackers tracking2.Trackers,
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
+	torrentClient torrentclient.Client,
 ) *RpcServer {
 	return &RpcServer{
 		logger:          logger,
 		trackers:        trackers,
 		torrentsStorage: torrentsStorage,
 		downloadFolders: downloadFolders,
+		torrentClient:   torrentClient,
 	}
 }
 
@@ -55,6 +59,10 @@ var BaseServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTorrent",
 			Handler:    DeleteTorrentHandler,
+		},
+		{
+			MethodName: "DownloadTorrent",
+			Handler:    DownloadTorrentHandler,
 		},
 	},
 	Metadata: "protobuf/baseService.proto",

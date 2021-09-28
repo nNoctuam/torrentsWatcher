@@ -2,7 +2,10 @@ import {
   SearchRequest,
   Torrent,
   Empty,
-  AddTorrentRequest, DeleteTorrentRequest,
+  AddTorrentRequest,
+  DeleteTorrentRequest,
+  DownloadTorrentRequest,
+  DownloadTorrentResponse,
 } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
@@ -76,22 +79,15 @@ const api = {
     });
   },
 
-  downloadTorrent(pageUrl: string, folder: string) {
-    return fetch(this.domain + "/download", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify({
-        Url: pageUrl,
-        Folder: folder,
-      }),
-    }).then(async (r) => {
-      if (r.status !== 200) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      return r.json();
+  downloadTorrent(
+    pageUrl: string,
+    folder: string
+  ): Promise<DownloadTorrentResponse.AsObject> {
+    const request = new DownloadTorrentRequest();
+    request.setUrl(pageUrl);
+    request.setFolder(folder);
+    return this.rpcClient.downloadTorrent(request, null).then((r) => {
+      return r.toObject();
     });
   },
 

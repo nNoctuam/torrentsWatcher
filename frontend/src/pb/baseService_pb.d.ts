@@ -135,6 +135,28 @@ export namespace DeleteTorrentRequest {
   }
 }
 
+export class DownloadTorrentRequest extends jspb.Message {
+  getUrl(): string;
+  setUrl(value: string): DownloadTorrentRequest;
+
+  getFolder(): string;
+  setFolder(value: string): DownloadTorrentRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DownloadTorrentRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DownloadTorrentRequest): DownloadTorrentRequest.AsObject;
+  static serializeBinaryToWriter(message: DownloadTorrentRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownloadTorrentRequest;
+  static deserializeBinaryFromReader(message: DownloadTorrentRequest, reader: jspb.BinaryReader): DownloadTorrentRequest;
+}
+
+export namespace DownloadTorrentRequest {
+  export type AsObject = {
+    url: string,
+    folder: string,
+  }
+}
+
 export class TorrentResponse extends jspb.Message {
   getTorrent(): Torrent | undefined;
   setTorrent(value?: Torrent): TorrentResponse;
@@ -192,6 +214,28 @@ export class DownloadFoldersResponse extends jspb.Message {
 export namespace DownloadFoldersResponse {
   export type AsObject = {
     foldersList: Array<string>,
+  }
+}
+
+export class DownloadTorrentResponse extends jspb.Message {
+  getName(): string;
+  setName(value: string): DownloadTorrentResponse;
+
+  getHash(): string;
+  setHash(value: string): DownloadTorrentResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DownloadTorrentResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: DownloadTorrentResponse): DownloadTorrentResponse.AsObject;
+  static serializeBinaryToWriter(message: DownloadTorrentResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownloadTorrentResponse;
+  static deserializeBinaryFromReader(message: DownloadTorrentResponse, reader: jspb.BinaryReader): DownloadTorrentResponse;
+}
+
+export namespace DownloadTorrentResponse {
+  export type AsObject = {
+    name: string,
+    hash: string,
   }
 }
 

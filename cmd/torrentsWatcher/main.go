@@ -104,7 +104,7 @@ func main() {
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
 
 	serve(errorChan, logger, cfg.Host, cfg.Port, trackers, torrentsStorage, transmissionClient, cfg.Transmission.Folders)
-	go serveRpc(logger.Named("RPC"), trackers, torrentsStorage, cfg.Transmission.Folders)
+	go serveRpc(logger.Named("RPC"), trackers, torrentsStorage, cfg.Transmission.Folders, transmissionClient)
 
 	logger.Info("Service started")
 	select {
@@ -125,6 +125,7 @@ func serveRpc(
 	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
+	torrentClient torrentclient.Client,
 ) {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
@@ -133,6 +134,7 @@ func serveRpc(
 		trackers,
 		torrentsStorage,
 		downloadFolders,
+		torrentClient,
 	))
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8804))
 	if err != nil {
