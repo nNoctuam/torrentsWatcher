@@ -218,6 +218,9 @@ export namespace DownloadFoldersResponse {
 }
 
 export class DownloadTorrentResponse extends jspb.Message {
+  getId(): number;
+  setId(value: number): DownloadTorrentResponse;
+
   getName(): string;
   setName(value: string): DownloadTorrentResponse;
 
@@ -234,6 +237,7 @@ export class DownloadTorrentResponse extends jspb.Message {
 
 export namespace DownloadTorrentResponse {
   export type AsObject = {
+    id: number,
     name: string,
     hash: string,
   }

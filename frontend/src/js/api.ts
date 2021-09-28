@@ -91,25 +91,6 @@ const api = {
     });
   },
 
-  renameTorrent(hash: string, newName: string) {
-    return fetch(this.domain + "/rename", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify({
-        hash,
-        newName,
-      }),
-    }).then(async (r) => {
-      if (r.status !== 200) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      return r;
-    });
-  },
-
   renameTorrentParts(id: number, names: string[][]) {
     return fetch(this.domain + "/rename-parts", {
       method: "POST",

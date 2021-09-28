@@ -103,17 +103,18 @@
       </div>
     </div>
 
-    <div class="modal renaming" :class="{ active: downloadedName }">
+    <div class="modal renaming" :class="{ active: downloadedTorrent.id }">
       <div class="modal-overlay"></div>
       <form
         class="modal-container form-group"
-        v-on:submit.prevent="renameTorrent(downloadedHash, newName)"
+        v-on:submit.prevent="
+          renameTorrent(downloadedTorrent.id, downloadedTorrent.name, newName)
+        "
       >
         <div class="modal-header">
           <button
-            href="#close"
             class="btn btn-clear float-right"
-            @click.prevent="downloadedName = null"
+            @click.prevent="downloadedTorrent.id = 0"
           ></button>
           <h5>Торрент загружается. Переименовать?</h5>
         </div>
@@ -166,6 +167,12 @@ interface TorrentLocal extends Torrent.AsObject {
   isBeingDownloaded: boolean;
 }
 
+class DownloadedTorrent {
+  id: number | null = null;
+  name: string | null = null;
+  hash: string | null = null;
+}
+
 class Data {
   searchText = "";
   searching = false;
@@ -178,8 +185,8 @@ class Data {
   folderSelectCancel: null | (() => void) = null;
 
   downloading = false;
-  downloadedName: string | null = null;
-  downloadedHash: string | null = null;
+
+  downloadedTorrent: DownloadedTorrent = new DownloadedTorrent();
 
   newName: string | null = null;
   renaming = false;
@@ -204,8 +211,11 @@ export default defineComponent({
     folderSelectCancel: null,
 
     downloading: false,
-    downloadedName: null,
-    downloadedHash: null,
+    downloadedTorrent: {
+      id: null,
+      name: null,
+      hash: null,
+    },
 
     newName: null,
     renaming: false,
@@ -245,13 +255,13 @@ export default defineComponent({
       api
         .search(this.searchText)
         .then((r: any) => {
-          console.log('got search result:', r);
+          console.log("got search result:", r);
           this.torrents = r.map((torrent: Torrent.AsObject): TorrentLocal => {
             const t: TorrentLocal = torrent as unknown as TorrentLocal;
             t.isBeingDownloaded = false;
             return t;
           });
-          console.log('final torrents: ', this.torrents)
+          console.log("final torrents: ", this.torrents);
         })
         .catch((e: any) => {
           this.error = e;
@@ -278,12 +288,14 @@ export default defineComponent({
           .downloadTorrent(torrent.pageUrl, folder)
           .then((r) => {
             console.log(r);
-            this.downloadedName = r.name;
+            this.downloadedTorrent.id = r.id;
+            this.downloadedTorrent.name = r.name;
+            this.downloadedTorrent.hash = r.hash;
+
             this.newName = r.name;
-            this.downloadedHash = r.hash;
           })
           .catch((e) => {
-            this.error = "Не удалось скачать: " + e;
+            this.error = "Не удалось скачать: " + JSON.stringify(e);
           })
           .then(() => {
             this.downloading = false;
@@ -298,20 +310,20 @@ export default defineComponent({
       return;
     },
 
-    renameTorrent(downloadedHash: string, newName: string): void {
-      console.log("renaming " + downloadedHash + " to " + newName);
+    renameTorrent(id: number, oldName: string, newName: string): void {
+      console.log(`renaming #${id} ${oldName} to ${newName}`);
       this.renaming = true;
       // setTimeout(() => {
       //   this.downloadedName = null
       // }, 1000)
       api
-        .renameTorrent(downloadedHash, newName)
+        .renameTorrentParts(id, [[oldName, newName]])
         .catch((e) => {
           this.error = "Не удалось переименовать: " + e;
         })
         .then(() => {
           this.renaming = false;
-          this.downloadedName = null;
+          this.downloadedTorrent.id = 0;
         });
     },
   },

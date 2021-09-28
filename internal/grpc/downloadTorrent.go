@@ -47,6 +47,7 @@ func (s *RpcServer) DownloadTorrent(ctx context.Context, r *pb.DownloadTorrentRe
 	}
 
 	return &pb.DownloadTorrentResponse{
+		ID:   int32(addedTorrent.ID),
 		Name: addedTorrent.Name,
 		Hash: addedTorrent.Hash,
 	}, nil

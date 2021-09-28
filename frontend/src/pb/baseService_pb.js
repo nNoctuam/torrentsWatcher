@@ -1880,8 +1880,9 @@ proto.protobuf.DownloadTorrentResponse.prototype.toObject = function(opt_include
  */
 proto.protobuf.DownloadTorrentResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    hash: jspb.Message.getFieldWithDefault(msg, 2, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    hash: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -1919,10 +1920,14 @@ proto.protobuf.DownloadTorrentResponse.deserializeBinaryFromReader = function(ms
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setId(value);
+      break;
+    case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
       break;
-    case 2:
+    case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setHash(value);
       break;
@@ -1955,46 +1960,53 @@ proto.protobuf.DownloadTorrentResponse.prototype.serializeBinary = function() {
  */
 proto.protobuf.DownloadTorrentResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getName();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getId();
+  if (f !== 0) {
+    writer.writeInt32(
       1,
       f
     );
   }
-  f = message.getHash();
+  f = message.getName();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
+  f = message.getHash();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
 /**
- * optional string Name = 1;
+ * optional int32 ID = 1;
+ * @return {number}
+ */
+proto.protobuf.DownloadTorrentResponse.prototype.getId = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.protobuf.DownloadTorrentResponse} returns this
+ */
+proto.protobuf.DownloadTorrentResponse.prototype.setId = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional string Name = 2;
  * @return {string}
  */
 proto.protobuf.DownloadTorrentResponse.prototype.getName = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.protobuf.DownloadTorrentResponse} returns this
- */
-proto.protobuf.DownloadTorrentResponse.prototype.setName = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string Hash = 2;
- * @return {string}
- */
-proto.protobuf.DownloadTorrentResponse.prototype.getHash = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -2003,8 +2015,26 @@ proto.protobuf.DownloadTorrentResponse.prototype.getHash = function() {
  * @param {string} value
  * @return {!proto.protobuf.DownloadTorrentResponse} returns this
  */
-proto.protobuf.DownloadTorrentResponse.prototype.setHash = function(value) {
+proto.protobuf.DownloadTorrentResponse.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string Hash = 3;
+ * @return {string}
+ */
+proto.protobuf.DownloadTorrentResponse.prototype.getHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.protobuf.DownloadTorrentResponse} returns this
+ */
+proto.protobuf.DownloadTorrentResponse.prototype.setHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 

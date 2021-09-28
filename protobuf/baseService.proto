@@ -72,6 +72,7 @@ message DownloadFoldersResponse {
 }
 
 message DownloadTorrentResponse {
-  string Name = 1;
-  string Hash = 2;
+  int32 ID = 1;
+  string Name = 2;
+  string Hash = 3;
 }
