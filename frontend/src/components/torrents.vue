@@ -64,7 +64,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import moment from "moment";
-import api from "@/js/api";
+import api from "@/ts/api";
 import { Torrent } from "@/pb/baseService_pb";
 
 class Data {

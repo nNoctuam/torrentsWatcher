@@ -158,7 +158,7 @@
 </template>
 
 <script lang="ts">
-import api from "../js/api";
+import api from "../ts/api";
 import moment from "moment";
 import {PartToRename, Torrent} from "@/pb/baseService_pb";
 import { defineComponent } from "vue";

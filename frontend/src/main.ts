@@ -19,4 +19,4 @@ const router = createRouter({
 
 createApp(App).use(router).mount("#app");
 
-// window.api = require('./js/api').default
+// window.api = require('./ts/api').default

@@ -51,8 +51,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import api from "@/js/api";
-import convertNamesList from "@/js/renameNamesConverter";
+import api from "@/ts/api";
+import convertNamesList from "@/ts/renameNamesConverter";
 import { ActiveTorrent, PartToRename } from "@/pb/baseService_pb";
 
 class File {
