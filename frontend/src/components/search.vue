@@ -160,7 +160,7 @@
 <script lang="ts">
 import api from "../ts/api";
 import moment from "moment";
-import {PartToRename, Torrent} from "@/pb/baseService_pb";
+import { PartToRename, Torrent } from "@/pb/baseService_pb";
 import { defineComponent } from "vue";
 
 interface TorrentLocal extends Torrent.AsObject {

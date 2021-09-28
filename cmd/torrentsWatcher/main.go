@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"embed"
 	"fmt"
-	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -38,15 +36,14 @@ import (
 	_grpc "torrentsWatcher/internal/grpc"
 )
 
+const portHTTP = 10000
+const portGRPC = 10001
+
 // TODO:
 // 	unit tests
 //  kinozal timestamps & topics
 //  search filters
 //  pagination || more long the only page
-
-// nolint: typecheck
-//go:embed dist/*
-var distContent embed.FS
 
 func main() {
 	ctx, ctxCancel := context.WithCancel(context.Background())
@@ -102,7 +99,7 @@ func main() {
 	wg.Add(1)
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
 
-	serveHttp(errorChan, logger, cfg.Host, cfg.Port)
+	serveHttp(errorChan, logger, portHTTP)
 	go serveRpc(logger.Named("RPC"), trackers, torrentsStorage, cfg.Transmission.Folders, transmissionClient)
 
 	logger.Info("Service started")
@@ -135,7 +132,7 @@ func serveRpc(
 		downloadFolders,
 		torrentClient,
 	))
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8804))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", portGRPC))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -146,8 +143,7 @@ func serveRpc(
 func serveHttp(
 	errorChan chan error,
 	logger *zap.Logger,
-	host string,
-	port string,
+	port int,
 ) {
 	router := chi.NewRouter()
 
@@ -162,11 +158,10 @@ func serveHttp(
 	})
 	router.Use(corsMiddleware.Handler)
 
-	content, _ := fs.Sub(distContent, "dist")
-	router.Handle("/*", http.FileServer(http.FS(content)))
+	router.Handle("/*", http.FileServer(http.Dir("dist")))
 
 	server := http.Server{
-		Addr:    fmt.Sprintf("%s:%s", host, port),
+		Addr:    fmt.Sprintf("0.0.0.0:%d", port),
 		Handler: router,
 	}
 

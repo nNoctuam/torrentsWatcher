@@ -15,18 +15,21 @@ import {
 } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
-const domainRPC = "http://localhost:8805";
+class API {
+  domainRPC = "";
+  // @ts-ignore
+  rpcClient: BaseServiceClient = null;
 
-const api = {
-  domain: "http://localhost:8803",
-  domainRPC: domainRPC,
-  rpcClient: new BaseServiceClient(domainRPC),
+  setRpcDomain(domain: string): void {
+    this.domainRPC = domain;
+    this.rpcClient = new BaseServiceClient(domain);
+  }
 
   getTorrents(): Promise<Torrent.AsObject[]> {
     return this.rpcClient.getMonitoredTorrents(new Empty(), null).then((r) => {
       return r.getTorrentsList().map((torrent) => torrent.toObject());
     });
-  },
+  }
 
   getTransmissionTorrents(
     onlyRegistered = false
@@ -38,7 +41,7 @@ const api = {
         return torrent.toObject();
       });
     });
-  },
+  }
 
   getTransmissionTorrentFiles(
     id: number
@@ -50,7 +53,7 @@ const api = {
         return part.toObject();
       });
     });
-  },
+  }
 
   getDownloadFolders(): Promise<string[]> {
     return this.rpcClient
@@ -58,7 +61,7 @@ const api = {
       .then(async (r) => {
         return r.getFoldersList();
       });
-  },
+  }
 
   addTorrent(url: string): Promise<Torrent.AsObject | undefined> {
     const request = new AddTorrentRequest();
@@ -66,13 +69,13 @@ const api = {
     return this.rpcClient.addTorrent(request, null).then((r) => {
       return r.getTorrent()?.toObject();
     });
-  },
+  }
 
   deleteTorrent(id: number): Promise<Empty> {
     const request = new DeleteTorrentRequest();
     request.setId(id);
     return this.rpcClient.deleteTorrent(request, null);
-  },
+  }
 
   search(text: string): Promise<Torrent.AsObject[]> {
     const request = new SearchRequest();
@@ -81,7 +84,7 @@ const api = {
     return this.rpcClient.search(request, null).then((r) => {
       return r.getTorrentsList().map((torrent) => torrent.toObject());
     });
-  },
+  }
 
   downloadTorrent(
     pageUrl: string,
@@ -93,14 +96,14 @@ const api = {
     return this.rpcClient.downloadTorrent(request, null).then((r) => {
       return r.toObject();
     });
-  },
+  }
 
   renameTorrentParts(id: number, names: Array<PartToRename>): Promise<Empty> {
     const request = new RenameTorrentPartsRequest();
     request.setId(id);
     request.setNamesList(names);
     return this.rpcClient.renameTorrentParts(request, null);
-  },
-};
+  }
+}
 
-export default api;
+export default new API();
