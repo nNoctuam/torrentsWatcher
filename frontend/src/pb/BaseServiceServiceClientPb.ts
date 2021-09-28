@@ -315,5 +315,45 @@ export class BaseServiceClient {
     this.methodInfoRenameTorrentParts);
   }
 
+  methodInfoGetActiveTorrents = new grpcWeb.AbstractClientBase.MethodInfo(
+    baseService_pb.ActiveTorrentsResponse,
+    (request: baseService_pb.GetActiveTorrentsRequest) => {
+      return request.serializeBinary();
+    },
+    baseService_pb.ActiveTorrentsResponse.deserializeBinary
+  );
+
+  getActiveTorrents(
+    request: baseService_pb.GetActiveTorrentsRequest,
+    metadata: grpcWeb.Metadata | null): Promise<baseService_pb.ActiveTorrentsResponse>;
+
+  getActiveTorrents(
+    request: baseService_pb.GetActiveTorrentsRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.Error,
+               response: baseService_pb.ActiveTorrentsResponse) => void): grpcWeb.ClientReadableStream<baseService_pb.ActiveTorrentsResponse>;
+
+  getActiveTorrents(
+    request: baseService_pb.GetActiveTorrentsRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.Error,
+               response: baseService_pb.ActiveTorrentsResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/protobuf.BaseService/GetActiveTorrents',
+        request,
+        metadata || {},
+        this.methodInfoGetActiveTorrents,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/protobuf.BaseService/GetActiveTorrents',
+    request,
+    metadata || {},
+    this.methodInfoGetActiveTorrents);
+  }
+
 }
 

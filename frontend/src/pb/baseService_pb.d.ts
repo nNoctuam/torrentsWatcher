@@ -89,6 +89,46 @@ export namespace PartToRename {
   }
 }
 
+export class ActiveTorrent extends jspb.Message {
+  getId(): number;
+  setId(value: number): ActiveTorrent;
+
+  getName(): string;
+  setName(value: string): ActiveTorrent;
+
+  getHash(): string;
+  setHash(value: string): ActiveTorrent;
+
+  getComment(): string;
+  setComment(value: string): ActiveTorrent;
+
+  getDownloaddir(): string;
+  setDownloaddir(value: string): ActiveTorrent;
+
+  getDatecreated(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setDatecreated(value?: google_protobuf_timestamp_pb.Timestamp): ActiveTorrent;
+  hasDatecreated(): boolean;
+  clearDatecreated(): ActiveTorrent;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ActiveTorrent.AsObject;
+  static toObject(includeInstance: boolean, msg: ActiveTorrent): ActiveTorrent.AsObject;
+  static serializeBinaryToWriter(message: ActiveTorrent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ActiveTorrent;
+  static deserializeBinaryFromReader(message: ActiveTorrent, reader: jspb.BinaryReader): ActiveTorrent;
+}
+
+export namespace ActiveTorrent {
+  export type AsObject = {
+    id: number,
+    name: string,
+    hash: string,
+    comment: string,
+    downloaddir: string,
+    datecreated?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+
 export class Empty extends jspb.Message {
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Empty.AsObject;
@@ -203,6 +243,24 @@ export namespace RenameTorrentPartsRequest {
   }
 }
 
+export class GetActiveTorrentsRequest extends jspb.Message {
+  getOnlyregistered(): boolean;
+  setOnlyregistered(value: boolean): GetActiveTorrentsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetActiveTorrentsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetActiveTorrentsRequest): GetActiveTorrentsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetActiveTorrentsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetActiveTorrentsRequest;
+  static deserializeBinaryFromReader(message: GetActiveTorrentsRequest, reader: jspb.BinaryReader): GetActiveTorrentsRequest;
+}
+
+export namespace GetActiveTorrentsRequest {
+  export type AsObject = {
+    onlyregistered: boolean,
+  }
+}
+
 export class TorrentResponse extends jspb.Message {
   getTorrent(): Torrent | undefined;
   setTorrent(value?: Torrent): TorrentResponse;
@@ -286,6 +344,26 @@ export namespace DownloadTorrentResponse {
     id: number,
     name: string,
     hash: string,
+  }
+}
+
+export class ActiveTorrentsResponse extends jspb.Message {
+  getTorrentsList(): Array<ActiveTorrent>;
+  setTorrentsList(value: Array<ActiveTorrent>): ActiveTorrentsResponse;
+  clearTorrentsList(): ActiveTorrentsResponse;
+  addTorrents(value?: ActiveTorrent, index?: number): ActiveTorrent;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ActiveTorrentsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ActiveTorrentsResponse): ActiveTorrentsResponse.AsObject;
+  static serializeBinaryToWriter(message: ActiveTorrentsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ActiveTorrentsResponse;
+  static deserializeBinaryFromReader(message: ActiveTorrentsResponse, reader: jspb.BinaryReader): ActiveTorrentsResponse;
+}
+
+export namespace ActiveTorrentsResponse {
+  export type AsObject = {
+    torrentsList: Array<ActiveTorrent.AsObject>,
   }
 }
 

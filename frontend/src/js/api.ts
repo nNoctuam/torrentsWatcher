@@ -5,7 +5,11 @@ import {
   AddTorrentRequest,
   DeleteTorrentRequest,
   DownloadTorrentRequest,
-  DownloadTorrentResponse, RenameTorrentPartsRequest, PartToRename,
+  DownloadTorrentResponse,
+  RenameTorrentPartsRequest,
+  PartToRename,
+  ActiveTorrent,
+  GetActiveTorrentsRequest,
 } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
@@ -22,13 +26,15 @@ const api = {
     });
   },
 
-  getTransmissionTorrents() {
-    return fetch(this.domain + "/transmission-torrents").then(async (r) => {
-      if (r.status !== 200) {
-        const text = await r.text();
-        throw new Error(text);
-      }
-      return r.json();
+  getTransmissionTorrents(
+    onlyRegistered = false
+  ): Promise<ActiveTorrent.AsObject[]> {
+    const request = new GetActiveTorrentsRequest();
+    request.setOnlyregistered(onlyRegistered);
+    return this.rpcClient.getActiveTorrents(request, null).then((r) => {
+      return r.getTorrentsList().map((torrent) => {
+        return torrent.toObject();
+      });
     });
   },
 

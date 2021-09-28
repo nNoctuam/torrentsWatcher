@@ -4,12 +4,12 @@
       <ul class="downloads">
         <li
           v-for="torrent in downloads"
-          :key="torrent.ID"
+          :key="torrent.id"
           @click="selected = torrent"
         >
-          <span class="chip">{{ torrent.ID }}</span>
+          <span class="chip">{{ torrent.id }}</span>
           <span class="path"
-            >{{ torrent.downloadDir.replace(/\/$/, "") }}/</span
+            >{{ torrent.downloaddir.replace(/\/$/, "") }}/</span
           >
           <span class="name">{{ torrent.name }}</span>
         </li>
@@ -53,21 +53,15 @@
 import { defineComponent } from "vue";
 import api from "@/js/api";
 import convertNamesList from "@/js/renameNamesConverter";
-import { TransmissionTorrent } from "@/js/models";
-import { PartToRename } from "@/pb/baseService_pb";
+import { ActiveTorrent, PartToRename } from "@/pb/baseService_pb";
 
-class Torrent {
-  ID = 0;
-  name = "";
-  downloadDir = "";
-}
 class File {
   name = "";
 }
 
 class Data {
-  downloads: Torrent[] = [];
-  selected: Torrent | null = null;
+  downloads: Array<ActiveTorrent.AsObject> = [];
+  selected: ActiveTorrent.AsObject | null = null;
   newNamesList = "";
   files: File[] = [];
 }
@@ -84,14 +78,14 @@ export default defineComponent({
 
   mounted(): void {
     api.getTransmissionTorrents().then((r) => {
-      this.downloads = r.sort((a: Torrent, b: Torrent) => b.ID - a.ID);
+      this.downloads = r.sort((a, b) => b.id - a.id);
     });
   },
 
   watch: {
-    selected(value: TransmissionTorrent | null): void {
+    selected(value: ActiveTorrent.AsObject | null): void {
       if (value !== null) {
-        api.getTransmissionTorrentFiles(value.ID).then((r2) => {
+        api.getTransmissionTorrentFiles(value.id).then((r2) => {
           this.files = r2;
           this.newNamesList = this.getFilesList();
         });
@@ -124,7 +118,7 @@ export default defineComponent({
         }
       });
       api
-        .renameTorrentParts(this.selected.ID, convertNamesList(basicNamesList))
+        .renameTorrentParts(this.selected.id, convertNamesList(basicNamesList))
         .then(() => {
           const selected = this.selected;
           this.selected = null;
