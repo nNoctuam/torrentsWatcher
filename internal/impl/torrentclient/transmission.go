@@ -91,7 +91,7 @@ func (t *Transmission) GetTorrents() ([]torrentclient.Torrent, error) {
 	return responseModel.Arguments.Torrents, err
 }
 
-func (t *Transmission) GetTorrentFiles(ids []int) ([]torrentclient.Torrent, error) {
+func (t *Transmission) GetTorrentFiles(ids []int) ([]torrentclient.TorrentFile, error) {
 	var responseModel struct {
 		Arguments struct {
 			Torrents []torrentclient.Torrent `json:"torrents"`
@@ -102,7 +102,11 @@ func (t *Transmission) GetTorrentFiles(ids []int) ([]torrentclient.Torrent, erro
 		"fields": []string{"id", "name", "downloadDir", "files"},
 	}, &responseModel)
 
-	return responseModel.Arguments.Torrents, err
+	if len(responseModel.Arguments.Torrents) != 1 {
+		return nil, fmt.Errorf("unexpected torrents count in response: %d", len(responseModel.Arguments.Torrents))
+	}
+
+	return responseModel.Arguments.Torrents[0].Files, err
 }
 
 func (t *Transmission) RemoveTorrents(ids []int, deleteLocalData bool) error {

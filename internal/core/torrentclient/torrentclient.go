@@ -6,5 +6,5 @@ type Client interface {
 	RemoveTorrents(ids []int, deleteLocalData bool) error
 	GetTorrents() ([]Torrent, error)
 	Rename(id int, oldPath string, newPath string) error
-	GetTorrentFiles(ids []int) ([]Torrent, error)
+	GetTorrentFiles(ids []int) ([]TorrentFile, error)
 }
