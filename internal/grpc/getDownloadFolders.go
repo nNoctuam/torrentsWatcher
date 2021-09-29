@@ -9,8 +9,10 @@ import (
 
 func (s *RPCServer) GetDownloadFolders(ctx context.Context, in *pb.Empty) (*pb.DownloadFoldersResponse, error) {
 	folders := make([]string, len(s.downloadFolders))
+	i := 0
 	for folder := range s.downloadFolders {
-		folders = append(folders, folder)
+		folders[i] = folder
+		i++
 	}
 
 	return &pb.DownloadFoldersResponse{Folders: folders}, nil

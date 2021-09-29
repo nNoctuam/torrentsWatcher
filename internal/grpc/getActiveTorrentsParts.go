@@ -15,10 +15,10 @@ func (s *RPCServer) GetActiveTorrentParts(ctx context.Context, r *pb.GetActiveTo
 	}
 
 	result := make([]*pb.ActiveTorrentPart, len(files))
-	for _, file := range files {
-		result = append(result, &pb.ActiveTorrentPart{
+	for i, file := range files {
+		result[i] = &pb.ActiveTorrentPart{
 			Name: file.Name,
-		})
+		}
 	}
 
 	return &pb.ActiveTorrentPartsResponse{Parts: result}, nil
