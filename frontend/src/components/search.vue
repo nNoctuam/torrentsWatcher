@@ -18,7 +18,7 @@
       </div>
     </form>
 
-    <table class="table table-striped table-hover" v-if="torrents.length > 0">
+    <table class="table table-striped table-hover" v-if="searchResults.length > 0">
       <thead>
         <tr>
           <th class="forum">Раздел</th>
@@ -33,7 +33,7 @@
       <tbody>
         <tr
           :class="{ active: selectedRow === i }"
-          v-for="(torrent, i) in torrents"
+          v-for="(torrent, i) in searchResults"
           @click="selectedRow = i"
           v-bind:key="torrent.pageUrl"
         >
@@ -75,7 +75,7 @@
         </div>
         <div class="modal-body">
           <ul>
-            <li v-for="folder in folders" v-bind:key="folder">
+            <li v-for="folder in downloadFolders" v-bind:key="folder">
               <button
                 class="btn"
                 v-on:click="folderSelect(folder)"
@@ -162,6 +162,10 @@ import api from "../ts/api";
 import moment from "moment";
 import { PartToRename, Torrent } from "@/pb/baseService_pb";
 import { defineComponent } from "vue";
+import { useStore, State } from "@/store/index";
+import { Store, mapState } from "vuex";
+
+let store: Store<State>;
 
 interface TorrentLocal extends Torrent.AsObject {
   isBeingDownloaded: boolean;
@@ -179,7 +183,6 @@ class Data {
 
   selectedRow: number | null = null;
 
-  folders: string[] = [];
   showSelectFolder = false;
   folderSelect: null | ((folder: string) => void) = null;
   folderSelectCancel: null | (() => void) = null;
@@ -192,8 +195,6 @@ class Data {
   renaming = false;
 
   error: string | null = null;
-
-  torrents: TorrentLocal[] = [];
 }
 
 export default defineComponent({
@@ -205,7 +206,6 @@ export default defineComponent({
 
     selectedRow: null,
 
-    folders: [],
     showSelectFolder: false,
     folderSelect: null,
     folderSelectCancel: null,
@@ -221,9 +221,15 @@ export default defineComponent({
     renaming: false,
 
     error: null,
-
-    torrents: [],
   }),
+
+  setup() {
+    store = useStore();
+  },
+
+  computed: {
+    ...mapState(["searchResults", "downloadFolders"]),
+  },
 
   methods: {
     timeFromNow(time: string | number): string {
@@ -255,13 +261,12 @@ export default defineComponent({
       api
         .search(this.searchText)
         .then((r: any) => {
-          console.log("got search result:", r);
-          this.torrents = r.map((torrent: Torrent.AsObject): TorrentLocal => {
+          const torrents = r.map((torrent: Torrent.AsObject): TorrentLocal => {
             const t: TorrentLocal = torrent as unknown as TorrentLocal;
             t.isBeingDownloaded = false;
             return t;
           });
-          console.log("final torrents: ", this.torrents);
+          store.commit("setSearchResults", torrents);
         })
         .catch((e: any) => {
           this.error = e;
@@ -271,7 +276,7 @@ export default defineComponent({
         });
     },
 
-    download(torrent: TorrentLocal): void {
+    download(torrent: TorrentLocal & Torrent.AsObject): void {
       if (this.downloading || this.showSelectFolder) {
         return;
       }
@@ -313,9 +318,6 @@ export default defineComponent({
     renameTorrent(id: number, oldName: string, newName: string): void {
       console.log(`renaming #${id} ${oldName} to ${newName}`);
       this.renaming = true;
-      // setTimeout(() => {
-      //   this.downloadedName = null
-      // }, 1000)
       const part = new PartToRename();
       part.setOldname(oldName);
       part.setNewname(newName);
@@ -336,8 +338,12 @@ export default defineComponent({
       this.searchText = this.$route.query.s as string;
       this.search();
     }
+    if (this.downloadFolders.length > 0) {
+      return;
+    }
+
     api.getDownloadFolders().then((folders) => {
-      this.folders = folders.sort();
+      store.commit("setDownloadFolders", folders.sort());
     });
   },
 });

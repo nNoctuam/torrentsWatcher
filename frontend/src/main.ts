@@ -6,6 +6,7 @@ import Watch from "./components/torrents.vue";
 import MassRename from "./components/mass-rename.vue";
 import moment from "moment";
 import api from "@/ts/api";
+import { store, key } from "./store";
 moment.locale("ru");
 
 const router = createRouter({
@@ -28,6 +29,7 @@ const router = createRouter({
   );
 
   const app = createApp(App);
+  app.use(store, key);
   app.use(router).mount("#app");
   app.config.performance = true;
 })();
