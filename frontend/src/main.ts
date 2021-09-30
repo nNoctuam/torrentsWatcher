@@ -1,9 +1,9 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
-import Search from "./components/search.vue";
-import Watch from "./components/torrents.vue";
-import MassRename from "./components/mass-rename.vue";
+import Search from "./components/pages/search.vue";
+import Watch from "./components/pages/torrents.vue";
+import MassRename from "./components/pages/mass-rename.vue";
 import moment from "moment";
 import api from "@/ts/api";
 import { store, key } from "./store";

@@ -42,10 +42,12 @@
         ></textarea>
       </div>
 
-      <button class="btn" @click="rename" :disabled="!valid">
+      <button class="btn" @click="rename" :disabled="renaming || !valid">
         Переименовать
       </button>
     </div>
+
+    <errorModal :message="error" @close="error = null" />
   </div>
 </template>
 
@@ -58,28 +60,42 @@ import {
   ActiveTorrentPart,
   PartToRename,
 } from "@/pb/baseService_pb";
+import errorModal from "@/components/fragments/errorModal.vue";
 
 class Data {
   downloads: Array<ActiveTorrent.AsObject> = [];
   selected: ActiveTorrent.AsObject | null = null;
   newNamesList = "";
   files: ActiveTorrentPart.AsObject[] = [];
+  error: string | null = null;
+  renaming = false;
 }
 
 export default defineComponent({
   name: "mass-rename",
+
+  components: {
+    errorModal,
+  },
 
   data: (): Data => ({
     downloads: [],
     selected: null,
     newNamesList: "",
     files: [],
+    error: null,
+    renaming: false,
   }),
 
   mounted(): void {
-    api.getTransmissionTorrents().then((r) => {
-      this.downloads = r.sort((a, b) => b.id - a.id);
-    });
+    api
+      .getTransmissionTorrents()
+      .then((r) => {
+        this.downloads = r.sort((a, b) => b.id - a.id);
+      })
+      .catch((e) => {
+        this.error = e;
+      });
   },
 
   watch: {
@@ -105,20 +121,38 @@ export default defineComponent({
     },
 
     rename(): void {
-      if (this.selected === null) {
-        throw new Error("selected cannot be null on rename");
+      if (this.renaming) {
+        return;
       }
-      const basicNamesList: PartToRename[] = [];
-      this.newNamesList.split("\n").forEach((name, i) => {
-        if (this.files[i].name !== name) {
-          const part = new PartToRename();
-          part.setOldname(this.files[i].name);
-          part.setNewname(name);
-          basicNamesList.push(part);
+      this.renaming = true;
+
+      new Promise<PartToRename[]>((resolve) => {
+        if (this.selected === null) {
+          throw new Error("selected cannot be null on rename");
         }
-      });
-      api
-        .renameTorrentParts(this.selected.id, convertNamesList(basicNamesList))
+
+        const basicNamesList: PartToRename[] = [];
+        this.newNamesList.split("\n").forEach((name, i) => {
+          if (this.files[i].name !== name) {
+            const part = new PartToRename();
+            part.setOldname(this.files[i].name);
+            part.setNewname(name);
+            basicNamesList.push(part);
+          }
+        });
+
+        resolve(basicNamesList);
+      })
+        .then((basicNamesList) => {
+          if (this.selected === null) {
+            throw new Error("selected cannot be null on rename");
+          }
+          return api.renameTorrentParts(
+            this.selected.id,
+            convertNamesList(basicNamesList)
+          );
+        })
+
         .then(() => {
           if (this.selected === null) {
             throw new Error("selected cannot be null right after rename");
@@ -127,6 +161,12 @@ export default defineComponent({
             this.files = r2;
             this.newNamesList = this.getFilesList();
           });
+        })
+        .catch((e) => {
+          this.error = e;
+        })
+        .then(() => {
+          this.renaming = false;
         });
     },
   },

@@ -41,7 +41,7 @@
               class="download"
               v-if="torrent.fileUrl"
               :href="'/torrent/' + torrent.id + '/download'"
-              ><img src="../assets/transmission-logo.png" alt=""
+              ><img src="../../assets/transmission-logo.png" alt=""
             /></a>
           </td>
           <td :title="timeFormat(torrent.uploadedAt.seconds * 1000)">
@@ -52,12 +52,14 @@
           </td>
           <td>
             <div class="delete" v-on:click="deleteTorrent(torrent)">
-              <img src="../assets/delete.png" alt="" />
+              <img src="../../assets/delete.png" alt="" />
             </div>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <errorModal :message="error" @close="error = null" />
   </div>
 </template>
 
@@ -66,22 +68,27 @@ import { defineComponent } from "vue";
 import moment from "moment";
 import api from "@/ts/api";
 import { Torrent } from "@/pb/baseService_pb";
+import errorModal from "@/components/fragments/errorModal.vue";
 
 class Data {
   newTorrentUrl = "";
   newTorrentAdding = false;
-
   torrents: Torrent.AsObject[] = [];
+  error: string | null = null;
 }
 
 export default defineComponent({
   name: "torrents",
 
+  components: {
+    errorModal,
+  },
+
   data: (): Data => ({
     newTorrentUrl: "",
     newTorrentAdding: false,
-
     torrents: [],
+    error: null,
   }),
 
   methods: {

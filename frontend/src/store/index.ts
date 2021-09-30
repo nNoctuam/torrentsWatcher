@@ -1,6 +1,6 @@
 import { createStore, useStore as baseUseStore, Store } from "vuex";
-import {Torrent} from "@/pb/baseService_pb";
-import {InjectionKey} from "vue";
+import { Torrent } from "@/pb/baseService_pb";
+import { InjectionKey } from "vue";
 
 export interface State {
   searchResults: Torrent.AsObject[];
@@ -8,10 +8,13 @@ export interface State {
 }
 
 export const store = createStore<State>({
+  strict: process.env.NODE_ENV !== "production",
+
   state: {
     searchResults: [],
     downloadFolders: [],
   },
+
   mutations: {
     setSearchResults(state, results) {
       state.searchResults = results;
@@ -20,6 +23,7 @@ export const store = createStore<State>({
       state.downloadFolders = folders;
     },
   },
+
   actions: {},
   modules: {},
 });

@@ -27,7 +27,7 @@ class API {
 
   getTorrents(): Promise<Torrent.AsObject[]> {
     return this.rpcClient.getMonitoredTorrents(new Empty(), null).then((r) => {
-      return r.getTorrentsList().map((torrent) => torrent.toObject());
+      return r.getTorrentsList().map((torrent: Torrent) => torrent.toObject());
     });
   }
 
@@ -37,7 +37,7 @@ class API {
     const request = new GetActiveTorrentsRequest();
     request.setOnlyregistered(onlyRegistered);
     return this.rpcClient.getActiveTorrents(request, null).then((r) => {
-      return r.getTorrentsList().map((torrent) => {
+      return r.getTorrentsList().map((torrent: ActiveTorrent) => {
         return torrent.toObject();
       });
     });
@@ -49,7 +49,7 @@ class API {
     const request = new GetActiveTorrentPartsRequest();
     request.setId(id);
     return this.rpcClient.getActiveTorrentParts(request, null).then((r) => {
-      return r.getPartsList().map((part) => {
+      return r.getPartsList().map((part: ActiveTorrentPart) => {
         return part.toObject();
       });
     });
@@ -82,7 +82,7 @@ class API {
     request.setText(text);
 
     return this.rpcClient.search(request, null).then((r) => {
-      return r.getTorrentsList().map((torrent) => torrent.toObject());
+      return r.getTorrentsList().map((torrent: Torrent) => torrent.toObject());
     });
   }
 

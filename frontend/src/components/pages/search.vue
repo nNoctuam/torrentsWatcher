@@ -18,7 +18,10 @@
       </div>
     </form>
 
-    <table class="table table-striped table-hover" v-if="searchResults.length > 0">
+    <table
+      class="table table-striped table-hover"
+      v-if="searchResults.length > 0"
+    >
       <thead>
         <tr>
           <th class="forum">Раздел</th>
@@ -140,30 +143,18 @@
       </form>
     </div>
 
-    <div class="modal error" :class="{ active: error }">
-      <div class="modal-overlay"></div>
-      <div class="modal-container">
-        <div class="modal-header">
-          <h5>Что-то пошло не так</h5>
-        </div>
-        <div class="modal-body">
-          <span>{{ error }}</span>
-        </div>
-        <div class="modal-footer">
-          <button class="btn close" v-on:click="error = null">Закрыть</button>
-        </div>
-      </div>
-    </div>
+    <errorModal :message="error" @close="error = null" />
   </div>
 </template>
 
 <script lang="ts">
-import api from "../ts/api";
+import api from "../../ts/api";
 import moment from "moment";
 import { PartToRename, Torrent } from "@/pb/baseService_pb";
 import { defineComponent } from "vue";
-import { useStore, State } from "@/store/index";
+import { useStore, State } from "@/store";
 import { Store, mapState } from "vuex";
+import errorModal from "@/components/fragments/errorModal.vue";
 
 let store: Store<State>;
 
@@ -199,6 +190,10 @@ class Data {
 
 export default defineComponent({
   name: "search",
+
+  components: {
+    errorModal,
+  },
 
   data: (): Data => ({
     searchText: "",
@@ -342,9 +337,14 @@ export default defineComponent({
       return;
     }
 
-    api.getDownloadFolders().then((folders) => {
-      store.commit("setDownloadFolders", folders.sort());
-    });
+    api
+      .getDownloadFolders()
+      .then((folders) => {
+        store.commit("setDownloadFolders", folders.sort());
+      })
+      .catch((e) => {
+        this.error = e;
+      });
   },
 });
 </script>
