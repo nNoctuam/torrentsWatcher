@@ -39,12 +39,6 @@ import (
 const portHTTP = 10000
 const portGRPC = 10001
 
-// TODO:
-// 	unit tests
-//  kinozal timestamps & topics
-//  search filters
-//  pagination || more long the only page
-
 func main() {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	errorChan := make(chan error)

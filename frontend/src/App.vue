@@ -8,7 +8,7 @@
         <img alt="Watch" src="./assets/transmission-logo.png" />
       </router-link>
       <router-link to="/mass-rename">
-        <img alt="Mass rename" src="" style="color: transparent" />
+        <img alt="Mass rename" src="./assets/rename.png" />
       </router-link>
     </div>
     <router-view />
@@ -40,6 +40,12 @@ $primary-color: #16a085 !default;
 @import "../node_modules/spectre.css/src/animations";
 @import "../node_modules/spectre.css/src/icons";
 @import "../node_modules/spectre.css/src/chips";
+
+.main-menu a:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 </style>
 
 <style lang="stylus">

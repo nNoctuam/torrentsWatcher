@@ -3,7 +3,6 @@ package protobuf;
 
 option go_package = "./pb";
 import "google/protobuf/timestamp.proto";
-//import "torrent.proto";
 
 service BaseService {
   rpc Search(SearchRequest) returns (TorrentsResponse) {}

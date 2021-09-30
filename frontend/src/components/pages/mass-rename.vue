@@ -1,5 +1,7 @@
 <template>
   <div>
+    <h1>Торрент-переименовывалка</h1>
+
     <div id="downloads" v-if="!selected">
       <ul class="downloads">
         <li
