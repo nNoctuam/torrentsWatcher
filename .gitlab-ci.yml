@@ -108,8 +108,6 @@ deploy:
       --volume /var/${CI_PROJECT_PATH_SLUG}/config.yml:/app/config.yml
       --volume ${DOWNLOADS_DIR}:/downloads
       -p ${PORT_HTTP}:10000
-      -p ${PORT_GRPC}:10002
-      -e PORT_GRPC=${PORT_GRPC}
       --restart=always
       ${CI_PROJECT_PATH_SLUG}:latest
   rules:

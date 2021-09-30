@@ -15,15 +15,10 @@ import {
 } from "@/pb/baseService_pb";
 import { BaseServiceClient } from "@/pb/BaseServiceServiceClientPb";
 
-class API {
-  domainRPC = "";
-  // @ts-ignore
-  rpcClient: BaseServiceClient = null;
+const domainRPC = window.location.origin;
 
-  setRpcDomain(domain: string): void {
-    this.domainRPC = domain;
-    this.rpcClient = new BaseServiceClient(domain);
-  }
+class API {
+  rpcClient: BaseServiceClient = new BaseServiceClient(domainRPC);
 
   getTorrents(): Promise<Torrent.AsObject[]> {
     return this.rpcClient.getMonitoredTorrents(new Empty(), null).then((r) => {

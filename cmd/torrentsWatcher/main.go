@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,6 +21,7 @@ import (
 	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
 	trackingImpl "torrentsWatcher/internal/impl/tracker"
 
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"google.golang.org/grpc"
 
@@ -37,7 +37,6 @@ import (
 )
 
 const portHTTP = 10000
-const portGRPC = 10001
 
 func main() {
 	ctx, ctxCancel := context.WithCancel(context.Background())
@@ -93,8 +92,8 @@ func main() {
 	wg.Add(1)
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
 
-	serveHTTP(errorChan, logger, portHTTP)
-	go serveRPC(logger.Named("RPC"), trackers, torrentsStorage, cfg.Transmission.Folders, transmissionClient)
+	httpServer := serveHTTP(errorChan, logger, portHTTP)
+	go serveRPC(logger.Named("RPC"), httpServer, trackers, torrentsStorage, cfg.Transmission.Folders, transmissionClient)
 
 	logger.Info("Service started")
 	select {
@@ -112,6 +111,7 @@ func main() {
 
 func serveRPC(
 	logger *zap.Logger,
+	mainHTTPServer *http.Server,
 	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
@@ -126,19 +126,35 @@ func serveRPC(
 		downloadFolders,
 		torrentClient,
 	))
-	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", portGRPC))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	err = grpcServer.Serve(lis)
-	fmt.Println(err)
+	wrappedGrpc := grpcweb.WrapServer(grpcServer)
+
+	mainHandler := mainHTTPServer.Handler
+	mainHTTPServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		if wrappedGrpc.IsGrpcWebRequest(req) {
+			resp.Header().Set("Access-Control-Allow-Origin", "*")
+			fmt.Println("got gRPC request: " + req.Method + " " + req.URL.String())
+			wrappedGrpc.ServeHTTP(resp, req)
+			return
+		}
+
+		if wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
+			fmt.Println("got AcceptableGrpcCorsRequest request: " + req.Method + " " + req.URL.String())
+			resp.Header().Set("Access-Control-Allow-Origin", "*")
+			resp.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-Grpc-Web, X-User-Agent")
+			resp.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		mainHandler.ServeHTTP(resp, req)
+	})
+	fmt.Printf("Attached gRPC to the http server\n")
 }
 
 func serveHTTP(
 	errorChan chan error,
 	logger *zap.Logger,
 	port int,
-) {
+) *http.Server {
 	router := chi.NewRouter()
 
 	corsMiddleware := cors.New(cors.Options{
@@ -154,7 +170,11 @@ func serveHTTP(
 
 	router.Handle("/*", http.FileServer(http.Dir("dist")))
 
-	server := http.Server{
+	router.Handle("/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("test response"))
+	}))
+
+	server := &http.Server{
 		Addr:    fmt.Sprintf("0.0.0.0:%d", port),
 		Handler: router,
 	}
@@ -163,6 +183,7 @@ func serveHTTP(
 		logger.Info("Webserver start", zap.String("host", "http://"+server.Addr))
 		errorChan <- server.ListenAndServe()
 	}()
+	return server
 }
 
 func getNotificator(cfg *config.AppConfig) notifications.Notificator {
