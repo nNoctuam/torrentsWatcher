@@ -1,0 +1,20 @@
+{
+  "mainMenu": {
+    "search": "Search",
+    "watch": "Watch",
+    "massRename": "Mass rename"
+  },
+  "search": {
+    "title": "Torrent search",
+    "searching": "Searching...",
+    "search": "Search",
+    "placeholder": "What to search for?",
+    "table": {
+      "forum": "Forum",
+      "title": "Title",
+      "seeders": "Seeders",
+      "size": "Size",
+      "updated": "Updated",
+    }
+  }
+}

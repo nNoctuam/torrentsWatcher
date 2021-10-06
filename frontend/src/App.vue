@@ -1,26 +1,23 @@
 <template>
   <div id="app">
-    <div class="main-menu">
-      <router-link to="/search">
-        <img alt="Search" src="./assets/search.png" />
-      </router-link>
-      <router-link to="/watch">
-        <img alt="Watch" src="./assets/transmission-logo.png" />
-      </router-link>
-      <router-link to="/mass-rename">
-        <img alt="Mass rename" src="./assets/rename.png" />
-      </router-link>
-    </div>
+    <localeSwitcher />
+    <mainMenu />
     <router-view />
   </div>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-// import HelloWorld from './components/HelloWorld.vue'
+import mainMenu from "./components/fragments/mainMenu.vue";
+import localeSwitcher from "./components/fragments/localeSwitcher.vue";
+import { defineComponent } from "vue";
 
-@Options({})
-export default class App extends Vue {}
+export default defineComponent({
+  name: "App",
+  components: {
+    mainMenu,
+    localeSwitcher,
+  },
+});
 </script>
 
 <style lang="scss">
@@ -40,12 +37,6 @@ $primary-color: #16a085 !default;
 @import "../node_modules/spectre.css/src/animations";
 @import "../node_modules/spectre.css/src/icons";
 @import "../node_modules/spectre.css/src/chips";
-
-.main-menu a:focus {
-  outline: none;
-  box-shadow: none;
-}
-
 </style>
 
 <style lang="stylus">
@@ -58,13 +49,5 @@ $primary-color: #16a085 !default;
   margin-top 60px
   h1
     text-align: center
-  .main-menu
-    text-align center
-    > a
-      transition: 0.3s all
-      cursor pointer
-      > img
-        height 100px
-      &:not(.router-link-active):not(:hover)
-        opacity 0.25
+
 </style>

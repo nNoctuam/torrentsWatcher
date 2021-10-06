@@ -1,6 +1,6 @@
 <template>
   <div id="search">
-    <h1>Торрент-поисковик</h1>
+    <h1>{{ $t("search.title") }}</h1>
 
     <form class="form-group" id="search-form" v-on:submit.prevent="search">
       <div class="input-group">
@@ -8,12 +8,12 @@
           type="text"
           class="form-input"
           name="search"
-          placeholder="Что ищем?"
+          :placeholder="$t('search.placeholder')"
           :disabled="searching"
           v-model="searchText"
         />
         <button class="btn" :disabled="searching">
-          {{ searching ? "Ищем..." : "Искать" }}
+          {{ searching ? $t("search.searching") : $t("search.search") }}
         </button>
       </div>
     </form>
@@ -24,11 +24,11 @@
     >
       <thead>
         <tr>
-          <th class="forum">Раздел</th>
-          <th class="title">Название</th>
-          <th class="seeders">Раздают</th>
-          <th class="size">Размер</th>
-          <th class="updated_at">Обновлен</th>
+          <th class="forum">{{ $t("search.table.forum") }}</th>
+          <th class="title">{{ $t("search.table.title") }}</th>
+          <th class="seeders">{{ $t("search.table.seeders") }}</th>
+          <th class="size">{{ $t("search.table.size") }}</th>
+          <th class="updated_at">{{ $t("search.table.updated") }}</th>
           <th class="download"></th>
         </tr>
       </thead>
@@ -155,6 +155,7 @@ import { defineComponent } from "vue";
 import { useStore, State } from "@/store";
 import { Store, mapState } from "vuex";
 import errorModal from "@/components/fragments/errorModal.vue";
+import { useI18n } from "vue-i18n";
 
 let store: Store<State>;
 

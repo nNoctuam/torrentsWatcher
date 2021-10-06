@@ -9,6 +9,7 @@
     "all": "npm run lint; npm run build && npm run copy-dist",
     "build-prod": "vue-cli-service build --mode production --fix",
     "copy-dist": "cp -r dist ../cmd/torrentsWatcher/",
+    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
     "test": "jest"
   },
   "dependencies": {
@@ -19,10 +20,12 @@
     "spectre.css": "^0.5.9",
     "vue": "^3.0.0",
     "vue-class-component": "^8.0.0-0",
+    "vue-i18n": "^9.1.0",
     "vue-router": "^4.0.11",
     "vuex": "^4.0.0-0"
   },
   "devDependencies": {
+    "@intlify/vue-i18n-loader": "^3.0.0",
     "@types/jest": "^27.0.2",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
@@ -53,6 +56,7 @@
     "stylus-loader": "^3.0.2",
     "ts-protoc-gen": "^0.15.0",
     "typescript": "~4.1.5",
+    "vue-cli-plugin-i18n": "~2.3.1",
     "vue-template-compiler": "^2.6.11"
   },
   "gitHooks": {
