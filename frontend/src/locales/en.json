@@ -9,12 +9,40 @@
     "searching": "Searching...",
     "search": "Search",
     "placeholder": "What to search for?",
+    "downloading": "Downloading...",
+    "downloaded-rename": "Torrent is being downloaded. Rename?",
+    "rename": "Rename",
+    "leave-as-is": "Leave as is",
     "table": {
       "forum": "Forum",
       "title": "Title",
       "seeders": "Seeders",
       "size": "Size",
-      "updated": "Updated",
+      "updated": "Updated"
     }
+  },
+  "watch": {
+    "title": "Torrent watch",
+    "input-placeholder": "URL",
+    "adding": "Adding...",
+    "add": "Add",
+    "table": {
+      "title": "Title",
+      "updated": "Updated",
+      "checked": "Checked"
+    },
+    "error": {
+      "empty-response": "no torrent in response",
+      "failed-to-delete": "failed to delete torrent:"
+    }
+  },
+  "error": {
+    "title": "Something went wrong",
+    "close": "Close"
+  },
+  "massRename": {
+    "title": "Torrent mass rename",
+    "back": "Back",
+    "rename": "Rename"
   }
 }

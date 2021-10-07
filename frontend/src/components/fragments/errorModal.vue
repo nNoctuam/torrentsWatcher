@@ -3,13 +3,13 @@
     <div class="modal-overlay"></div>
     <div class="modal-container">
       <div class="modal-header">
-        <h5>Что-то пошло не так</h5>
+        <h5>{{ t("error.title") }}</h5>
       </div>
       <div class="modal-body">
         <span>{{ message }}</span>
       </div>
       <div class="modal-footer">
-        <button class="btn close" v-on:click="$emit('close')">Закрыть</button>
+        <button class="btn close" v-on:click="$emit('close')">{{ t("error.close") }}</button>
       </div>
     </div>
   </div>
@@ -17,11 +17,20 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import {useI18n} from "vue-i18n";
 
 export default defineComponent({
   name: "errorModal",
 
   props: ["message"],
+
+  setup() {
+    const { t } = useI18n({
+      inheritLocale: true,
+      useScope: "global",
+    });
+    return { t };
+  },
 });
 </script>
 

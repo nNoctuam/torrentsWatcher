@@ -14,12 +14,14 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useI18n } from "vue-i18n";
+import moment from "moment";
 
 export default defineComponent({
   name: "localeSwitcher",
 
   watch: {
     "$i18n.locale"(value: string) {
+      moment.locale(value);
       localStorage.setItem("locale", value);
     },
   },
@@ -29,11 +31,7 @@ export default defineComponent({
       inheritLocale: true,
       useScope: "local",
     });
-    console.log(t);
     return { t };
-  },
-  mounted() {
-    console.log(this);
   },
 });
 </script>

@@ -9,12 +9,40 @@
     "searching": "Ищем...",
     "search": "Искать",
     "placeholder": "Что ищем?",
+    "downloading": "Загружается...",
+    "downloaded-rename": "Торрент загружается. Переименовать?",
+    "rename": "Переименовать",
+    "leave-as-is": "Оставить как есть",
     "table": {
       "forum": "Раздел",
       "title": "Название",
       "seeders": "Раздают",
       "size": "Размер",
-      "updated": "Обновлен",
+      "updated": "Обновлен"
     }
+  },
+  "watch": {
+    "title": "Торрент-монитор",
+    "input-placeholder": "Ссылка на страницу",
+    "adding": "Добавляем...",
+    "add": "Добавить",
+    "table": {
+      "title": "Название",
+      "updated": "Обновлен",
+      "checked": "Проверен"
+    },
+    "error": {
+      "empty-response": "Пустой ответ",
+      "failed-to-delete": "Не удалось удалить:"
+    }
+  },
+  "error": {
+    "title": "Что - то пошло не так",
+    "close": "Закрыть"
+  },
+  "massRename": {
+    "title": "Торрент-переименовывалка",
+    "back": "Назад",
+    "rename": "Переименовать"
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Торрент-переименовывалка</h1>
+    <h1>{{ t("massRename.title")}}</h1>
 
     <div id="downloads" v-if="!selected">
       <ul class="downloads">
@@ -26,7 +26,7 @@
           files = [];
         "
       >
-        &larr; назад
+        &larr; {{ t("massRename.back") }}
       </button>
 
       <div id="mapping" class="input-group">
@@ -44,9 +44,7 @@
         ></textarea>
       </div>
 
-      <button class="btn" @click="rename" :disabled="renaming || !valid">
-        Переименовать
-      </button>
+      <button class="btn" @click="rename" :disabled="renaming || !valid">{{ t("massRename.rename") }}</button>
     </div>
 
     <errorModal :message="error" @close="error = null" />
@@ -63,6 +61,7 @@ import {
   PartToRename,
 } from "@/pb/baseService_pb";
 import errorModal from "@/components/fragments/errorModal.vue";
+import {useI18n} from "vue-i18n";
 
 class Data {
   downloads: Array<ActiveTorrent.AsObject> = [];
@@ -78,6 +77,14 @@ export default defineComponent({
 
   components: {
     errorModal,
+  },
+
+  setup() {
+    const { t } = useI18n({
+      inheritLocale: true,
+      useScope: "global",
+    });
+    return { t };
   },
 
   data: (): Data => ({

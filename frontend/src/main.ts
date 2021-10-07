@@ -4,10 +4,8 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import Search from "./components/pages/search.vue";
 import Watch from "./components/pages/torrents.vue";
 import MassRename from "./components/pages/mass-rename.vue";
-import moment from "moment";
 import { store, key } from "./store";
 import i18n from "./i18n";
-moment.locale("ru");
 
 const router = createRouter({
   history: createWebHashHistory(),

@@ -100,7 +100,7 @@
       <div class="modal-container">
         <div class="modal-header"></div>
         <div class="modal-body">
-          <h5>Загружается...</h5>
+          <h5>{{ t("search.downloading") }}</h5>
         </div>
         <div class="modal-footer"></div>
       </div>
@@ -119,7 +119,7 @@
             class="btn btn-clear float-right"
             @click.prevent="downloadedTorrent.id = 0"
           ></button>
-          <h5>Торрент загружается. Переименовать?</h5>
+          <h5>{{ t("search.downloaded-rename") }}</h5>
         </div>
         <div class="modal-body">
           <input type="text" class="form-input" v-model="newName" />
@@ -130,14 +130,14 @@
             class="btn float-left"
             :disabled="renaming"
             type="submit"
-            value="Переименовать"
+            :value="t('search.rename')"
           />
           <button
             class="btn"
             :disabled="renaming"
             @click.prevent="downloadedName = null"
           >
-            Оставить как есть
+            {{ t("search.leave-as-is") }}
           </button>
         </div>
       </form>
@@ -220,7 +220,12 @@ export default defineComponent({
   }),
 
   setup() {
+    const { t } = useI18n({
+      inheritLocale: true,
+      useScope: "global",
+    });
     store = useStore();
+    return { t };
   },
 
   computed: {
@@ -229,7 +234,7 @@ export default defineComponent({
 
   methods: {
     timeFromNow(time: string | number): string {
-      return moment(time).fromNow();
+      return time < 0 ? '' : moment(time).fromNow();
     },
 
     byteSize(bytes: number): string {

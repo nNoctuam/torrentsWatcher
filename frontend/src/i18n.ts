@@ -1,4 +1,5 @@
 import { createI18n, LocaleMessages, VueMessageType } from "vue-i18n";
+import moment from "moment";
 
 /**
  * Load locale messages
@@ -23,11 +24,15 @@ function loadLocaleMessages(): LocaleMessages<VueMessageType> {
   return messages;
 }
 
+moment().locale(
+  localStorage.getItem("locale") || process.env.VUE_APP_I18N_LOCALE || "ru"
+);
+
 export default createI18n({
   legacy: false,
   globalInjection: true,
   locale:
-    localStorage.getItem("locale") || process.env.VUE_APP_I18N_LOCALE || "en",
+    localStorage.getItem("locale") || process.env.VUE_APP_I18N_LOCALE || "ru",
   fallbackLocale: process.env.VUE_APP_I18N_FALLBACK_LOCALE || "en",
   messages: loadLocaleMessages(),
 });

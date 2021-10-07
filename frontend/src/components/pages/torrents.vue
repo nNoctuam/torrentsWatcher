@@ -1,6 +1,6 @@
 <template>
   <div id="torrents">
-    <h1>Торрент-монитор</h1>
+    <h1>{{ t("watch.title") }}</h1>
 
     <form class="form-group" id="add-form" v-on:submit.prevent="addTorrent">
       <div class="input-group">
@@ -8,12 +8,12 @@
           type="url"
           class="form-input"
           name="url"
-          placeholder="Ссылка на страницу"
+          :placeholder="t('watch.input-placeholder')"
           :disabled="newTorrentAdding"
           v-model="newTorrentUrl"
         />
         <button class="btn" :disabled="newTorrentAdding">
-          {{ newTorrentAdding ? "Добавляем..." : "Добавить" }}
+          {{ newTorrentAdding ? t("watch.adding") : t("watch.add") }}
         </button>
       </div>
     </form>
@@ -21,10 +21,10 @@
     <table class="table table-striped table-hover" v-if="torrents.length > 0">
       <thead>
         <tr>
-          <th>Название</th>
+          <th>{{ t("watch.table.title") }}</th>
           <th></th>
-          <th>Обновлен</th>
-          <th>Проверен</th>
+          <th>{{ t("watch.table.updated") }}</th>
+          <th>{{ t("watch.table.checked") }}</th>
           <th></th>
         </tr>
       </thead>
@@ -69,6 +69,7 @@ import moment from "moment";
 import api from "@/ts/api";
 import { Torrent } from "@/pb/baseService_pb";
 import errorModal from "@/components/fragments/errorModal.vue";
+import {useI18n} from "vue-i18n";
 
 class Data {
   newTorrentUrl = "";
@@ -82,6 +83,14 @@ export default defineComponent({
 
   components: {
     errorModal,
+  },
+
+  setup() {
+    const { t } = useI18n({
+      inheritLocale: true,
+      useScope: "global",
+    });
+    return { t };
   },
 
   data: (): Data => ({
@@ -106,12 +115,12 @@ export default defineComponent({
         .addTorrent(this.newTorrentUrl)
         .then((r) => {
           if (!r) {
-            throw new Error("no torrent in response");
+            throw new Error(this.t("watch.error.empty-response"));
           }
           this.torrents.push(r);
         })
         .catch((e) => {
-          alert(e);
+          this.error = e;
         })
         .then(() => {
           this.newTorrentUrl = "";
@@ -126,7 +135,7 @@ export default defineComponent({
           this.torrents.splice(this.torrents.indexOf(torrent), 1);
         })
         .catch((e) => {
-          alert("failed to delete torrent:" + e);
+          this.error = "failed to delete torrent: " + e;
         });
     },
   },
