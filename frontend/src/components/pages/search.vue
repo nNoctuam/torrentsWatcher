@@ -384,19 +384,12 @@ table
 .table tbody tr.active
   background: saturation(rgba(#16a085, 20%), 50%)
 
-thead th
-  white-space nowrap
-
-td.forum
-  max-width 15%
-
-td.size, td.updated_at
-  white-space nowrap
-
-td.title img
-  width: 16px
-  height: 16px
-  margin-right: 10px
+td.title
+  white-space: normal
+  img
+    width: 16px
+    height: 16px
+    margin-right: 10px
 
 .download
   cursor: pointer

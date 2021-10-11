@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div>
     <localeSwitcher />
     <mainMenu />
     <router-view />
@@ -42,12 +42,16 @@ $primary-color: #16a085 !default;
 <style lang="stylus">
 //@import "../node_modules/spectre.css/dist/spectre.min.css";
 #app
+  width: auto
+  overflow-x: auto
   font-family Avenir, Helvetica, Arial, sans-serif
   -webkit-font-smoothing antialiased
   -moz-osx-font-smoothing grayscale
   color #2c3e50
   margin-top 60px
+  white-space: nowrap
+  > div
+    min-width 960px
   h1
     text-align: center
-
 </style>

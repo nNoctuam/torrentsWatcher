@@ -93,7 +93,9 @@ func (t *Kinozal) ParseSearch(document *goquery.Document) (torrents []*models.To
 			}
 		}
 
-		torrent.Forum = forumTD.FirstChild.Data
+		if forumTD.FirstChild.Data != "img" {
+			torrent.Forum = forumTD.FirstChild.Data
+		}
 		torrent.Title = titleTD.FirstChild.FirstChild.Data
 		torrent.Seeders, _ = strconv.ParseUint(seedersTD.FirstChild.Data, 10, 64)
 
