@@ -394,7 +394,6 @@ a
 
 .title
   float: left
-  white-space: normal
   img
     width: 16px
     height: 16px

@@ -49,9 +49,8 @@ $primary-color: #16a085 !default;
   -moz-osx-font-smoothing grayscale
   color #2c3e50
   margin-top 60px
-  white-space: nowrap
   > div
-    min-width 960px
+    min-width 500px
   h1
     text-align: center
 </style>
