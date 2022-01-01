@@ -18,53 +18,39 @@
       </div>
     </form>
 
-    <table
-      class="table table-striped table-hover"
-      v-if="searchResults.length > 0"
-    >
-      <thead>
-        <tr>
-          <th class="forum">{{ $t("search.table.forum") }}</th>
-          <th class="title">{{ $t("search.table.title") }}</th>
-          <th class="seeders">{{ $t("search.table.seeders") }}</th>
-          <th class="size">{{ $t("search.table.size") }}</th>
-          <th class="updated_at">{{ $t("search.table.updated") }}</th>
-          <th class="download"></th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr
-          :class="{ active: selectedRow === i }"
+    <div id="results" v-if="searchResults.length > 0">
+      <div
+          :class="{result:true, active: selectedRow === i }"
           v-for="(torrent, i) in searchResults"
           @click="selectedRow = i"
           v-bind:key="torrent.pageUrl"
         >
-          <td class="forum">{{ torrent.forum }}</td>
-          <td class="title">
-            <img :src="getFavicon(torrent.pageUrl)" /><a
-              class="open"
-              :href="torrent.pageUrl"
-              target="_blank"
-              >{{ torrent.title }}</a
-            >
-          </td>
-          <td class="seeders">{{ torrent.seeders }}</td>
-          <td class="size">{{ byteSize(torrent.size) }}</td>
-          <td
-            class="updated_at"
-            :title="timeFormat(torrent.updatedAt.seconds * 1000)"
-          >
-            {{ timeFromNow(torrent.updatedAt.seconds * 1000) }}
-          </td>
-          <td>
+          <div class="title">
             <a class="download" v-on:click.prevent="download(torrent)">
               <i class="icon icon-2x icon-download"></i>
             </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <img :src="getFavicon(torrent.pageUrl)" />
+            <a
+              class="open"
+              :href="torrent.pageUrl"
+              target="_blank"
+              >{{ torrent.title }}</a>
+          </div>
+
+          <div class="forum">{{ torrent.forum }}</div>
+
+          <div class="result-footer">
+            <div class="seeders">{{ torrent.seeders }}</div>
+            <div class="size">{{ byteSize(torrent.size) }}</div>
+            <div
+              class="updated_at"
+              :title="timeFormat(torrent.updatedAt.seconds * 1000)"
+            >
+              {{ timeFromNow(torrent.updatedAt.seconds * 1000) }}
+            </div>
+          </div>
+        </div>
+    </div>
 
     <div class="modal folders" :class="{ active: showSelectFolder }">
       <div class="modal-overlay"></div>
@@ -377,14 +363,37 @@ a
   text-align: center
   margin: 0 auto
 
-table
-  margin-top: 30px
-  width: 100%
-
-.table tbody tr.active
+.active
   background: saturation(rgba(#16a085, 20%), 50%)
 
-td.title
+
+.result
+  padding: 25px 10px 10px
+  min-height: 50px
+  max-width: 700px
+  margin: 0 auto
+  border-bottom: 1px solid gray
+  .title
+    width: 100%
+    min-height: 50px
+  &::after
+    content: ""
+    display: block
+    clear: both
+    visibility: hidden
+    height: 0
+  .forum
+    min-width: 100%
+    text-align: center 
+.result-footer
+  .seeders, .updated_at
+    padding-left: 15px
+    float: right
+  .size
+    float: left
+
+.title
+  float: left
   white-space: normal
   img
     width: 16px
@@ -392,9 +401,11 @@ td.title
     margin-right: 10px
 
 .download
+  float: right
   cursor: pointer
   padding-left: 10px
-  padding-right: 20px
+  padding-right: 0
+  padding-bottom: 20px
   img
     height: 25px
     cursor: pointer
@@ -410,6 +421,8 @@ td.title
   text-align: center
 
 .folders
+    ul
+      white-space: normal  
     li
       display inline-block
       margin-right: 5px
