@@ -31,7 +31,7 @@ import (
 
 	"go.uber.org/zap"
 
-	_grpc "torrentsWatcher/internal/grpc"
+	grpc_server "torrentsWatcher/internal/interfaces/grpc/server"
 )
 
 const portHTTP = 10000
@@ -116,7 +116,7 @@ func serveRPC(
 ) {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	grpcServer.RegisterService(&_grpc.BaseServiceDesc, _grpc.NewRPCServer(
+	grpcServer.RegisterService(&grpc_server.BaseServiceDesc, grpc_server.NewRPCServer(
 		logger,
 		trackers,
 		torrentsStorage,
