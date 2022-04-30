@@ -12,7 +12,8 @@ import (
 	"os"
 	"strings"
 	"time"
-	"torrentsWatcher/internal/core/torrentclient"
+
+	"torrentsWatcher/internal/interfaces/torrentclient"
 )
 
 const successResult string = "success"
@@ -40,7 +41,7 @@ func NewTransmission(autoDownloadDir string, rpcURL string, login string, passwo
 
 func (t *Transmission) SaveToAutoDownloadFolder(name string, content []byte) error {
 	// nolint: gosec
-	return os.WriteFile(t.autoDownloadDir+"/"+name, content, 0660)
+	return os.WriteFile(t.autoDownloadDir+"/"+name, content, 0o660)
 }
 
 func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torrent torrentclient.Torrent, err error) {

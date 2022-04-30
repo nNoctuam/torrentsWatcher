@@ -32,7 +32,7 @@ func (s *RPCServer) AddTorrent(ctx context.Context, r *pb.AddTorrentRequest) (*p
 		return nil, err
 	}
 
-	return &pb.TorrentResponse{Torrent: torrent.ToPB()}, nil
+	return &pb.TorrentResponse{Torrent: pb.TorrentToPB(torrent)}, nil
 }
 
 // nolint: revive
