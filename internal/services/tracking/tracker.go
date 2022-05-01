@@ -11,9 +11,10 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/storage"
-	network2 "torrentsWatcher/internal/utils/network"
+	"torrentsWatcher/internal/utils/network"
 
 	"go.uber.org/zap"
 
@@ -31,7 +32,7 @@ type Tracker struct {
 	Credentials     Credentials
 	TorrentsStorage storage.Torrents
 	CookiesStorage  storage.Cookies
-	Impl            TrackerImpl
+	Website         WebsiteConnector
 }
 
 func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
@@ -64,7 +65,7 @@ func (t *Tracker) Download(url string) (string, []byte, error) {
 		return "", nil, err
 	}
 
-	headers, body, err := network2.LoadBytes(url, cookies)
+	headers, body, err := network.LoadBytes(url, cookies)
 	if err != nil {
 		return "", nil, err
 	}
@@ -101,7 +102,7 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 		return
 	}
 
-	r, err := t.Impl.MakeSearchRequest(text)
+	r, err := t.Website.MakeSearchRequest(text)
 	if err != nil {
 		return
 	}
@@ -168,7 +169,7 @@ func (t *Tracker) Search(text string) (torrents []*models.Torrent, err error) {
 		return
 	}
 
-	torrents, _ = t.Impl.ParseSearch(document)
+	torrents, _ = t.Website.ParseSearch(document)
 
 	return torrents, nil
 }
@@ -180,7 +181,7 @@ func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	_, body, err := network2.LoadHTML(url, cookies)
+	_, body, err := network.LoadHTML(url, cookies)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +191,7 @@ func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
 		return nil, err
 	}
 
-	return t.Impl.Parse(document)
+	return t.Website.Parse(document)
 }
 
 func (t *Tracker) getCookies() ([]*http.Cookie, error) {
@@ -213,7 +214,7 @@ func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 func (t *Tracker) login() error {
 	var cookies []*http.Cookie
 	t.Logger.Info("login: " + t.Domain)
-	cookies, err := t.Impl.Login(t.Credentials)
+	cookies, err := t.Website.Login(t.Credentials)
 	if err != nil {
 		return err
 	}
