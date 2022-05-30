@@ -18,6 +18,7 @@ type RPCServer struct {
 	torrentsStorage storage.Torrents
 	downloadFolders map[string]string
 	torrentClient   torrentclient.Client
+	blockViewList   []string
 }
 
 func NewRPCServer(
@@ -26,6 +27,7 @@ func NewRPCServer(
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
 	torrentClient torrentclient.Client,
+	blockViewList []string,
 ) *RPCServer {
 	return &RPCServer{
 		logger:          logger,
@@ -33,6 +35,7 @@ func NewRPCServer(
 		torrentsStorage: torrentsStorage,
 		downloadFolders: downloadFolders,
 		torrentClient:   torrentClient,
+		blockViewList:   blockViewList,
 	}
 }
 
