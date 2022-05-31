@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/models"
 )
 
 type Cookies interface {

@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"torrentsWatcher/internal/core/models"
-	"torrentsWatcher/internal/core/storage"
+	"torrentsWatcher/internal/models"
+	"torrentsWatcher/internal/storage"
 	"torrentsWatcher/internal/utils/network"
 
 	"go.uber.org/zap"

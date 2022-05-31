@@ -3,7 +3,8 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"torrentsWatcher/internal/core/models"
+
+	"torrentsWatcher/internal/models"
 	"torrentsWatcher/internal/pb"
 
 	"go.uber.org/zap"

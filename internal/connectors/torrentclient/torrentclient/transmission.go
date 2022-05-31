@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"torrentsWatcher/internal/interfaces/torrentclient"
+	"torrentsWatcher/internal/connectors/torrentclient"
 )
 
 const successResult string = "success"

@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"torrentsWatcher/internal/core/models"
-	"torrentsWatcher/internal/core/storage"
-	"torrentsWatcher/internal/interfaces/torrentclient"
+
+	"torrentsWatcher/internal/connectors/torrentclient"
+	"torrentsWatcher/internal/models"
 	"torrentsWatcher/internal/services/tracking"
+	"torrentsWatcher/internal/storage"
 
 	"go.uber.org/zap"
 )
@@ -67,7 +68,6 @@ func (w *Watcher) Run() {
 
 func (w *Watcher) checkTorrent(torrent *models.Torrent) {
 	updatedTorrent, err := w.trackers.GetTorrentInfo(torrent.PageURL)
-
 	if err != nil {
 		w.logger.Error("Failed to parse torrent", zap.Error(err))
 		return

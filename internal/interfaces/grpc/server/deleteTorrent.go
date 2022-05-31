@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
-	"torrentsWatcher/internal/core/models"
+
+	"torrentsWatcher/internal/models"
 	"torrentsWatcher/internal/pb"
 
 	"go.uber.org/zap"

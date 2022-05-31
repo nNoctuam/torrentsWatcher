@@ -5,7 +5,8 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	"torrentsWatcher/internal/core/models"
+
+	"torrentsWatcher/internal/models"
 )
 
 type Trackers []*Tracker
