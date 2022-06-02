@@ -13,26 +13,23 @@ import (
 	"time"
 
 	"torrentsWatcher/internal/models"
+	"torrentsWatcher/internal/ports"
 	"torrentsWatcher/internal/storage"
 	"torrentsWatcher/internal/utils/network"
 
-	"go.uber.org/zap"
-
-	"golang.org/x/net/html/charset"
-
 	"github.com/PuerkitoBio/goquery"
+	"go.uber.org/zap"
+	"golang.org/x/net/html/charset"
 )
-
-var ErrUnauthorized = errors.New("unauthorized")
 
 type Tracker struct {
 	Logger          *zap.Logger
 	Domain          string
 	ForceHTTPS      bool
-	Credentials     Credentials
+	Credentials     ports.Credentials
 	TorrentsStorage storage.Torrents
 	CookiesStorage  storage.Cookies
-	Website         WebsiteConnector
+	Website         ports.WebsiteConnector
 }
 
 func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
@@ -42,7 +39,7 @@ func (t *Tracker) GetInfo(url string) (*models.Torrent, error) {
 
 	torrent, err := t.loadAndParse(url)
 
-	if err != nil && (err == ErrUnauthorized || err.Error() == "record not found") {
+	if err != nil && (err == ports.ErrUnauthorized || err.Error() == "record not found") {
 		err = t.login()
 		if err != nil {
 			return nil, fmt.Errorf("login: %w", err)
@@ -196,7 +193,7 @@ func (t *Tracker) loadAndParse(url string) (*models.Torrent, error) {
 
 func (t *Tracker) getCookies() ([]*http.Cookie, error) {
 	var cookies []*http.Cookie
-	if t.Credentials != (Credentials{}) {
+	if t.Credentials != (ports.Credentials{}) {
 		var savedCookies []models.AuthCookie
 		if err := t.CookiesStorage.Find(&savedCookies, &models.AuthCookie{Domain: t.Domain}); err != nil {
 			return nil, err

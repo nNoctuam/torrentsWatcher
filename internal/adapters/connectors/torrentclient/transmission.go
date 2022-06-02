@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"torrentsWatcher/internal/connectors/torrentclient"
+	"torrentsWatcher/internal/ports"
 )
 
 const successResult string = "success"
@@ -44,11 +44,11 @@ func (t *Transmission) SaveToAutoDownloadFolder(name string, content []byte) err
 	return os.WriteFile(t.autoDownloadDir+"/"+name, content, 0o660)
 }
 
-func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torrent torrentclient.Torrent, err error) {
+func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torrent ports.Torrent, err error) {
 	var responseModel struct {
 		Arguments struct {
-			TorrentAdded     torrentclient.Torrent `json:"torrent-added"`
-			TorrentDuplicate torrentclient.Torrent `json:"torrent-duplicate"`
+			TorrentAdded     ports.Torrent `json:"torrent-added"`
+			TorrentDuplicate ports.Torrent `json:"torrent-duplicate"`
 		} `json:"arguments"`
 		Result string `json:"result"`
 	}
@@ -58,11 +58,11 @@ func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torr
 		"paused":       paused,
 	}, &responseModel)
 	if err != nil {
-		return torrentclient.Torrent{}, err
+		return ports.Torrent{}, err
 	}
 
 	if responseModel.Result != successResult {
-		return torrentclient.Torrent{}, errors.New("torrent-add result: " + responseModel.Result)
+		return ports.Torrent{}, errors.New("torrent-add result: " + responseModel.Result)
 	}
 
 	torrent = responseModel.Arguments.TorrentAdded
@@ -79,10 +79,10 @@ func (t *Transmission) AddTorrent(content []byte, dir string, paused bool) (torr
 	return torrent, nil
 }
 
-func (t *Transmission) GetTorrents() ([]torrentclient.Torrent, error) {
+func (t *Transmission) GetTorrents() ([]ports.Torrent, error) {
 	var responseModel struct {
 		Arguments struct {
-			Torrents []torrentclient.Torrent `json:"torrents"`
+			Torrents []ports.Torrent `json:"torrents"`
 		} `json:"arguments"`
 	}
 	err := t.call("torrent-get", map[string]interface{}{
@@ -92,10 +92,10 @@ func (t *Transmission) GetTorrents() ([]torrentclient.Torrent, error) {
 	return responseModel.Arguments.Torrents, err
 }
 
-func (t *Transmission) GetTorrentFiles(ids []int) ([]torrentclient.TorrentFile, error) {
+func (t *Transmission) GetTorrentFiles(ids []int) ([]ports.TorrentFile, error) {
 	var responseModel struct {
 		Arguments struct {
-			Torrents []torrentclient.Torrent `json:"torrents"`
+			Torrents []ports.Torrent `json:"torrents"`
 		} `json:"arguments"`
 	}
 	err := t.call("torrent-get", map[string]interface{}{

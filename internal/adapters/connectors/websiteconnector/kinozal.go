@@ -8,14 +8,11 @@ import (
 	"strings"
 
 	"torrentsWatcher/internal/models"
-	"torrentsWatcher/internal/services/tracking"
-	"torrentsWatcher/internal/storage"
-
-	"go.uber.org/zap"
-
-	"golang.org/x/text/encoding/charmap"
+	"torrentsWatcher/internal/ports"
 
 	"github.com/PuerkitoBio/goquery"
+	"go.uber.org/zap"
+	"golang.org/x/text/encoding/charmap"
 )
 
 const (
@@ -27,24 +24,11 @@ type Kinozal struct {
 	logger *zap.Logger
 }
 
-var _ tracking.WebsiteConnector = &Kinozal{}
-
 func NewKinozal(
 	logger *zap.Logger,
-	credentials tracking.Credentials,
-	torrentsStorage storage.Torrents,
-	cookiesStorage storage.Cookies,
-) *tracking.Tracker {
-	return &tracking.Tracker{
-		Logger:          logger,
-		Domain:          KinozalDomain,
-		ForceHTTPS:      false,
-		Credentials:     credentials,
-		TorrentsStorage: torrentsStorage,
-		CookiesStorage:  cookiesStorage,
-		Website: &Kinozal{
-			logger: logger,
-		},
+) *Kinozal {
+	return &Kinozal{
+		logger: logger,
 	}
 }
 
@@ -57,7 +41,7 @@ func (t *Kinozal) Parse(document *goquery.Document) (*models.Torrent, error) {
 		authLink.Get(0).FirstChild != nil &&
 		authLink.Get(0).FirstChild.Data == "Гость! ( Зарегистрируйтесь )" {
 		t.logger.Warn(KinozalDomain+" unauthorized:", zap.Any("authLinkTitle", authLink.Get(0).FirstChild.Data))
-		return &info, tracking.ErrUnauthorized
+		return &info, ports.ErrUnauthorized
 	}
 
 	info.Title = document.Find("h1 a.r0").First().Text()
@@ -146,7 +130,7 @@ func (t *Kinozal) MakeSearchRequest(text string) (r *http.Request, err error) {
 	return
 }
 
-func (t *Kinozal) Login(credentials tracking.Credentials) ([]*http.Cookie, error) {
+func (t *Kinozal) Login(credentials ports.Credentials) ([]*http.Cookie, error) {
 	params := url.Values{}
 	params.Set("username", credentials.Login)
 	params.Set("password", credentials.Password)

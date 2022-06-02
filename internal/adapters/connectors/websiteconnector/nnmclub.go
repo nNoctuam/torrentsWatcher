@@ -10,14 +10,11 @@ import (
 	"time"
 
 	"torrentsWatcher/internal/models"
-	"torrentsWatcher/internal/services/tracking"
-	"torrentsWatcher/internal/storage"
-
-	"go.uber.org/zap"
-
-	"golang.org/x/text/encoding/charmap"
+	"torrentsWatcher/internal/ports"
 
 	"github.com/PuerkitoBio/goquery"
+	"go.uber.org/zap"
+	"golang.org/x/text/encoding/charmap"
 )
 
 const NnmClubDomain = "nnmclub.to"
@@ -26,24 +23,11 @@ type NnmClub struct {
 	logger *zap.Logger
 }
 
-var _ tracking.WebsiteConnector = &NnmClub{}
-
 func NewNnmClub(
 	logger *zap.Logger,
-	credentials tracking.Credentials,
-	torrentsStorage storage.Torrents,
-	cookiesStorage storage.Cookies,
-) *tracking.Tracker {
-	return &tracking.Tracker{
-		Logger:          logger,
-		Domain:          NnmClubDomain,
-		ForceHTTPS:      true,
-		Credentials:     credentials,
-		TorrentsStorage: torrentsStorage,
-		CookiesStorage:  cookiesStorage,
-		Website: &NnmClub{
-			logger: logger,
-		},
+) *NnmClub {
+	return &NnmClub{
+		logger: logger,
 	}
 }
 
@@ -52,7 +36,7 @@ func (t *NnmClub) Parse(document *goquery.Document) (*models.Torrent, error) {
 	var err error
 
 	if document.Find("table.btTbl tr.row1 td.gensmall span b a").First().Text() != "Скачать" {
-		return &info, tracking.ErrUnauthorized
+		return &info, ports.ErrUnauthorized
 	}
 
 	info.Title = document.Find(".maintitle").First().Text()
@@ -125,7 +109,7 @@ func (t *NnmClub) MakeSearchRequest(text string) (r *http.Request, err error) {
 	return
 }
 
-func (t *NnmClub) Login(credentials tracking.Credentials) ([]*http.Cookie, error) {
+func (t *NnmClub) Login(credentials ports.Credentials) ([]*http.Cookie, error) {
 	code, err := getLoginCode()
 	if err != nil {
 		return nil, err

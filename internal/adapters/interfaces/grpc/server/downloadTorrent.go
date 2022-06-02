@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"torrentsWatcher/internal/models"
-	"torrentsWatcher/internal/pb"
+	"torrentsWatcher/internal/ports/pb"
 
 	"go.uber.org/zap"
 

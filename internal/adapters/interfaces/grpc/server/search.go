@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"torrentsWatcher/internal/pb"
+	"torrentsWatcher/internal/ports/pb"
 
 	"google.golang.org/grpc"
 )

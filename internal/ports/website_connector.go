@@ -1,12 +1,15 @@
-package tracking
+package ports
 
 import (
+	"errors"
 	"net/http"
 
 	"torrentsWatcher/internal/models"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+var ErrUnauthorized = errors.New("unauthorized")
 
 type Credentials struct {
 	Login    string

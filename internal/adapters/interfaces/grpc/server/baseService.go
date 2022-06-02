@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"torrentsWatcher/internal/connectors/torrentclient"
-	"torrentsWatcher/internal/pb"
+	"torrentsWatcher/internal/ports"
+	"torrentsWatcher/internal/ports/pb"
 	"torrentsWatcher/internal/services/tracking"
 	"torrentsWatcher/internal/storage"
 
@@ -17,7 +17,7 @@ type RPCServer struct {
 	trackers        tracking.Trackers
 	torrentsStorage storage.Torrents
 	downloadFolders map[string]string
-	torrentClient   torrentclient.Client
+	torrentClient   ports.TorrentClient
 	blockViewList   []string
 }
 
@@ -26,7 +26,7 @@ func NewRPCServer(
 	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
-	torrentClient torrentclient.Client,
+	torrentClient ports.TorrentClient,
 	blockViewList []string,
 ) *RPCServer {
 	return &RPCServer{

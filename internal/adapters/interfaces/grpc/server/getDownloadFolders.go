@@ -2,7 +2,8 @@ package grpc
 
 import (
 	"context"
-	"torrentsWatcher/internal/pb"
+
+	"torrentsWatcher/internal/ports/pb"
 
 	"google.golang.org/grpc"
 )
