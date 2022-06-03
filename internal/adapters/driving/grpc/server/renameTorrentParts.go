@@ -14,8 +14,8 @@ import (
 
 func (s *RPCServer) RenameTorrentParts(ctx context.Context, r *pb.RenameTorrentPartsRequest) (*pb.Empty, error) {
 	parts := make([]*torrents.PartToRename, len(r.Names))
-	for _, n := range r.Names {
-		parts = append(parts, &torrents.PartToRename{OldName: n.OldName, NewName: n.NewName})
+	for i, n := range r.Names {
+		parts[i] = &torrents.PartToRename{OldName: n.OldName, NewName: n.NewName}
 	}
 
 	if err := s.torrents.RenameParts(uint(r.Id), parts); err != nil {
