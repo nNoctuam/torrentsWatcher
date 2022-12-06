@@ -12,10 +12,10 @@ import (
 
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/storage"
-	"torrentsWatcher/internal/core/torrentclient"
 	storageImpl "torrentsWatcher/internal/impl/storage"
 	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
 	trackingImpl "torrentsWatcher/internal/impl/tracker"
+	"torrentsWatcher/internal/interfaces/torrentclient"
 	"torrentsWatcher/internal/services/tracking"
 	"torrentsWatcher/internal/services/watcher"
 

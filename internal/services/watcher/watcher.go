@@ -7,7 +7,7 @@ import (
 	"time"
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/storage"
-	"torrentsWatcher/internal/core/torrentclient"
+	"torrentsWatcher/internal/interfaces/torrentclient"
 	"torrentsWatcher/internal/services/tracking"
 
 	"go.uber.org/zap"

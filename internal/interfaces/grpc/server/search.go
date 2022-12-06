@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	models2 "torrentsWatcher/internal/core/models"
+
 	"torrentsWatcher/internal/pb"
 
 	"google.golang.org/grpc"
@@ -18,7 +18,7 @@ func (s *RPCServer) Search(ctx context.Context, r *pb.SearchRequest) (*pb.Torren
 	})
 
 	return &pb.TorrentsResponse{
-		Torrents: models2.TorrentsToPB(torrents),
+		Torrents: pb.TorrentsToPB(torrents),
 	}, nil
 }
 

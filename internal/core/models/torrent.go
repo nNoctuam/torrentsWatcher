@@ -3,9 +3,6 @@ package models
 import (
 	"encoding/json"
 	"time"
-	"torrentsWatcher/internal/pb"
-
-	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
 type Torrent struct {
@@ -52,27 +49,4 @@ func (t *Torrent) UpdateFrom(updatedTorrent *Torrent) {
 	t.Title = updatedTorrent.Title
 	t.UploadedAt = updatedTorrent.UploadedAt
 	t.FileURL = updatedTorrent.FileURL
-}
-
-func (t *Torrent) ToPB() *pb.Torrent {
-	return &pb.Torrent{
-		Id:         uint32(t.ID),
-		Title:      t.Title,
-		PageUrl:    t.PageURL,
-		FileUrl:    t.FileURL,
-		Forum:      t.Forum,
-		Author:     t.Author,
-		Size:       t.Size,
-		Seeders:    t.Seeders,
-		CreatedAt:  &timestamp.Timestamp{Seconds: t.CreatedAt.Unix()},
-		UpdatedAt:  &timestamp.Timestamp{Seconds: t.UpdatedAt.Unix()},
-		UploadedAt: &timestamp.Timestamp{Seconds: t.UploadedAt.Unix()},
-	}
-}
-
-func TorrentsToPB(torrents []*Torrent) (result []*pb.Torrent) {
-	for _, t := range torrents {
-		result = append(result, t.ToPB())
-	}
-	return result
 }

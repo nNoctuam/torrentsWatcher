@@ -27,6 +27,8 @@ github.com/jinzhu/gorm
 github.com/jinzhu/gorm/dialects/sqlite
 # github.com/jinzhu/inflection v1.0.0
 github.com/jinzhu/inflection
+# github.com/kisielk/godepgraph v0.0.0-20190626013829-57a7e4a651a9
+## explicit
 # github.com/klauspost/compress v1.11.7
 github.com/klauspost/compress/flate
 # github.com/mattn/go-sqlite3 v2.0.1+incompatible
