@@ -139,7 +139,7 @@ func (t *Torrents) GetActive(onlyRegistered bool) ([]*driven.Torrent, error) {
 	}
 
 	var result []*driven.Torrent
-	for _, torrent := range activeTorrents {
+	for i, torrent := range activeTorrents {
 		blocked := false
 		for _, path := range t.blockViewList {
 			if strings.Contains(torrent.DownloadDir+torrent.Name, path) {
@@ -160,7 +160,7 @@ func (t *Torrents) GetActive(onlyRegistered bool) ([]*driven.Torrent, error) {
 			}
 		}
 		if found || !onlyRegistered {
-			result = append(result, &torrent)
+			result = append(result, &activeTorrents[i])
 		}
 	}
 
