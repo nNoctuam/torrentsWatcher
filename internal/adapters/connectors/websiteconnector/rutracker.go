@@ -10,14 +10,11 @@ import (
 	"time"
 
 	"torrentsWatcher/internal/models"
-	"torrentsWatcher/internal/services/tracking"
-	"torrentsWatcher/internal/storage"
-
-	"go.uber.org/zap"
-
-	"golang.org/x/text/encoding/charmap"
+	"torrentsWatcher/internal/ports"
 
 	"github.com/PuerkitoBio/goquery"
+	"go.uber.org/zap"
+	"golang.org/x/text/encoding/charmap"
 )
 
 const RutrackerDomain = "rutracker.org"
@@ -27,23 +24,10 @@ type Rutracker struct {
 	logger *zap.Logger
 }
 
-var _ tracking.WebsiteConnector = &Rutracker{}
-
 func NewRutracker(
 	logger *zap.Logger,
-	credentials tracking.Credentials,
-	torrents storage.Torrents,
-	cookies storage.Cookies,
-) *tracking.Tracker {
-	return &tracking.Tracker{
-		Logger:          logger,
-		Domain:          RutrackerDomain,
-		ForceHTTPS:      true,
-		Credentials:     credentials,
-		TorrentsStorage: torrents,
-		CookiesStorage:  cookies,
-		Website:         &Rutracker{},
-	}
+) *Rutracker {
+	return &Rutracker{logger: logger}
 }
 
 func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
@@ -60,7 +44,7 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 
 	if info.Title != "" && document.Find("#logged-in-username").Size() == 0 {
 		t.logger.Info("Unauthorized")
-		return nil, tracking.ErrUnauthorized
+		return nil, ports.ErrUnauthorized
 	}
 
 	r := strings.NewReplacer(
@@ -89,7 +73,7 @@ func (t *Rutracker) Parse(document *goquery.Document) (*models.Torrent, error) {
 	return &info, err
 }
 
-func (t *Rutracker) Login(credentials tracking.Credentials) ([]*http.Cookie, error) {
+func (t *Rutracker) Login(credentials ports.Credentials) ([]*http.Cookie, error) {
 	data := url.Values{}
 	data.Set("login_username", credentials.Login)
 	data.Set("login_password", credentials.Password)

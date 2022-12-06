@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"torrentsWatcher/internal/connectors/torrentclient"
 	"torrentsWatcher/internal/models"
+	"torrentsWatcher/internal/ports"
 	"torrentsWatcher/internal/services/tracking"
 	"torrentsWatcher/internal/storage"
 
@@ -20,7 +20,7 @@ type Watcher struct {
 	logger          *zap.Logger
 	interval        time.Duration
 	trackers        tracking.Trackers
-	torrentClient   torrentclient.Client
+	torrentClient   ports.TorrentClient
 	torrentsStorage storage.Torrents
 }
 
@@ -30,7 +30,7 @@ func New(
 	logger *zap.Logger,
 	interval time.Duration,
 	trackers tracking.Trackers,
-	torrentClient torrentclient.Client,
+	torrentClient ports.TorrentClient,
 	torrentsStorage storage.Torrents,
 ) *Watcher {
 	return &Watcher{

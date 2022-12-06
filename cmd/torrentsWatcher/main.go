@@ -10,10 +10,10 @@ import (
 	"sync"
 	"syscall"
 
-	"torrentsWatcher/internal/connectors/torrentclient"
-	torrentClientImpl "torrentsWatcher/internal/connectors/torrentclient/torrentclient"
-	website_connector "torrentsWatcher/internal/connectors/websiteconnector"
+	torrentClientImpl "torrentsWatcher/internal/adapters/connectors/torrentclient"
+	website_connector "torrentsWatcher/internal/adapters/connectors/websiteconnector"
 	"torrentsWatcher/internal/models"
+	"torrentsWatcher/internal/ports"
 	"torrentsWatcher/internal/services/tracking"
 	"torrentsWatcher/internal/services/watcher"
 	"torrentsWatcher/internal/storage"
@@ -31,7 +31,7 @@ import (
 
 	"go.uber.org/zap"
 
-	grpc_server "torrentsWatcher/internal/interfaces/grpc/server"
+	grpc_server "torrentsWatcher/internal/adapters/interfaces/grpc/server"
 )
 
 const portHTTP = 10000
@@ -63,9 +63,35 @@ func main() {
 	cookiesStorage := storage_sqlite.NewCookiesSqliteStorage(db)
 
 	trackers := tracking.Trackers([]*tracking.Tracker{
-		website_connector.NewNnmClub(logger, cfg.Credentials[website_connector.NnmClubDomain], torrentsStorage, cookiesStorage),
-		website_connector.NewRutracker(logger, cfg.Credentials[website_connector.RutrackerDomain], torrentsStorage, cookiesStorage),
-		website_connector.NewKinozal(logger, cfg.Credentials[website_connector.KinozalDomain], torrentsStorage, cookiesStorage),
+		{
+			Logger:          logger,
+			Domain:          website_connector.NnmClubDomain,
+			ForceHTTPS:      true,
+			Credentials:     cfg.Credentials[website_connector.NnmClubDomain],
+			TorrentsStorage: torrentsStorage,
+			CookiesStorage:  cookiesStorage,
+			Website:         website_connector.NewNnmClub(logger),
+		},
+
+		{
+			Logger:          logger,
+			Domain:          website_connector.RutrackerDomain,
+			ForceHTTPS:      true,
+			Credentials:     cfg.Credentials[website_connector.RutrackerDomain],
+			TorrentsStorage: torrentsStorage,
+			CookiesStorage:  cookiesStorage,
+			Website:         website_connector.NewRutracker(logger),
+		},
+
+		{
+			Logger:          logger,
+			Domain:          website_connector.KinozalDomain,
+			ForceHTTPS:      false,
+			Credentials:     cfg.Credentials[website_connector.KinozalDomain],
+			TorrentsStorage: torrentsStorage,
+			CookiesStorage:  cookiesStorage,
+			Website:         website_connector.NewKinozal(logger),
+		},
 	})
 	for i, t := range trackers {
 		if t.Credentials.Login == "" {
@@ -120,7 +146,7 @@ func serveRPC(
 	trackers tracking.Trackers,
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
-	torrentClient torrentclient.Client,
+	torrentClient ports.TorrentClient,
 	blockViewList []string,
 ) {
 	var opts []grpc.ServerOption

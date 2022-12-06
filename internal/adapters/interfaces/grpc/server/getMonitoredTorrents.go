@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"torrentsWatcher/internal/models"
-	"torrentsWatcher/internal/pb"
+	"torrentsWatcher/internal/ports/pb"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"go.uber.org/zap"

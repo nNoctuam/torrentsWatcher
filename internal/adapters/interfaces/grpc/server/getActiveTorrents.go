@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"torrentsWatcher/internal/models"
-	"torrentsWatcher/internal/pb"
+	"torrentsWatcher/internal/ports/pb"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 
