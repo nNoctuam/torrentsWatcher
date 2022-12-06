@@ -1,4 +1,4 @@
-package tracker
+package websiteconnector
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/storage"
 	"torrentsWatcher/internal/services/tracking"
@@ -19,12 +20,14 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const RutrackerDomain = "rutracker.org"
+
 type Rutracker struct {
 	//nolint:structcheck,unused
 	logger *zap.Logger
 }
 
-const RutrackerDomain = "rutracker.org"
+var _ tracking.WebsiteConnector = &Rutracker{}
 
 func NewRutracker(
 	logger *zap.Logger,
@@ -39,7 +42,7 @@ func NewRutracker(
 		Credentials:     credentials,
 		TorrentsStorage: torrents,
 		CookiesStorage:  cookies,
-		Impl:            &Rutracker{},
+		Website:         &Rutracker{},
 	}
 }
 

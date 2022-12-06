@@ -1,4 +1,4 @@
-package tracker
+package websiteconnector
 
 import (
 	"math"
@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/storage"
 	"torrentsWatcher/internal/services/tracking"
@@ -17,13 +18,16 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-const href string = "href"
+const (
+	KinozalDomain = "kinozal.tv"
+	href          = "href"
+)
 
 type Kinozal struct {
 	logger *zap.Logger
 }
 
-const KinozalDomain = "kinozal.tv"
+var _ tracking.WebsiteConnector = &Kinozal{}
 
 func NewKinozal(
 	logger *zap.Logger,
@@ -38,7 +42,7 @@ func NewKinozal(
 		Credentials:     credentials,
 		TorrentsStorage: torrentsStorage,
 		CookiesStorage:  cookiesStorage,
-		Impl: &Kinozal{
+		Website: &Kinozal{
 			logger: logger,
 		},
 	}

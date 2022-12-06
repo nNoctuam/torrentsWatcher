@@ -14,7 +14,7 @@ import (
 	"torrentsWatcher/internal/core/storage"
 	storageImpl "torrentsWatcher/internal/impl/storage"
 	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
-	trackingImpl "torrentsWatcher/internal/impl/tracker"
+	website_connector "torrentsWatcher/internal/impl/websiteconnector"
 	"torrentsWatcher/internal/interfaces/torrentclient"
 	"torrentsWatcher/internal/services/tracking"
 	"torrentsWatcher/internal/services/watcher"
@@ -63,9 +63,9 @@ func main() {
 	cookiesStorage := storageImpl.NewCookiesSqliteStorage(db)
 
 	trackers := tracking.Trackers([]*tracking.Tracker{
-		trackingImpl.NewNnmClub(logger, cfg.Credentials[trackingImpl.NnmClubDomain], torrentsStorage, cookiesStorage),
-		trackingImpl.NewRutracker(logger, cfg.Credentials[trackingImpl.RutrackerDomain], torrentsStorage, cookiesStorage),
-		trackingImpl.NewKinozal(logger, cfg.Credentials[trackingImpl.KinozalDomain], torrentsStorage, cookiesStorage),
+		website_connector.NewNnmClub(logger, cfg.Credentials[website_connector.NnmClubDomain], torrentsStorage, cookiesStorage),
+		website_connector.NewRutracker(logger, cfg.Credentials[website_connector.RutrackerDomain], torrentsStorage, cookiesStorage),
+		website_connector.NewKinozal(logger, cfg.Credentials[website_connector.KinozalDomain], torrentsStorage, cookiesStorage),
 	})
 	for i, t := range trackers {
 		if t.Credentials.Login == "" {

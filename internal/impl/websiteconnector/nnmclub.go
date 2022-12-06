@@ -1,4 +1,4 @@
-package tracker
+package websiteconnector
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/storage"
 	"torrentsWatcher/internal/services/tracking"
@@ -19,11 +20,13 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const NnmClubDomain = "nnmclub.to"
+
 type NnmClub struct {
 	logger *zap.Logger
 }
 
-const NnmClubDomain = "nnmclub.to"
+var _ tracking.WebsiteConnector = &NnmClub{}
 
 func NewNnmClub(
 	logger *zap.Logger,
@@ -38,7 +41,7 @@ func NewNnmClub(
 		Credentials:     credentials,
 		TorrentsStorage: torrentsStorage,
 		CookiesStorage:  cookiesStorage,
-		Impl: &NnmClub{
+		Website: &NnmClub{
 			logger: logger,
 		},
 	}
