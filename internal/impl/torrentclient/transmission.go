@@ -238,6 +238,16 @@ func (t *Transmission) call(method string, arguments interface{}, responseModel 
 	if err != nil {
 		return fmt.Errorf("transmission rpc request: %w", err)
 	}
+	err = json.Unmarshal(responseBytes, responseModel)
+	if err == nil {
+		return nil
+	}
+
+	// just try one more time
+	responseBytes, err = t.rpcRequest(body)
+	if err != nil {
+		return fmt.Errorf("transmission rpc request: %w", err)
+	}
 	return json.Unmarshal(responseBytes, responseModel)
 }
 
