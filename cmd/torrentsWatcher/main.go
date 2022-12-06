@@ -10,14 +10,14 @@ import (
 	"sync"
 	"syscall"
 
-	torrentClientImpl "torrentsWatcher/internal/adapters/connectors/torrentclient"
-	website_connector "torrentsWatcher/internal/adapters/connectors/websiteconnector"
-	"torrentsWatcher/internal/models"
-	"torrentsWatcher/internal/ports"
-	"torrentsWatcher/internal/services/tracking"
-	"torrentsWatcher/internal/services/watcher"
-	"torrentsWatcher/internal/storage"
-	storage_sqlite "torrentsWatcher/internal/storage/sqlite"
+	storage_sqlite "torrentsWatcher/internal/adapters/driven/storage/sqlite"
+	torrentClientImpl "torrentsWatcher/internal/adapters/driven/torrentclient"
+	"torrentsWatcher/internal/adapters/driven/trackers"
+	"torrentsWatcher/internal/adapters/driven/trackers/tracker"
+	website_connector "torrentsWatcher/internal/adapters/driven/trackers/tracker/websiteconnector"
+	"torrentsWatcher/internal/domain/models"
+	"torrentsWatcher/internal/domain/services/torrents"
+	"torrentsWatcher/internal/domain/services/watcher"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -31,7 +31,7 @@ import (
 
 	"go.uber.org/zap"
 
-	grpc_server "torrentsWatcher/internal/adapters/interfaces/grpc/server"
+	grpc_server "torrentsWatcher/internal/adapters/driving/grpc/server"
 )
 
 const portHTTP = 10000
@@ -62,42 +62,44 @@ func main() {
 	torrentsStorage := storage_sqlite.NewTorrentsSqliteStorage(db)
 	cookiesStorage := storage_sqlite.NewCookiesSqliteStorage(db)
 
-	trackers := tracking.Trackers([]*tracking.Tracker{
-		{
-			Logger:          logger,
-			Domain:          website_connector.NnmClubDomain,
-			ForceHTTPS:      true,
-			Credentials:     cfg.Credentials[website_connector.NnmClubDomain],
-			TorrentsStorage: torrentsStorage,
-			CookiesStorage:  cookiesStorage,
-			Website:         website_connector.NewNnmClub(logger),
-		},
+	trackers := &trackers.Adapter{
+		Trackers: []trackers.TrackerAdapter{
+			&tracker.Tracker{
+				Logger:          logger,
+				Domain:          website_connector.NnmClubDomain,
+				ForceHTTPS:      true,
+				Credentials:     cfg.Credentials[website_connector.NnmClubDomain],
+				TorrentsStorage: torrentsStorage,
+				CookiesStorage:  cookiesStorage,
+				Website:         website_connector.NewNnmClub(logger),
+			},
 
-		{
-			Logger:          logger,
-			Domain:          website_connector.RutrackerDomain,
-			ForceHTTPS:      true,
-			Credentials:     cfg.Credentials[website_connector.RutrackerDomain],
-			TorrentsStorage: torrentsStorage,
-			CookiesStorage:  cookiesStorage,
-			Website:         website_connector.NewRutracker(logger),
-		},
+			&tracker.Tracker{
+				Logger:          logger,
+				Domain:          website_connector.RutrackerDomain,
+				ForceHTTPS:      true,
+				Credentials:     cfg.Credentials[website_connector.RutrackerDomain],
+				TorrentsStorage: torrentsStorage,
+				CookiesStorage:  cookiesStorage,
+				Website:         website_connector.NewRutracker(logger),
+			},
 
-		{
-			Logger:          logger,
-			Domain:          website_connector.KinozalDomain,
-			ForceHTTPS:      false,
-			Credentials:     cfg.Credentials[website_connector.KinozalDomain],
-			TorrentsStorage: torrentsStorage,
-			CookiesStorage:  cookiesStorage,
-			Website:         website_connector.NewKinozal(logger),
+			&tracker.Tracker{
+				Logger:          logger,
+				Domain:          website_connector.KinozalDomain,
+				ForceHTTPS:      false,
+				Credentials:     cfg.Credentials[website_connector.KinozalDomain],
+				TorrentsStorage: torrentsStorage,
+				CookiesStorage:  cookiesStorage,
+				Website:         website_connector.NewKinozal(logger),
+			},
 		},
-	})
-	for i, t := range trackers {
-		if t.Credentials.Login == "" {
-			trackers = append(trackers[:i], trackers[i+1:]...)
-		}
 	}
+	// for i, t := range trackers {
+	// if t.Credentials.Login == "" {
+	// trackers = append(trackers[:i], trackers[i+1:]...)
+	// }
+	// }
 
 	transmissionClient, err := torrentClientImpl.NewTransmission(
 		cfg.AutoDownloadDir,
@@ -112,6 +114,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	torrents := torrents.New(
+		logger,
+		trackers,
+		torrentsStorage,
+		transmissionClient,
+		cfg.Transmission.Folders,
+		cfg.BlockViewList,
+	)
+
 	wg.Add(1)
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, transmissionClient, torrentsStorage).Run()
 
@@ -119,11 +130,7 @@ func main() {
 	go serveRPC(
 		logger.Named("RPC"),
 		httpServer,
-		trackers,
-		torrentsStorage,
-		cfg.Transmission.Folders,
-		transmissionClient,
-		cfg.BlockViewList,
+		torrents,
 	)
 
 	logger.Info("Service started")
@@ -143,21 +150,13 @@ func main() {
 func serveRPC(
 	logger *zap.Logger,
 	mainHTTPServer *http.Server,
-	trackers tracking.Trackers,
-	torrentsStorage storage.Torrents,
-	downloadFolders map[string]string,
-	torrentClient ports.TorrentClient,
-	blockViewList []string,
+	torrents *torrents.Torrents,
 ) {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	grpcServer.RegisterService(&grpc_server.BaseServiceDesc, grpc_server.NewRPCServer(
 		logger,
-		trackers,
-		torrentsStorage,
-		downloadFolders,
-		torrentClient,
-		blockViewList,
+		torrents,
 	))
 	wrappedGrpc := grpcweb.WrapServer(grpcServer)
 
