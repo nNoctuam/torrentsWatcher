@@ -13,7 +13,7 @@ import (
 )
 
 func (s *RPCServer) RenameTorrentParts(ctx context.Context, r *pb.RenameTorrentPartsRequest) (*pb.Empty, error) {
-	var parts []*torrents.PartToRename
+	parts := make([]*torrents.PartToRename, len(r.Names))
 	for _, n := range r.Names {
 		parts = append(parts, &torrents.PartToRename{OldName: n.OldName, NewName: n.NewName})
 	}

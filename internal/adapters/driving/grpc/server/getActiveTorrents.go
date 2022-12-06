@@ -19,7 +19,7 @@ func (s *RPCServer) GetActiveTorrents(ctx context.Context, r *pb.GetActiveTorren
 		return nil, fmt.Errorf("cannot get active torrents: %w", err)
 	}
 
-	var result []*pb.ActiveTorrent
+	result := make([]*pb.ActiveTorrent, len(torrents))
 	for _, t := range torrents {
 		result = append(result, &pb.ActiveTorrent{
 			ID:          int32(t.ID),
