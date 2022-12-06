@@ -8,7 +8,7 @@ import (
 	"strings"
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/core/storage"
-	"torrentsWatcher/internal/core/tracking"
+	"torrentsWatcher/internal/services/tracking"
 
 	"go.uber.org/zap"
 

@@ -6,10 +6,9 @@ import (
 	"sync"
 	"time"
 	"torrentsWatcher/internal/core/models"
-	"torrentsWatcher/internal/core/notifications"
 	"torrentsWatcher/internal/core/storage"
 	"torrentsWatcher/internal/core/torrentclient"
-	"torrentsWatcher/internal/core/tracking"
+	"torrentsWatcher/internal/services/tracking"
 
 	"go.uber.org/zap"
 )
@@ -20,7 +19,6 @@ type Watcher struct {
 	logger          *zap.Logger
 	interval        time.Duration
 	trackers        tracking.Trackers
-	notificator     notifications.Notificator
 	torrentClient   torrentclient.Client
 	torrentsStorage storage.Torrents
 }
@@ -31,7 +29,6 @@ func New(
 	logger *zap.Logger,
 	interval time.Duration,
 	trackers tracking.Trackers,
-	notificator notifications.Notificator,
 	torrentClient torrentclient.Client,
 	torrentsStorage storage.Torrents,
 ) *Watcher {
@@ -41,7 +38,6 @@ func New(
 		logger:          logger,
 		interval:        interval,
 		trackers:        trackers,
-		notificator:     notificator,
 		torrentClient:   torrentClient,
 		torrentsStorage: torrentsStorage,
 	}

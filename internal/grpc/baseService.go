@@ -3,7 +3,7 @@ package grpc
 import (
 	"torrentsWatcher/internal/core/storage"
 	"torrentsWatcher/internal/core/torrentclient"
-	"torrentsWatcher/internal/core/tracking"
+	"torrentsWatcher/internal/services/tracking"
 	"torrentsWatcher/internal/pb"
 
 	"go.uber.org/zap"

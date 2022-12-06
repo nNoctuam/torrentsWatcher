@@ -7,19 +7,17 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"sync"
 	"syscall"
+
 	"torrentsWatcher/internal/core/models"
-	"torrentsWatcher/internal/core/notifications"
 	"torrentsWatcher/internal/core/storage"
 	"torrentsWatcher/internal/core/torrentclient"
-	"torrentsWatcher/internal/core/tracking"
-	"torrentsWatcher/internal/core/watcher"
-	"torrentsWatcher/internal/impl/notificator"
 	storageImpl "torrentsWatcher/internal/impl/storage"
 	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
 	trackingImpl "torrentsWatcher/internal/impl/tracker"
+	"torrentsWatcher/internal/services/tracking"
+	"torrentsWatcher/internal/services/watcher"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -51,7 +49,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	platformNotificator := getNotificator(cfg)
 
 	db, err := gorm.Open("sqlite3", "./torrents.db")
 	if err != nil {
@@ -90,7 +87,7 @@ func main() {
 	}
 
 	wg.Add(1)
-	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, platformNotificator, transmissionClient, torrentsStorage).Run()
+	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, transmissionClient, torrentsStorage).Run()
 
 	httpServer := serveHTTP(errorChan, logger, portHTTP)
 	go serveRPC(logger.Named("RPC"), httpServer, trackers, torrentsStorage, cfg.Transmission.Folders, transmissionClient)
@@ -184,17 +181,6 @@ func serveHTTP(
 		errorChan <- server.ListenAndServe()
 	}()
 	return server
-}
-
-func getNotificator(cfg *config.AppConfig) notifications.Notificator {
-	switch runtime.GOOS {
-	case "windows":
-		return &notificator.Windows{Config: notifications.Config(cfg.Notifications)}
-	case "linux":
-		fallthrough
-	default:
-		return &notificator.Linux{Config: notifications.Config(cfg.Notifications)}
-	}
 }
 
 func waitExitSignal() chan os.Signal {
