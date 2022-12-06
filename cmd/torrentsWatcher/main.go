@@ -90,7 +90,15 @@ func main() {
 	go watcher.New(ctx, wg, logger, cfg.Interval, trackers, transmissionClient, torrentsStorage).Run()
 
 	httpServer := serveHTTP(errorChan, logger, portHTTP)
-	go serveRPC(logger.Named("RPC"), httpServer, trackers, torrentsStorage, cfg.Transmission.Folders, transmissionClient)
+	go serveRPC(
+		logger.Named("RPC"),
+		httpServer,
+		trackers,
+		torrentsStorage,
+		cfg.Transmission.Folders,
+		transmissionClient,
+		cfg.BlockViewList,
+	)
 
 	logger.Info("Service started")
 	select {
@@ -113,6 +121,7 @@ func serveRPC(
 	torrentsStorage storage.Torrents,
 	downloadFolders map[string]string,
 	torrentClient torrentclient.Client,
+	blockViewList []string,
 ) {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
@@ -122,6 +131,7 @@ func serveRPC(
 		torrentsStorage,
 		downloadFolders,
 		torrentClient,
+		blockViewList,
 	))
 	wrappedGrpc := grpcweb.WrapServer(grpcServer)
 

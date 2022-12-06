@@ -31,6 +31,7 @@ type AppConfig struct {
 		Password string
 		Folders  map[string]string
 	}
+	BlockViewList []string `yaml:"blockViewList"`
 }
 
 func Load(filePath string) (*AppConfig, error) {

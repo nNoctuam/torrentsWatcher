@@ -3,6 +3,8 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"torrentsWatcher/internal/core/models"
 	"torrentsWatcher/internal/pb"
 
@@ -25,6 +27,12 @@ func (s *RPCServer) GetActiveTorrents(ctx context.Context, r *pb.GetActiveTorren
 
 	var result []*pb.ActiveTorrent
 	for _, t := range activeTorrents {
+		for _, path := range s.blockViewList {
+			if strings.Contains(t.DownloadDir+t.Name, path) {
+				continue
+			}
+		}
+
 		found := false
 		if r.OnlyRegistered {
 			for _, registeredTorrent := range torrents {
