@@ -27,10 +27,14 @@ func (s *RPCServer) GetActiveTorrents(ctx context.Context, r *pb.GetActiveTorren
 
 	var result []*pb.ActiveTorrent
 	for _, t := range activeTorrents {
+		blocked := false
 		for _, path := range s.blockViewList {
 			if strings.Contains(t.DownloadDir+t.Name, path) {
-				continue
+				blocked = true
 			}
+		}
+		if blocked {
+			continue
 		}
 
 		found := false

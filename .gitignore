@@ -4,3 +4,4 @@ torrents.db*
 config.yml
 graph.png
 ./torrentsWatcher
+__debug_bin
