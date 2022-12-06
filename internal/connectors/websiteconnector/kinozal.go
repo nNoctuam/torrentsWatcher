@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"torrentsWatcher/internal/core/models"
-	"torrentsWatcher/internal/core/storage"
+	"torrentsWatcher/internal/models"
 	"torrentsWatcher/internal/services/tracking"
+	"torrentsWatcher/internal/storage"
 
 	"go.uber.org/zap"
 

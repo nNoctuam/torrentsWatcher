@@ -1,8 +1,8 @@
-package storage
+package sqlite
 
 import (
-	"torrentsWatcher/internal/core/models"
-	"torrentsWatcher/internal/core/storage"
+	"torrentsWatcher/internal/models"
+	"torrentsWatcher/internal/storage"
 
 	"github.com/jinzhu/gorm"
 )

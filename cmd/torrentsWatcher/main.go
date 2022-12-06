@@ -10,14 +10,14 @@ import (
 	"sync"
 	"syscall"
 
-	"torrentsWatcher/internal/core/models"
-	"torrentsWatcher/internal/core/storage"
-	storageImpl "torrentsWatcher/internal/impl/storage"
-	torrentClientImpl "torrentsWatcher/internal/impl/torrentclient"
-	website_connector "torrentsWatcher/internal/impl/websiteconnector"
-	"torrentsWatcher/internal/interfaces/torrentclient"
+	"torrentsWatcher/internal/connectors/torrentclient"
+	torrentClientImpl "torrentsWatcher/internal/connectors/torrentclient/torrentclient"
+	website_connector "torrentsWatcher/internal/connectors/websiteconnector"
+	"torrentsWatcher/internal/models"
 	"torrentsWatcher/internal/services/tracking"
 	"torrentsWatcher/internal/services/watcher"
+	"torrentsWatcher/internal/storage"
+	storage_sqlite "torrentsWatcher/internal/storage/sqlite"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -59,8 +59,8 @@ func main() {
 	defer db.Close()
 	db.AutoMigrate(&models.Torrent{}, &models.AuthCookie{}, &models.TransmissionTorrent{})
 
-	torrentsStorage := storageImpl.NewTorrentsSqliteStorage(db)
-	cookiesStorage := storageImpl.NewCookiesSqliteStorage(db)
+	torrentsStorage := storage_sqlite.NewTorrentsSqliteStorage(db)
+	cookiesStorage := storage_sqlite.NewCookiesSqliteStorage(db)
 
 	trackers := tracking.Trackers([]*tracking.Tracker{
 		website_connector.NewNnmClub(logger, cfg.Credentials[website_connector.NnmClubDomain], torrentsStorage, cookiesStorage),

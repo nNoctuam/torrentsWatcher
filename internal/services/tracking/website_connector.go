@@ -2,7 +2,8 @@ package tracking
 
 import (
 	"net/http"
-	"torrentsWatcher/internal/core/models"
+
+	"torrentsWatcher/internal/models"
 
 	"github.com/PuerkitoBio/goquery"
 )

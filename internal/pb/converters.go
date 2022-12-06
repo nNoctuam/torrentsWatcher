@@ -1,7 +1,7 @@
 package pb
 
 import (
-	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/models"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"torrentsWatcher/internal/core/models"
+	"torrentsWatcher/internal/models"
 	"torrentsWatcher/internal/pb"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
