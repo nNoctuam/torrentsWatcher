@@ -9,10 +9,9 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/improbable-eng/grpc-web v0.14.1
 	github.com/jinzhu/gorm v1.9.12
-	github.com/kisielk/godepgraph v0.0.0-20190626013829-57a7e4a651a9 // indirect
 	go.uber.org/zap v1.16.0
-	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
-	golang.org/x/text v0.3.5
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+	golang.org/x/text v0.3.8
 	google.golang.org/grpc v1.41.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
